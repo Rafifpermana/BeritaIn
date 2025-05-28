@@ -77,7 +77,12 @@ const Footer = () => {
         {/* Mobile Accordion Layout (< sm) */}
         <div className="block sm:hidden space-y-4">
           {Object.entries(footerData).map(([key, section]) => (
-            <div key={key} className="border-b border-gray-200 pb-4">
+            <div
+              key={key}
+              className="border-b border-gray-200 pb-4 last:border-b-0"
+            >
+              {" "}
+              {/* Menghilangkan border bawah untuk item terakhir */}
               <button
                 onClick={() => toggleSection(key)}
                 className="flex justify-between items-center w-full py-3 text-left"
@@ -91,7 +96,6 @@ const Footer = () => {
                   <ChevronDown className="w-5 h-5 text-gray-500" />
                 )}
               </button>
-
               {expandedSections[key] && (
                 <ul className="mt-3 space-y-3 pl-2">
                   {section.links.map((link, index) => (
@@ -111,7 +115,9 @@ const Footer = () => {
         </div>
 
         {/* Tablet Layout (sm to lg) */}
-        <div className="hidden sm:grid lg:hidden grid-cols-2 gap-8">
+        <div className="hidden sm:grid lg:hidden grid-cols-2 gap-x-8 gap-y-10">
+          {" "}
+          {/* Menambah gap-y */}
           {Object.entries(footerData).map(([key, section]) => (
             <div key={key}>
               <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
@@ -134,124 +140,64 @@ const Footer = () => {
         </div>
 
         {/* Desktop Layout (lg+) */}
-        <div className="hidden lg:grid grid-cols-4 gap-8">
-          {/* About Column */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-6">
-              {footerData.about.title}
-            </h3>
-            <ul className="space-y-4">
-              {footerData.about.links.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href="#"
-                    className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* News Column */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-6">
-              {footerData.news.title}
-            </h3>
-            <ul className="space-y-4">
-              {footerData.news.links.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href="#"
-                    className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Lifestyle Column */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-6">
-              {footerData.lifestyle.title}
-            </h3>
-            <ul className="space-y-4">
-              {footerData.lifestyle.links.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href="#"
-                    className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Topics Column */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-6">
-              {footerData.topics.title}
-            </h3>
-            <ul className="space-y-4">
-              {footerData.topics.links.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href="#"
-                    className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="hidden lg:grid grid-cols-4 gap-x-8 gap-y-10">
+          {" "}
+          {/* Menambah gap-y */}
+          {/* Kolom diambil dari footerData untuk konsistensi */}
+          {Object.values(footerData).map((section, sectionIndex) => (
+            <div key={sectionIndex}>
+              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-6">
+                {section.title}
+              </h3>
+              <ul className="space-y-4">
+                {section.links.map((link, linkIndex) => (
+                  <li key={linkIndex}>
+                    <a
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                    >
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        {/* Social Media and Copyright Section */}
-        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-200">
-          <div className="flex flex-col space-y-6 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center">
-            {/* Social Media Icons */}
-            <div className="flex justify-center sm:justify-start space-x-6">
-              {socialIcons.map((social, index) => {
-                const IconComponent = social.icon;
-                return (
-                  <a
-                    key={index}
-                    href={social.href}
-                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-full"
-                    aria-label={social.label}
-                  >
-                    <IconComponent className="w-5 h-5" />
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Additional Mobile Footer Info */}
-          <div className="mt-6 pt-6 border-t border-gray-100 sm:hidden">
-            <div className="text-center space-y-2">
-              <p className="text-xs text-gray-500">
-                Stay connected with us for the latest updates
-              </p>
-              <div className="flex justify-center space-x-4 text-xs text-gray-600">
-                <a href="#" className="hover:text-gray-900">
-                  Contact
-                </a>
-                <span>•</span>
-                <a href="#" className="hover:text-gray-900">
-                  Support
-                </a>
-                <span>•</span>
-                <a href="#" className="hover:text-gray-900">
-                  Feedback
-                </a>
+        {/* Social Media, Nama Anda, dan Copyright Section */}
+        <div className="mt-10 sm:mt-12 pt-8 sm:pt-10 border-t border-gray-200">
+          <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center text-center md:text-left">
+            {/* Grup Ikon Media Sosial dan Nama Anda */}
+            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start">
+              <div className="flex space-x-5">
+                {" "}
+                {/* Sedikit menambah spasi antar ikon */}
+                {socialIcons.map((social, index) => {
+                  const IconComponent = social.icon;
+                  return (
+                    <a
+                      key={index}
+                      href={social.href}
+                      className="text-gray-500 hover:text-gray-700 transition-colors duration-200 p-1.5 hover:bg-gray-100 rounded-full" // Penyesuaian padding dan warna
+                      aria-label={social.label}
+                    >
+                      <IconComponent className="w-5 h-5" />
+                    </a>
+                  );
+                })}
               </div>
+              <div className="mt-3 sm:mt-0 sm:ml-4">
+                <p className="text-sm text-gray-700 font-medium">
+                  Rafifpermana
+                </p>
+              </div>
+            </div>
+
+            {/* Copyright Text */}
+            <div className="text-xs text-gray-500">
+              &copy; {new Date().getFullYear()} NamaWebsiteAnda. Hak Cipta
+              Dilindungi.
             </div>
           </div>
         </div>
