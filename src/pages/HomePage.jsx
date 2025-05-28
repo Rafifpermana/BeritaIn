@@ -1,31 +1,30 @@
-// src/pages/HomePage.jsx
 import React from "react";
+import { Link } from "react-router-dom"; // Import Link
 
-// Komponen untuk judul bagian dengan garis vertikal (sudah ada)
+// Komponen untuk judul bagian dengan garis vertikal
 const SectionTitle = ({ title }) => (
   <div className="flex items-center mb-4 md:mb-6">
-    <span className="w-1 h-6 bg-black mr-3"></span>{" "}
-    {/* Sesuaikan warna jika perlu */}
+    <span className="w-1 h-6 bg-black mr-3"></span>
     <h2 className="text-xl sm:text-2xl font-bold">{title}</h2>
   </div>
 );
 
-// Komponen untuk item berita kecil dengan thumbnail (sudah ada)
+// Komponen untuk item berita kecil dengan thumbnail
 const SmallStoryItem = ({ image, title, author, date, link }) => (
   <div className="group flex gap-3 sm:gap-4 items-start">
-    <a
-      href={link}
-      className="block w-1/3 sm:w-1/4 md:w-1/3 lg:w-1/4 flex-shrink-0 rounded-md overflow-hidden" // Anda bisa menyesuaikan lebar ini jika perlu
+    <Link
+      to={link}
+      className="block w-1/3 sm:w-1/4 md:w-1/3 lg:w-1/4 flex-shrink-0 rounded-md overflow-hidden"
     >
       <img
         src={image}
         alt={title}
         className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
       />
-    </a>
+    </Link>
     <div>
       <h4 className="text-sm sm:text-base font-semibold group-hover:text-blue-600 transition-colors">
-        <a href={link}>{title}</a>
+        <Link to={link}>{title}</Link>
       </h4>
       <div className="text-xs text-gray-500 mt-1">
         <span>By {author}</span>
@@ -37,144 +36,157 @@ const SmallStoryItem = ({ image, title, author, date, link }) => (
 );
 
 const HomePage = () => {
-  // Data dari bagian pertama (tidak berubah)
+  // Menambahkan 'id' unik untuk setiap artikel agar bisa di-link
   const popularPosts = [
     {
+      id: "ai-poetry",
       title: "AI Breakthrough: Machines Now Write Poetry?",
       author: "Alex Johnson",
       date: "Jan 13, 2025",
       image: "/placeholder-ai.jpg",
-      link: "#",
     },
     {
+      id: "remote-work-2025",
       title: "The Future of Remote Work in 2025",
       author: "Emily Carter",
       date: "Jan 10, 2025",
       image: "/placeholder-remote.jpg",
-      link: "#",
     },
     {
+      id: "social-media-algo",
       title: "The Truth About Social Media Algorithms",
       author: "John Doe",
       date: "Jan 13, 2025",
       image: "/placeholder-social.jpg",
-      link: "#",
     },
     {
+      id: "future-of-office",
       title: "The Future of Work: Are Offices a Thing of the Past?",
       author: "Michael Torres",
       date: "Jan 13, 2025",
       image: "/placeholder-office.jpg",
-      link: "#",
     },
   ];
 
-  // Data untuk bagian kedua (tidak berubah)
   const recommendationNewsData = [
     {
+      id: "fitness-trends",
       title: "Fitness Trends That Will Dominate This Year!",
       author: "John Smith",
       date: "Jan 10, 2025",
-      link: "#",
     },
     {
+      id: "gen-z-workplace",
       title: "How Gen Z is Changing the Workplace Forever",
       author: "Ryan Cooper",
       date: "Jan 10, 2025",
-      link: "#",
     },
     {
+      id: "esports-shakeup",
       title: "Gaming Industry Shakeup: What's Next for Esports?",
       author: "Luke Wilson",
       date: "Dec 22, 2024",
-      link: "#",
     },
   ];
 
   const trendingNowData = [
     {
+      id: "smart-cities",
       title: "Inside the World's Most Advanced Smart Cities",
       author: "Olivia Carter",
       date: "Nov 14, 2024",
       image: "/placeholder-smart-cities.jpg",
       isLarge: true,
-      link: "#",
     },
     {
+      id: "streaming-entertainment",
       title: "How Streaming Services Are Changing Entertainment",
       author: "Jason Mitchell",
       date: "Jan 12, 2025",
       image: "/placeholder-streaming.jpg",
-      link: "#",
     },
     {
+      id: "sustainable-fashion",
       title: "The Rise of Sustainable Fashion",
       author: "Emily Thompson",
       date: "Jan 18, 2025",
       image: "/placeholder-fashion.jpg",
-      link: "#",
     },
     {
+      id: "space-astronomy",
       title: "New Space Missions Set to Change Astronomy",
       author: "William Chase",
       date: "Jan 19, 2025",
       image: "/placeholder-space.jpg",
-      link: "#",
     },
   ];
 
   const latestUpdatesData = [
-    { title: "Why Electric Vehicles Are Taking Over the Roads", link: "#" },
-    { title: "The Secret Behind Viral Social Media Trends", link: "#" },
-    { title: "How Esports is Becoming a Billion-Dollar Industry", link: "#" },
-    { title: "Breakthroughs in Medical Technology This Year", link: "#" },
-    { title: "The Changing Landscape of Remote Work", link: "#" },
-    { title: "Why Gen Z is Reshaping the Job Market", link: "#" },
+    {
+      id: "electric-vehicles",
+      title: "Why Electric Vehicles Are Taking Over the Roads",
+    },
+    {
+      id: "viral-trends",
+      title: "The Secret Behind Viral Social Media Trends",
+    },
+    {
+      id: "esports-billion-dollar",
+      title: "How Esports is Becoming a Billion-Dollar Industry",
+    },
+    {
+      id: "medical-tech",
+      title: "Breakthroughs in Medical Technology This Year",
+    },
+    {
+      id: "remote-work-landscape",
+      title: "The Changing Landscape of Remote Work",
+    },
+    { id: "gen-z-job-market", title: "Why Gen Z is Reshaping the Job Market" },
   ];
 
-  // Data untuk bagian ketiga (tidak berubah)
   const breakingNewsData = [
     {
+      id: "dark-side-ai",
       title: "The Dark Side of AI: Ethical Concerns & Risks",
       author: "Anthony Sputo",
       date: "Jan 13, 2024",
       image: "/placeholder-dark-ai.jpg",
-      link: "#",
     },
     {
+      id: "minimalism-design",
       title: "How Minimalism Is Changing Interior Design",
       author: "Rachel Stevens",
       date: "Jan 13, 2025",
       image: "/placeholder-minimalism.jpg",
-      link: "#",
     },
     {
+      id: "hollywood-releases",
       title: "Hollywood's Biggest Movie Releases This Year",
       author: "Alan Johnson",
       date: "Jan 13, 2025",
       image: "/placeholder-hollywood.jpg",
-      link: "#",
     },
     {
+      id: "cloud-gaming-future",
       title: "Is Cloud Gaming the Future of Play?",
       author: "John Doe",
       date: "Jan 13, 2025",
       image: "/placeholder-cloud-gaming.jpg",
-      link: "#",
     },
     {
+      id: "kpop-phenomenon",
       title: "The Rise of K-Pop: What's Next for the Global Phenomenon?",
       author: "Kim Jae-eun",
       date: "Jan 13, 2025",
       image: "/placeholder-kpop.jpg",
-      link: "#",
     },
     {
+      id: "future-work-model",
       title: "The Future of Work: Remote, Hybrid, or Back to Office?",
       author: "Priya S.",
       date: "Jan 13, 2025",
       image: "/placeholder-future-work.jpg",
-      link: "#",
     },
   ];
 
@@ -199,85 +211,78 @@ const HomePage = () => {
   ];
   const moreTag = "More";
 
-  // Data untuk bagian keempat (MUST-READ STORIES) - Disesuaikan untuk simetri
   const mustReadProminentStoryLeft = {
-    // Sebelumnya mustReadMainStory1
+    id: "trump-panama",
     title:
       "Trump reiterates threat to retake Panama Canal ‘or something very powerful’ will happen if pressures on U.S. increase",
     author: "John Doe",
     date: "Jan 13, 2025",
-    link: "#",
-    imageLarge: "/placeholder-trump-large.jpg", // Gambar ini sekarang selalu terlihat
+    imageLarge: "/placeholder-trump-large.jpg",
   };
-
   const mustReadSmallerStoriesLeft = [
-    // Sebelumnya mustReadSmallerStoriesSet1
     {
+      id: "sa-land",
       title:
         "South Africa denies ‘confiscating land,’ after Trump threatens to cut off aid",
       author: "Jason Mitchell",
       date: "Jan 13, 2025",
       image: "/placeholder-sa.jpg",
-      link: "#",
     },
     {
+      id: "mickey-bergman-book",
       title:
         "Mickey Bergman’s new book looks at true stories of high-stakes hostage negotiations...",
       author: "Emily Thompson",
       date: "Jan 16, 2025",
       image: "/placeholder-book.jpg",
-      link: "#",
     },
     {
+      id: "cerita-malam-minggu",
       title: "Cerita tentang Malam Minggu, LinkedIn, dan Menjaga Anak",
       author: "Robert Chen",
       date: "Jan 16, 2025",
       image: "/placeholder-linkedin.jpg",
-      link: "#",
     },
   ];
-
   const mustReadProminentStoryRight = {
-    // Sebelumnya mustReadProminentStory2
+    id: "ai-gaming-change",
     title: "How AI is Changing the Way We Game",
     author: "John Doe",
     date: "Jan 13, 2025",
-    link: "#",
     imageLarge: "/placeholder-ai-game-large.jpg",
   };
-
   const mustReadSmallerStoriesRight = [
-    // Sebelumnya mustReadSmallerStoriesSet2
     {
+      id: "streaming-services-change",
       title: "How Streaming Services Are Changing Entertainment",
       author: "Jason Mitchell",
       date: "Jan 13, 2025",
       image: "/placeholder-streaming-small.jpg",
-      link: "#",
     },
     {
+      id: "rise-sustainable-fashion",
       title: "The Rise of Sustainable Fashion",
       author: "Emily Thompson",
       date: "Jan 16, 2025",
       image: "/placeholder-fashion-small.jpg",
-      link: "#",
     },
     {
+      id: "new-space-missions",
       title: "New Space Missions Set to Change Astronomy",
       author: "Robert Chen",
       date: "Jan 16, 2025",
       image: "/placeholder-space-small.jpg",
-      link: "#",
     },
   ];
 
   return (
     <div className="container mx-auto py-8 px-4">
-      {/* === BAGIAN PERTAMA (Tidak Berubah) === */}
+      {/* === BAGIAN PERTAMA === */}
       <div className="grid gap-8 lg:grid-cols-3 mb-12 md:mb-16">
         <div className="lg:col-span-2 space-y-4">
           <div className="relative rounded-lg overflow-hidden shadow-lg">
-            <a href="#" className="block">
+            {/* Ganti dengan ID artikel utama jika ada */}
+            <Link to={`/article/main-travel-story`} className="block">
               <img
                 src="/placeholder-laptop.jpg"
                 alt="Mind-Blowing Travel Destinations"
@@ -290,13 +295,13 @@ const HomePage = () => {
                 className="w-full h-auto object-cover md:hidden"
                 style={{ aspectRatio: "1.33 / 1" }}
               />
-            </a>
+            </Link>
           </div>
           <div className="text-left">
             <h2 className="text-2xl sm:text-3xl font-bold md:text-4xl hover:text-blue-600 transition-colors">
-              <a href="#">
+              <Link to={`/article/main-travel-story`}>
                 Mind-Blowing Travel Destinations You Need to Visit!
-              </a>
+              </Link>
             </h2>
             <div className="flex items-center mt-2 text-gray-500 text-sm">
               <span>By Muhammad Rafif Permana Putra</span>
@@ -306,23 +311,23 @@ const HomePage = () => {
           </div>
         </div>
         <div className="space-y-4 lg:space-y-3">
-          {popularPosts.map((post, index) => (
+          {popularPosts.map((post) => (
             <div
-              key={index}
+              key={post.id}
               className="grid grid-cols-3 gap-3 items-start group"
             >
               <div className="col-span-1 relative rounded-md overflow-hidden">
-                <a href={post.link} className="block">
+                <Link to={`/article/${post.id}`} className="block">
                   <img
                     src={post.image}
                     alt={post.title}
                     className="w-full h-full object-cover aspect-[4/3] sm:aspect-[16/9] md:aspect-[4/3] lg:aspect-[1/1] group-hover:opacity-80 transition-opacity"
                   />
-                </a>
+                </Link>
               </div>
               <div className="col-span-2">
                 <h3 className="text-sm sm:text-base font-semibold group-hover:text-blue-600 transition-colors">
-                  <a href={post.link}>{post.title}</a>
+                  <Link to={`/article/${post.id}`}>{post.title}</Link>
                 </h3>
                 <div className="flex items-center mt-1 text-gray-500 text-xs">
                   <span>By {post.author}</span>
@@ -335,14 +340,14 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* === BAGIAN KEDUA (Tidak Berubah) === */}
+      {/* === BAGIAN KEDUA === */}
       <section className="mb-12 md:mb-16">
         <SectionTitle title="Recommendation News" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {recommendationNewsData.map((item, index) => (
-            <div key={index} className="group">
+          {recommendationNewsData.map((item) => (
+            <div key={item.id} className="group">
               <h3 className="text-lg font-semibold mb-1 group-hover:text-blue-600 transition-colors">
-                <a href={item.link}>{item.title}</a>
+                <Link to={`/article/${item.id}`}>{item.title}</Link>
               </h3>
               <div className="text-xs text-gray-500">
                 <span>By {item.author}</span>
@@ -358,15 +363,15 @@ const HomePage = () => {
         <section className="lg:col-span-2">
           <SectionTitle title="Trending Now" />
           <div className="space-y-6 md:space-y-8">
-            {trendingNowData.map((item, index) => (
+            {trendingNowData.map((item) => (
               <div
-                key={index}
+                key={item.id}
                 className={`group flex flex-col ${
                   item.isLarge ? "md:flex-row" : "sm:flex-row"
                 } gap-4 items-start`}
               >
-                <a
-                  href={item.link}
+                <Link
+                  to={`/article/${item.id}`}
                   className={`block relative rounded-md overflow-hidden ${
                     item.isLarge
                       ? "w-full md:w-1/2 lg:w-2/5"
@@ -382,7 +387,7 @@ const HomePage = () => {
                         : "aspect-video sm:aspect-[4/3]"
                     }`}
                   />
-                </a>
+                </Link>
                 <div
                   className={`${
                     item.isLarge ? "mt-3 md:mt-0" : "mt-2 sm:mt-0"
@@ -395,7 +400,7 @@ const HomePage = () => {
                         : "text-base md:text-lg"
                     }`}
                   >
-                    <a href={item.link}>{item.title}</a>
+                    <Link to={`/article/${item.id}`}>{item.title}</Link>
                   </h3>
                   <div className="text-xs text-gray-500 mt-1">
                     <span>By {item.author}</span>
@@ -410,28 +415,32 @@ const HomePage = () => {
         <section>
           <SectionTitle title="Latest Updates" />
           <div className="space-y-3">
-            {latestUpdatesData.map((item, index) => (
-              <a
-                key={index}
-                href={item.link}
-                className="block text-sm sm:text-base font-medium text-gray-700 hover:text-blue-600 hover:underline transition-colors"
-              >
-                {item.title}
-              </a>
-            ))}
+            {latestUpdatesData.map(
+              (
+                item // Asumsi item ini juga bisa menjadi artikel detail
+              ) => (
+                <Link
+                  key={item.id}
+                  to={`/article/${item.id}`}
+                  className="block text-sm sm:text-base font-medium text-gray-700 hover:text-blue-600 hover:underline transition-colors"
+                >
+                  {item.title}
+                </Link>
+              )
+            )}
           </div>
         </section>
       </div>
 
-      {/* === BAGIAN KETIGA (Tidak Berubah) === */}
+      {/* === BAGIAN KETIGA === */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-12 md:mb-16">
         <section className="lg:col-span-2">
           <SectionTitle title="Breaking News" />
           <div className="space-y-5 md:space-y-6">
-            {breakingNewsData.map((item, index) => (
-              <div key={index} className="group flex gap-4 items-start">
-                <a
-                  href={item.link}
+            {breakingNewsData.map((item) => (
+              <div key={item.id} className="group flex gap-4 items-start">
+                <Link
+                  to={`/article/${item.id}`}
                   className="block w-1/3 sm:w-1/4 md:w-1/3 lg:w-1/4 xl:w-1/5 flex-shrink-0 rounded-md overflow-hidden"
                 >
                   <img
@@ -439,10 +448,10 @@ const HomePage = () => {
                     alt={item.title}
                     className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
                   />
-                </a>
+                </Link>
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold group-hover:text-blue-600 transition-colors">
-                    <a href={item.link}>{item.title}</a>
+                    <Link to={`/article/${item.id}`}>{item.title}</Link>
                   </h3>
                   <div className="text-xs text-gray-500 mt-1">
                     <span>By {item.author}</span>
@@ -458,71 +467,68 @@ const HomePage = () => {
           <SectionTitle title="Tags Category" />
           <div className="flex flex-wrap gap-2">
             {tagsCategoryData.map((tag, index) => (
-              <a
+              <Link
                 key={index}
-                href="#"
+                to={`/category/${tag
+                  .toLowerCase()
+                  .replace(/ & /g, "-")
+                  .replace(/ /g, "-")}`}
                 className="bg-gray-200 text-gray-700 text-xs sm:text-sm px-3 py-1.5 rounded-md hover:bg-gray-300 hover:text-black transition-colors"
               >
                 {tag}
-              </a>
+              </Link>
             ))}
-            <a
-              href="#"
+            <Link
+              to="/categories"
               className="bg-gray-700 text-white text-xs sm:text-sm px-3 py-1.5 rounded-md hover:bg-black transition-colors"
             >
               {moreTag}
-            </a>
+            </Link>
           </div>
         </section>
       </div>
 
-      {/* --- AWAL BAGIAN KEEMPAT (MUST-READ STORIES) - DIPERBAIKI UNTUK SIMETRI --- */}
+      {/* --- BAGIAN KEEMPAT (MUST-READ STORIES) --- */}
       <section>
         <SectionTitle title="Must-Read Stories" />
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8">
-          {/* Kolom KIRI di DESKTOP / Bagian ATAS di MOBILE/TABLET */}
           <div>
-            {" "}
-            {/* Tidak perlu lg:order-1 karena ini default */}
-            {/* Cerita Menonjol KIRI */}
             <div className="mb-6 md:mb-8 group">
-              <a
-                href={mustReadProminentStoryLeft.link}
+              <Link
+                to={`/article/${mustReadProminentStoryLeft.id}`}
                 className="block mb-3 sm:mb-4 rounded-lg overflow-hidden shadow-md"
               >
                 <img
                   src={mustReadProminentStoryLeft.imageLarge}
                   alt={mustReadProminentStoryLeft.title}
-                  className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity" // Gambar selalu terlihat
+                  className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
                 />
-              </a>
+              </Link>
               <h3 className="text-xl md:text-2xl font-bold group-hover:text-blue-600 transition-colors">
-                <a href={mustReadProminentStoryLeft.link}>
+                <Link to={`/article/${mustReadProminentStoryLeft.id}`}>
                   {mustReadProminentStoryLeft.title}
-                </a>
+                </Link>
               </h3>
               <div className="text-sm text-gray-500 mt-1.5">
-                <span>By {mustReadProminentStoryLeft.author}</span>
-                <span className="mx-2">|</span>
+                <span>By {mustReadProminentStoryLeft.author}</span>{" "}
+                <span className="mx-2">|</span>{" "}
                 <span>{mustReadProminentStoryLeft.date}</span>
               </div>
             </div>
-            {/* Daftar Cerita Kecil KIRI */}
             <div className="space-y-4 md:space-y-5">
-              {mustReadSmallerStoriesLeft.map((story, index) => (
-                <SmallStoryItem key={`smallLeft-${index}`} {...story} />
+              {mustReadSmallerStoriesLeft.map((story) => (
+                <SmallStoryItem
+                  key={story.id}
+                  {...story}
+                  link={`/article/${story.id}`}
+                />
               ))}
             </div>
           </div>
-
-          {/* Kolom KANAN di DESKTOP / Bagian BAWAH di MOBILE/TABLET */}
           <div className="mt-8 lg:mt-0">
-            {" "}
-            {/* lg:order-2 tidak eksplisit diperlukan jika ini elemen kedua */}
-            {/* Cerita Menonjol KANAN */}
             <div className="mb-6 md:mb-8 group">
-              <a
-                href={mustReadProminentStoryRight.link}
+              <Link
+                to={`/article/${mustReadProminentStoryRight.id}`}
                 className="block mb-3 sm:mb-4 rounded-lg overflow-hidden shadow-md"
               >
                 <img
@@ -530,30 +536,31 @@ const HomePage = () => {
                   alt={mustReadProminentStoryRight.title}
                   className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
                 />
-              </a>
+              </Link>
               <h3 className="text-xl md:text-2xl font-bold group-hover:text-blue-600 transition-colors">
-                <a href={mustReadProminentStoryRight.link}>
+                <Link to={`/article/${mustReadProminentStoryRight.id}`}>
                   {mustReadProminentStoryRight.title}
-                </a>
+                </Link>
               </h3>
               <div className="text-sm text-gray-500 mt-1.5">
-                <span>By {mustReadProminentStoryRight.author}</span>
-                <span className="mx-2">|</span>
+                <span>By {mustReadProminentStoryRight.author}</span>{" "}
+                <span className="mx-2">|</span>{" "}
                 <span>{mustReadProminentStoryRight.date}</span>
               </div>
             </div>
-            {/* Daftar Cerita Kecil KANAN */}
             <div className="space-y-4 md:space-y-5">
-              {mustReadSmallerStoriesRight.map((story, index) => (
-                <SmallStoryItem key={`smallRight-${index}`} {...story} />
+              {mustReadSmallerStoriesRight.map((story) => (
+                <SmallStoryItem
+                  key={story.id}
+                  {...story}
+                  link={`/article/${story.id}`}
+                />
               ))}
             </div>
           </div>
         </div>
       </section>
-      {/* --- AKHIR BAGIAN KEEMPAT --- */}
     </div>
   );
 };
-
 export default HomePage;
