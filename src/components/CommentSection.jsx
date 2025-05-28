@@ -13,11 +13,6 @@ const CommentSection = ({
   // Tambah onAddReply
   return (
     <div className="mt-8 pt-8 border-t border-gray-200">
-      <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 flex items-center space-x-2">
-        <MessageSquare size={24} className="text-blue-600" />
-        <span>Komentar ({comments.length})</span>
-      </h3>
-
       <CommentForm onSubmitComment={onAddComment} />
 
       <div className="mt-6 space-y-2">

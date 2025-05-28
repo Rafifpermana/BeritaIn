@@ -19,8 +19,10 @@ const ReplyForm = ({ parentId, onSubmitReply, onCancel }) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-2 ml-8 pl-4 border-l-2 border-gray-200"
+      className="mt-3 ml-8 pl-4 border-l-2 border-gray-200"
     >
+      {" "}
+      {/* Penyesuaian margin atas */}
       <input
         type="text"
         value={replyAuthor}
@@ -86,19 +88,13 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
     setShowReplyForm(!showReplyForm);
   };
 
-  const indentStyle = { marginLeft: `${indentLevel * 1.5}rem` }; // Mengurangi sedikit indentasi
+  // Gaya indentasi berdasarkan level
+  const indentStyle =
+    indentLevel > 0 ? { marginLeft: `${indentLevel * 1.5}rem` } : {};
 
   return (
-    <div
-      style={indentLevel > 0 ? indentStyle : {}}
-      className={`py-3 ${
-        indentLevel === 0
-          ? "border-b border-gray-100 last:border-b-0"
-          : "mt-1 pt-1 border-t border-gray-100"
-      }`}
-    >
-      {" "}
-      {/* Penyesuaian border dan margin untuk balasan */}
+    // Menghapus border dari sini, akan ditangani oleh parent list (CommentSection atau div replies)
+    <div style={indentStyle} className="py-3">
       <div className="flex items-start space-x-3">
         <img
           src={avatarUrl || "/placeholder-avatar.png"}
@@ -106,11 +102,10 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
           className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover flex-shrink-0"
         />
         <div className="flex-grow">
-          <div
-            className={`p-3 rounded-lg ${
-              indentLevel > 0 ? "bg-gray-50" : "bg-gray-100"
-            }`}
-          >
+          {/* Latar belakang bubble komentar disamakan */}
+          <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
+            {" "}
+            {/* Menambah shadow-sm untuk sedikit kedalaman */}
             <div className="flex items-center justify-between mb-0.5">
               <p className="text-xs sm:text-sm font-semibold text-gray-800 hover:underline cursor-pointer">
                 {author}
@@ -118,7 +113,9 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
             </div>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{text}</p>
           </div>
-          <div className="flex items-center space-x-3 mt-1 pl-1">
+          <div className="flex items-center space-x-3 mt-1.5 pl-1">
+            {" "}
+            {/* mt-1.5 agar lebih rapat sedikit */}
             <button
               onClick={handleLikeComment}
               className={`text-xs font-medium flex items-center space-x-1 transition-colors
@@ -137,7 +134,6 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
               className="text-xs text-gray-500 hover:text-blue-600 font-medium flex items-center space-x-1"
             >
               <MessageSquare size={14} />
-              {/* Menampilkan jumlah balasan */}
               <span>
                 Balas{" "}
                 {replies && replies.length > 0 ? `(${replies.length})` : ""}
@@ -158,23 +154,21 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
           {showReplyForm && (
             <ReplyForm
               parentId={id}
-              onSubmitReply={onAddReply} // onAddReply diteruskan dari props CommentItem
+              onSubmitReply={onAddReply}
               onCancel={() => setShowReplyForm(false)}
             />
           )}
 
+          {/* Render Balasan Komentar */}
           {replies && replies.length > 0 && (
-            <div
-              className={`mt-2 space-y-1 ${indentLevel < 2 ? "pl-0" : "ml-0"}`}
-            >
-              {" "}
-              {/* Hapus border dan margin kiri tambahan di sini, biarkan indentStyle utama yg bekerja */}
+            // Menggunakan divide-y untuk garis pemisah antar balasan
+            <div className="mt-3 space-y-0 divide-y divide-gray-200">
               {replies.map((reply) => (
                 <CommentItem
                   key={reply.id}
                   comment={reply}
                   onAddReply={onAddReply}
-                  indentLevel={indentLevel + 1}
+                  indentLevel={indentLevel + 1} // Pertahankan indentLevel untuk balasan dari balasan
                 />
               ))}
             </div>
