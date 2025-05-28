@@ -1,9 +1,8 @@
 // src/data/mockData.js
 
-// Helper untuk menghasilkan timestamp yang berbeda untuk data contoh
 let dateCounterForTimestamp = Date.now();
 const getPseudoUniqueTimestamp = () => {
-  dateCounterForTimestamp -= (Math.floor(Math.random() * 60) + 30) * 1000 * 60; // Mundur beberapa menit hingga jam
+  dateCounterForTimestamp -= (Math.floor(Math.random() * 60) + 30) * 1000 * 60;
   return dateCounterForTimestamp;
 };
 
@@ -14,12 +13,12 @@ export const allArticlesData = {
       "Mind-Blowing Travel Destinations You Need to Visit This Year for Unforgettable Adventures!",
     author: "Muhammad Rafif Permana Putra",
     date: "2025-01-23",
+    category: "Travel & Adventure",
     image: "/placeholder-laptop.jpg",
     imageUrl: "/placeholder-laptop.jpg",
     initialLikes: 120,
     initialDislikes: 5,
-    contentHTML:
-      "<p>Detail perjalanan yang menakjubkan, penuh dengan pemandangan indah dan pengalaman tak terlupakan. Dari pegunungan yang menjulang tinggi hingga pantai berpasir putih, dunia ini menawarkan begitu banyak keajaiban untuk dijelajahi.</p><p>Artikel ini akan membawa Anda melalui beberapa destinasi paling menakjubkan yang wajib masuk dalam daftar perjalanan Anda berikutnya. Siapkan diri Anda untuk terinspirasi!</p>",
+    contentHTML: `<p>Detail perjalanan yang menakjubkan, penuh dengan pemandangan indah dan pengalaman tak terlupakan. Dari pegunungan yang menjulang tinggi hingga pantai berpasir putih, dunia ini menawarkan begitu banyak keajaiban untuk dijelajahi.</p><p>Artikel ini akan membawa Anda melalui beberapa destinasi paling menakjubkan yang wajib masuk dalam daftar perjalanan Anda berikutnya. Siapkan diri Anda untuk terinspirasi!</p>`,
   },
   "ai-poetry": {
     id: "ai-poetry",
@@ -27,289 +26,291 @@ export const allArticlesData = {
       "AI Breakthrough: Machines Now Write Poetry, Challenging Human Creativity?",
     author: "Alex Johnson",
     date: "2025-01-13",
+    category: "Tech & Innovation",
     image: "/placeholder-ai.jpg",
     imageUrl: "/placeholder-ai.jpg",
     initialLikes: 95,
     initialDislikes: 2,
-    contentHTML:
-      "<p>Sebuah terobosan baru dalam kecerdasan buatan telah menggemparkan dunia sastra. Mesin yang ditenagai oleh algoritma canggih kini dilaporkan mampu menghasilkan puisi dengan kedalaman emosi dan kompleksitas linguistik yang menyaingi karya manusia.</p><p>Apakah ini pertanda era baru kolaborasi manusia-mesin dalam seni, ataukah ancaman bagi kreativitas otentik? Mari kita selami lebih dalam.</p>",
+    contentHTML: `<p>Sebuah terobosan baru dalam kecerdasan buatan telah menggemparkan dunia sastra. Mesin yang ditenagai oleh algoritma canggih kini dilaporkan mampu menghasilkan puisi dengan kedalaman emosi dan kompleksitas linguistik yang menyaingi karya manusia.</p><p>Apakah ini pertanda era baru kolaborasi manusia-mesin dalam seni, ataukah ancaman bagi kreativitas otentik? Mari kita selami lebih dalam.</p>`,
   },
   "remote-work-2025": {
     id: "remote-work-2025",
     title: "The Future of Remote Work in 2025",
     author: "Emily Carter",
     date: "2025-01-10",
+    category: "Business & Economy",
     image: "/placeholder-remote.jpg",
     imageUrl: "/placeholder-remote.jpg",
     initialLikes: 110,
     initialDislikes: 10,
-    contentHTML:
-      "<p>Pandemi global telah mengakselerasi adopsi kerja jarak jauh. Artikel ini membahas prediksi dan tren utama untuk remote work di tahun 2025, termasuk teknologi pendukung, tantangan budaya, dan model kerja hibrida.</p>",
+    contentHTML: `<p>Pandemi global telah mengakselerasi adopsi kerja jarak jauh. Artikel ini membahas prediksi dan tren utama untuk remote work di tahun 2025, termasuk teknologi pendukung, tantangan budaya, dan model kerja hibrida.</p>`,
   },
   "social-media-algo": {
     id: "social-media-algo",
     title: "The Truth About Social Media Algorithms",
     author: "John Doe",
     date: "2025-01-13",
+    category: "Tech & Innovation",
     image: "/placeholder-social.jpg",
     imageUrl: "/placeholder-social.jpg",
     initialLikes: 75,
     initialDislikes: 3,
-    contentHTML:
-      "<p>Algoritma media sosial seringkali menjadi kotak hitam. Bagaimana sebenarnya cara kerjanya? Artikel ini mencoba membongkar beberapa mitos dan fakta seputar algoritma yang membentuk feed berita kita setiap hari.</p>",
+    contentHTML: `<p>Algoritma media sosial seringkali menjadi kotak hitam. Bagaimana sebenarnya cara kerjanya? Artikel ini mencoba membongkar beberapa mitos dan fakta seputar algoritma yang membentuk feed berita kita setiap hari.</p>`,
   },
   "future-of-office": {
     id: "future-of-office",
     title: "The Future of Work: Are Offices a Thing of the Past?",
     author: "Michael Torres",
     date: "2025-01-13",
+    category: "Business & Economy",
     image: "/placeholder-office.jpg",
     imageUrl: "/placeholder-office.jpg",
     initialLikes: 130,
     initialDislikes: 7,
-    contentHTML:
-      "<p>Dengan semakin populernya kerja jarak jauh, banyak yang mempertanyakan relevansi kantor fisik. Apakah kantor akan menjadi artefak masa lalu, ataukah ia akan berevolusi menjadi sesuatu yang baru?</p>",
+    contentHTML: `<p>Dengan semakin populernya kerja jarak jauh, banyak yang mempertanyakan relevansi kantor fisik. Apakah kantor akan menjadi artefak masa lalu, ataukah ia akan berevolusi menjadi sesuatu yang baru?</p>`,
   },
   "fitness-trends": {
     id: "fitness-trends",
     title: "Fitness Trends That Will Dominate This Year!",
     author: "John Smith",
     date: "2025-01-10",
+    category: "Health & Wellness",
     image: "/placeholder-fitness.jpg",
     imageUrl: "/placeholder-fitness.jpg",
     initialLikes: 50,
     initialDislikes: 1,
-    contentHTML:
-      "<p>Setiap tahun membawa tren kebugaran baru. Dari wearable tech canggih hingga latihan berbasis mindfulness, temukan apa yang akan populer di dunia fitness tahun ini dan bagaimana Anda bisa mengikutinya.</p>",
+    contentHTML: `<p>Setiap tahun membawa tren kebugaran baru. Dari wearable tech canggih hingga latihan berbasis mindfulness, temukan apa yang akan populer di dunia fitness tahun ini dan bagaimana Anda bisa mengikutinya.</p>`,
   },
   "gen-z-workplace": {
+    // Ini kemungkinan sekitar baris 70-80
     id: "gen-z-workplace",
     title: "How Gen Z is Changing the Workplace Forever",
     author: "Ryan Cooper",
     date: "2025-01-10",
-    image: "/placeholder-genz.jpg",
-    imageUrl: "/placeholder-genz.jpg",
+    category: "Business & Economy",
+    image: "/placeholder-genz.jpg", // Pastikan path gambar benar dan string ditutup
+    imageUrl: "/placeholder-genz.jpg", // Pastikan path gambar benar dan string ditutup
     initialLikes: 65,
     initialDislikes: 4,
-    contentHTML:
-      "<p>Generasi Z memasuki dunia kerja dengan ekspektasi dan nilai yang berbeda. Pelajari bagaimana kehadiran mereka membentuk kembali budaya perusahaan, penggunaan teknologi, dan keseimbangan kerja-hidup.</p>",
-  },
+    contentHTML: `<p>Generasi Z memasuki dunia kerja dengan ekspektasi dan nilai yang berbeda. Pelajari bagaimana kehadiran mereka membentuk kembali budaya perusahaan, penggunaan teknologi, dan keseimbangan kerja-hidup.</p>`, // Pastikan backtick penutup ada
+  }, // Koma setelah setiap entri objek
   "esports-shakeup": {
+    // Ini kemungkinan sekitar baris 80-90, tempat error Anda terjadi
     id: "esports-shakeup",
     title: "Gaming Industry Shakeup: What's Next for Esports?",
     author: "Luke Wilson",
     date: "2024-12-22",
+    category: "Esport", // Pastikan kategori ini ada di daftar Navbar Anda
     image: "/placeholder-esports.jpg",
     imageUrl: "/placeholder-esports.jpg",
     initialLikes: 88,
     initialDislikes: 6,
-    contentHTML:
-      "<p>Industri esports terus tumbuh pesat dengan turnamen bernilai jutaan dolar dan basis penggemar global. Namun, tantangan baru juga muncul. Artikel ini menganalisis perubahan dan masa depan esports.</p>",
+    contentHTML: `<p>Industri esports terus tumbuh pesat dengan turnamen bernilai jutaan dolar dan basis penggemar global. Namun, tantangan baru juga muncul. Artikel ini menganalisis perubahan dan masa depan esports.</p>`,
   },
   "smart-cities": {
     id: "smart-cities",
     title: "Inside the World's Most Advanced Smart Cities",
     author: "Olivia Carter",
     date: "2024-11-14",
+    category: "Tech & Innovation",
     image: "/placeholder-smart-cities.jpg",
     imageUrl: "/placeholder-smart-cities.jpg",
     initialLikes: 200,
     initialDislikes: 15,
-    contentHTML:
-      "<p>Kota pintar memanfaatkan teknologi untuk meningkatkan kualitas hidup warganya. Jelajahi beberapa kota paling inovatif di dunia dan solusi cerdas yang mereka terapkan dalam transportasi, energi, dan layanan publik.</p>",
+    contentHTML: `<p>Kota pintar memanfaatkan teknologi untuk meningkatkan kualitas hidup warganya. Jelajahi beberapa kota paling inovatif di dunia dan solusi cerdas yang mereka terapkan dalam transportasi, energi, dan layanan publik.</p>`,
   },
   "streaming-entertainment": {
     id: "streaming-entertainment",
     title: "How Streaming Services Are Changing Entertainment",
     author: "Jason Mitchell",
     date: "2025-01-12",
+    category: "Entertainment & Pop Culture",
     image: "/placeholder-streaming.jpg",
     imageUrl: "/placeholder-streaming.jpg",
     initialLikes: 105,
     initialDislikes: 9,
-    contentHTML:
-      "<p>Layanan streaming telah merevolusi cara kita mengonsumsi film dan acara TV. Bagaimana dampaknya terhadap Hollywood, bioskop, dan kebiasaan menonton kita?</p>",
+    contentHTML: `<p>Layanan streaming telah merevolusi cara kita mengonsumsi film dan acara TV. Bagaimana dampaknya terhadap Hollywood, bioskop, dan kebiasaan menonton kita?</p>`,
   },
   "sustainable-fashion": {
     id: "sustainable-fashion",
     title: "The Rise of Sustainable Fashion",
     author: "Emily Thompson",
     date: "2025-01-18",
+    category: "Lifestyle & Trends",
     image: "/placeholder-fashion.jpg",
     imageUrl: "/placeholder-fashion.jpg",
     initialLikes: 92,
     initialDislikes: 3,
-    contentHTML:
-      "<p>Kesadaran akan dampak lingkungan dari industri fashion mendorong munculnya gerakan fashion berkelanjutan. Apa artinya dan bagaimana konsumen bisa berpartisipasi?</p>",
+    contentHTML: `<p>Kesadaran akan dampak lingkungan dari industri fashion mendorong munculnya gerakan fashion berkelanjutan. Apa artinya dan bagaimana konsumen bisa berpartisipasi?</p>`,
   },
   "space-astronomy": {
     id: "space-astronomy",
     title: "New Space Missions Set to Change Astronomy",
     author: "William Chase",
     date: "2025-01-19",
+    category: "Science & Discovery",
     image: "/placeholder-space.jpg",
     imageUrl: "/placeholder-space.jpg",
     initialLikes: 140,
     initialDislikes: 11,
-    contentHTML:
-      "<p>Dengan teleskop baru dan misi ambisius, pemahaman kita tentang alam semesta siap untuk berubah. Temukan misi luar angkasa menarik yang akan datang dan penemuan yang mungkin mereka hasilkan.</p>",
+    contentHTML: `<p>Dengan teleskop baru dan misi ambisius, pemahaman kita tentang alam semesta siap untuk berubah. Temukan misi luar angkasa menarik yang akan datang dan penemuan yang mungkin mereka hasilkan.</p>`,
   },
   "electric-vehicles": {
     id: "electric-vehicles",
     title: "Why Electric Vehicles Are Taking Over the Roads",
     author: "Auto Expert",
     date: "2025-01-05",
+    category: "Tech & Innovation",
     imageUrl: "/placeholder-ev.jpg",
     image: "/placeholder-ev.jpg",
     initialLikes: 190,
     initialDislikes: 4,
-    contentHTML:
-      "<p>Kendaraan listrik (EV) bukan lagi hanya tren, melainkan masa depan transportasi. Artikel ini menjelaskan faktor pendorong popularitas EV, mulai dari teknologi baterai hingga insentif pemerintah.</p>",
+    contentHTML: `<p>Kendaraan listrik (EV) bukan lagi hanya tren, melainkan masa depan transportasi. Artikel ini menjelaskan faktor pendorong popularitas EV, mulai dari teknologi baterai hingga insentif pemerintah.</p>`,
   },
   "viral-trends": {
     id: "viral-trends",
     title: "The Secret Behind Viral Social Media Trends",
     author: "Social Media Guru",
     date: "2025-01-06",
+    category: "Tech & Innovation",
     imageUrl: "/placeholder-viral.jpg",
     image: "/placeholder-viral.jpg",
     initialLikes: 210,
     initialDislikes: 3,
-    contentHTML:
-      "<p>Apa yang membuat sebuah konten menjadi viral di media sosial? Apakah ada formula rahasianya? Kita akan mengupas psikologi di balik tren viral dan bagaimana brand bisa memanfaatkannya.</p>",
+    contentHTML: `<p>Apa yang membuat sebuah konten menjadi viral di media sosial? Apakah ada formula rahasianya? Kita akan mengupas psikologi di balik tren viral dan bagaimana brand bisa memanfaatkannya.</p>`,
   },
   "esports-billion-dollar": {
     id: "esports-billion-dollar",
     title: "How Esports is Becoming a Billion-Dollar Industry",
     author: "Business Analyst",
     date: "2025-01-07",
+    category: "Esport",
     imageUrl: "/placeholder-esports-money.jpg",
     image: "/placeholder-esports-money.jpg",
     initialLikes: 160,
     initialDislikes: 7,
-    contentHTML:
-      "<p>Esports telah berkembang dari hobi niche menjadi industri global bernilai miliaran dolar. Artikel ini menganalisis model bisnis, sumber pendapatan, dan potensi pertumbuhan esports ke depan.</p>",
+    contentHTML: `<p>Esports telah berkembang dari hobi niche menjadi industri global bernilai miliaran dolar. Artikel ini menganalisis model bisnis, sumber pendapatan, dan potensi pertumbuhan esports ke depan.</p>`,
   },
   "medical-tech": {
     id: "medical-tech",
     title: "Breakthroughs in Medical Technology This Year",
     author: "Dr. Health",
     date: "2025-01-08",
+    category: "Health & Wellness",
     imageUrl: "/placeholder-medtech.jpg",
     image: "/placeholder-medtech.jpg",
     initialLikes: 175,
     initialDislikes: 2,
-    contentHTML:
-      "<p>Tahun ini menyaksikan berbagai terobosan menarik dalam teknologi medis, mulai dari diagnostik berbasis AI hingga terapi gen inovatif. Kemajuan ini menjanjikan perawatan kesehatan yang lebih baik di masa depan.</p>",
+    contentHTML: `<p>Tahun ini menyaksikan berbagai terobosan menarik dalam teknologi medis, mulai dari diagnostik berbasis AI hingga terapi gen inovatif. Kemajuan ini menjanjikan perawatan kesehatan yang lebih baik di masa depan.</p>`,
   },
   "remote-work-landscape": {
     id: "remote-work-landscape",
     title: "The Changing Landscape of Remote Work",
     author: "Future of Work Org",
     date: "2025-01-09",
+    category: "Business & Economy",
     imageUrl: "/placeholder-remote-landscape.jpg",
     image: "/placeholder-remote-landscape.jpg",
     initialLikes: 135,
     initialDislikes: 6,
-    contentHTML:
-      "<p>Lanskap kerja jarak jauh terus berubah. Bagaimana perusahaan dan karyawan beradaptasi dengan norma baru ini? Tantangan dan peluang apa yang muncul?</p>",
+    contentHTML: `<p>Lanskap kerja jarak jauh terus berubah. Bagaimana perusahaan dan karyawan beradaptasi dengan norma baru ini? Tantangan dan peluang apa yang muncul?</p>`,
   },
   "gen-z-job-market": {
     id: "gen-z-job-market",
     title: "Why Gen Z is Reshaping the Job Market",
     author: "Youth Economist",
     date: "2025-01-11",
+    category: "Business & Economy",
     imageUrl: "/placeholder-genz-job.jpg",
     image: "/placeholder-genz-job.jpg",
     initialLikes: 155,
     initialDislikes: 4,
-    contentHTML:
-      "<p>Gen Z membawa perspektif unik ke pasar kerja. Preferensi mereka terhadap fleksibilitas, tujuan, dan teknologi mendorong perusahaan untuk memikirkan ulang cara merekrut dan mempertahankan talenta.</p>",
+    contentHTML: `<p>Gen Z membawa perspektif unik ke pasar kerja. Preferensi mereka terhadap fleksibilitas, tujuan, dan teknologi mendorong perusahaan untuk memikirkan ulang cara merekrut dan mempertahankan talenta.</p>`,
   },
   "dark-side-ai": {
     id: "dark-side-ai",
     title: "The Dark Side of AI: Ethical Concerns & Risks",
     author: "Anthony Sputo",
     date: "2024-01-13",
+    category: "Tech & Innovation",
     image: "/placeholder-dark-ai.jpg",
     imageUrl: "/placeholder-dark-ai.jpg",
     initialLikes: 150,
     initialDislikes: 25,
-    contentHTML:
-      "<p>Di balik kemampuannya yang luar biasa, AI juga menyimpan potensi risiko dan dilema etika. Artikel ini membahas sisi gelap AI, mulai dari bias algoritma hingga potensi penyalahgunaan.</p>",
+    contentHTML: `<p>Di balik kemampuannya yang luar biasa, AI juga menyimpan potensi risiko dan dilema etika. Artikel ini membahas sisi gelap AI, mulai dari bias algoritma hingga potensi penyalahgunaan.</p>`,
   },
   "minimalism-design": {
     id: "minimalism-design",
     title: "How Minimalism Is Changing Interior Design",
     author: "Rachel Stevens",
     date: "2025-01-13",
+    category: "Lifestyle & Trends",
     image: "/placeholder-minimalism.jpg",
     imageUrl: "/placeholder-minimalism.jpg",
     initialLikes: 100,
     initialDislikes: 5,
-    contentHTML:
-      "<p>Minimalisme bukan hanya tren sesaat, tetapi sebuah filosofi desain yang menekankan kesederhanaan dan fungsionalitas. Bagaimana prinsip ini diterapkan dalam desain interior modern?</p>",
+    contentHTML: `<p>Minimalisme bukan hanya tren sesaat, tetapi sebuah filosofi desain yang menekankan kesederhanaan dan fungsionalitas. Bagaimana prinsip ini diterapkan dalam desain interior modern?</p>`,
   },
   "hollywood-releases": {
     id: "hollywood-releases",
     title: "Hollywood's Biggest Movie Releases This Year",
     author: "Alan Johnson",
     date: "2025-01-13",
+    category: "Entertainment & Pop Culture",
     image: "/placeholder-hollywood.jpg",
     imageUrl: "/placeholder-hollywood.jpg",
     initialLikes: 220,
     initialDislikes: 10,
-    contentHTML:
-      "<p>Tahun ini dipenuhi dengan rilis film besar dari Hollywood. Dari sekuel yang ditunggu-tunggu hingga cerita orisinal yang menjanjikan, mana saja yang wajib ditonton?</p>",
+    contentHTML: `<p>Tahun ini dipenuhi dengan rilis film besar dari Hollywood. Dari sekuel yang ditunggu-tunggu hingga cerita orisinal yang menjanjikan, mana saja yang wajib ditonton?</p>`,
   },
   "cloud-gaming-future": {
     id: "cloud-gaming-future",
     title: "Is Cloud Gaming the Future of Play?",
-    author: "John Doe", // Menggunakan John Doe lagi untuk variasi
+    author: "John Doe",
     date: "2025-01-13",
+    category: "Gaming",
     image: "/placeholder-cloud-gaming.jpg",
     imageUrl: "/placeholder-cloud-gaming.jpg",
     initialLikes: 165,
     initialDislikes: 6,
-    contentHTML:
-      "<p>Cloud gaming menawarkan kemampuan untuk bermain game AAA di perangkat apa pun tanpa memerlukan hardware canggih. Apakah ini benar-benar masa depan industri game?</p>",
+    contentHTML: `<p>Cloud gaming menawarkan kemampuan untuk bermain game AAA di perangkat apa pun tanpa memerlukan hardware canggih. Apakah ini benar-benar masa depan industri game?</p>`,
   },
   "kpop-phenomenon": {
     id: "kpop-phenomenon",
     title: "The Rise of K-Pop: What's Next for the Global Phenomenon?",
     author: "Kim Jae-eun",
     date: "2025-01-13",
+    category: "Entertainment & Pop Culture",
     image: "/placeholder-kpop.jpg",
     imageUrl: "/placeholder-kpop.jpg",
     initialLikes: 300,
     initialDislikes: 12,
-    contentHTML:
-      "<p>K-Pop telah menjadi fenomena global yang tak terbantahkan. Bagaimana industri ini mencapai kesuksesan masif dan apa tren selanjutnya yang bisa kita harapkan?</p>",
+    contentHTML: `<p>K-Pop telah menjadi fenomena global yang tak terbantahkan. Bagaimana industri ini mencapai kesuksesan masif dan apa tren selanjutnya yang bisa kita harapkan?</p>`,
   },
   "future-work-model": {
     id: "future-work-model",
     title: "The Future of Work: Remote, Hybrid, or Back to Office?",
     author: "Priya S.",
     date: "2025-01-13",
+    category: "Business & Economy",
     image: "/placeholder-future-work.jpg",
     imageUrl: "/placeholder-future-work.jpg",
     initialLikes: 145,
     initialDislikes: 7,
-    contentHTML:
-      "<p>Debat mengenai model kerja masa depan terus berlanjut. Mana yang lebih baik: sepenuhnya jarak jauh, sepenuhnya di kantor, atau model hibrida? Artikel ini membahas pro dan kontra masing-masing.</p>",
+    contentHTML: `<p>Debat mengenai model kerja masa depan terus berlanjut. Mana yang lebih baik: sepenuhnya jarak jauh, sepenuhnya di kantor, atau model hibrida? Artikel ini membahas pro dan kontra masing-masing.</p>`,
   },
   "trump-panama": {
-    // Data ini sudah ada di atas, pastikan ID unik. Jika sama, ini akan menimpa. Untuk contoh, saya biarkan.
     id: "trump-panama",
     title:
       "Trump reiterates threat to retake Panama Canal ‘or something very powerful’ will happen if pressures on U.S. increase",
     author: "John Doe",
     date: "2025-01-13",
+    category: "Politics & Global Affairs",
     image: "/placeholder-trump-large.jpg",
     imageUrl: "/placeholder-trump-large.jpg",
     initialLikes: 250,
     initialDislikes: 30,
-    contentHTML: "<p>Dalam sebuah pernyataan yang mengejutkan...</p>",
+    contentHTML: `<p>Dalam sebuah pernyataan yang mengejutkan, mantan Presiden Trump kembali mengemukakan ancaman terkait Terusan Panama.</p>`,
   },
   "sa-land": {
     id: "sa-land",
@@ -317,11 +318,12 @@ export const allArticlesData = {
       "South Africa denies ‘confiscating land,’ after Trump threatens to cut off aid",
     author: "Jason Mitchell",
     date: "2025-01-13",
+    category: "Politics & Global Affairs",
     image: "/placeholder-sa.jpg",
     imageUrl: "/placeholder-sa.jpg",
     initialLikes: 70,
     initialDislikes: 15,
-    contentHTML: "<p>Pemerintah Afrika Selatan membantah...</p>",
+    contentHTML: `<p>Pemerintah Afrika Selatan membantah tuduhan perampasan lahan.</p>`,
   },
   "mickey-bergman-book": {
     id: "mickey-bergman-book",
@@ -329,91 +331,83 @@ export const allArticlesData = {
       "Mickey Bergman’s new book looks at true stories of high-stakes hostage negotiations...",
     author: "Emily Thompson",
     date: "2025-01-16",
+    category: "Politics & Global Affairs",
     image: "/placeholder-book.jpg",
     imageUrl: "/placeholder-book.jpg",
     initialLikes: 60,
     initialDislikes: 2,
-    contentHTML:
-      "<p>Buku baru Mickey Bergman mengungkap kisah nyata di balik negosiasi sandera yang menegangkan dan berisiko tinggi. Sebuah pandangan mendalam ke dunia yang jarang terekspos.</p>",
+    contentHTML: `<p>Buku baru Mickey Bergman mengungkap kisah nyata di balik negosiasi sandera.</p>`,
   },
   "cerita-malam-minggu": {
     id: "cerita-malam-minggu",
     title: "Cerita tentang Malam Minggu, LinkedIn, dan Menjaga Anak",
     author: "Robert Chen",
     date: "2025-01-16",
+    category: "Lifestyle & Trends",
     image: "/placeholder-linkedin.jpg",
     imageUrl: "/placeholder-linkedin.jpg",
     initialLikes: 45,
     initialDislikes: 1,
-    contentHTML:
-      "<p>Sebuah refleksi ringan mengenai berbagai aspek kehidupan sehari-hari, dari hiruk pikuk malam Minggu, dinamika profesional di LinkedIn, hingga tantangan dan kegembiraan dalam menjaga anak.</p>",
+    contentHTML: `<p>Sebuah refleksi ringan mengenai berbagai aspek kehidupan sehari-hari.</p>`,
   },
   "ai-gaming-change": {
-    // Data ini sudah ada di atas, pastikan ID unik.
     id: "ai-gaming-change",
     title: "How AI is Changing the Way We Game",
-    author: "Jane Doe", // Menggunakan Jane Doe untuk variasi
-    date: "2025-01-13", // Tanggal bisa sama atau beda
+    author: "Jane Doe",
+    date: "2025-01-13",
+    category: "Gaming",
     image: "/placeholder-ai-game-large.jpg",
     imageUrl: "/placeholder-ai-game-large.jpg",
     initialLikes: 180,
     initialDislikes: 8,
-    contentHTML:
-      "<p>Bagaimana Kecerdasan Buatan merevolusi industri game...</p>",
+    contentHTML: `<p>Bagaimana Kecerdasan Buatan merevolusi industri game, dari NPC yang lebih pintar hingga pembuatan konten otomatis.</p>`,
   },
   "streaming-services-change": {
     id: "streaming-services-change",
     title: "How Streaming Services Are Changing Entertainment",
-    author: "Jason Mitchell", // Author bisa sama atau beda
+    author: "Jason Mitchell",
     date: "2025-01-13",
+    category: "Entertainment & Pop Culture",
     image: "/placeholder-streaming-small.jpg",
     imageUrl: "/placeholder-streaming-small.jpg",
     initialLikes: 90,
     initialDislikes: 3,
-    contentHTML:
-      "<p>Layanan streaming telah mengubah lanskap hiburan global. Artikel ini membahas dampaknya pada produksi konten, perilaku penonton, dan model bisnis tradisional.</p>",
+    contentHTML: `<p>Layanan streaming telah mengubah lanskap hiburan global.</p>`,
   },
   "rise-sustainable-fashion": {
     id: "rise-sustainable-fashion",
     title: "The Rise of Sustainable Fashion",
-    author: "Emily Thompson", // Author bisa sama atau beda
+    author: "Emily Thompson",
     date: "2025-01-16",
+    category: "Lifestyle & Trends",
     image: "/placeholder-fashion-small.jpg",
     imageUrl: "/placeholder-fashion-small.jpg",
     initialLikes: 85,
     initialDislikes: 5,
-    contentHTML:
-      "<p>Dengan meningkatnya kesadaran akan isu lingkungan dan etika, fashion berkelanjutan menjadi semakin penting. Pelajari lebih lanjut tentang gerakan ini dan bagaimana Anda bisa berkontribusi.</p>",
+    contentHTML: `<p>Dengan meningkatnya kesadaran akan isu lingkungan dan etika, fashion berkelanjutan menjadi semakin penting.</p>`,
   },
   "new-space-missions": {
     id: "new-space-missions",
     title: "New Space Missions Set to Change Astronomy",
-    author: "Robert Chen", // Author bisa sama atau beda
+    author: "Robert Chen",
     date: "2025-01-16",
+    category: "Science & Discovery",
     image: "/placeholder-space-small.jpg",
     imageUrl: "/placeholder-space-small.jpg",
     initialLikes: 120,
     initialDislikes: 7,
-    contentHTML:
-      "<p>Beberapa misi luar angkasa baru yang ambisius dijadwalkan untuk diluncurkan. Misi-misi ini berpotensi merevolusi pemahaman kita tentang astronomi dan alam semesta.</p>",
-  },
+    contentHTML: `<p>Beberapa misi luar angkasa baru yang ambisius dijadwalkan untuk diluncurkan.</p>`,
+  }, // Koma terakhir di sini tidak masalah, tapi jika ini benar-benar entri terakhir, bisa dihilangkan.
 };
 
-// ID Komentar Statis untuk Konsistensi
-const commentIds = {
-  mts_c1: "mts-c1-" + getPseudoUniqueTimestamp(),
-  mts_c2: "mts-c2-" + getPseudoUniqueTimestamp(),
-  mts_c2_r1: "mts-c2-r1-" + getPseudoUniqueTimestamp(),
-  aip_c1: "aip-c1-" + getPseudoUniqueTimestamp(),
-  aip_c1_r1: "aip-c1-r1-" + getPseudoUniqueTimestamp(),
-  aip_c2: "aip-c2-" + getPseudoUniqueTimestamp(),
-  tp_c1: "tp-c1-" + getPseudoUniqueTimestamp(),
-};
+// ID Komentar Statis untuk Konsistensi dan menghindari masalah dengan Date.now() untuk parentId
+const commentIdGen = (prefix, num) => `${prefix}-c${num}`;
+const replyIdGen = (prefix, cNum, rNum) => `${prefix}-c${cNum}-r${rNum}`;
 
 export const initialCommentsData = {
   "main-travel-story": [
     {
-      id: commentIds.mts_c1,
+      id: commentIdGen("mts", 1),
       author: "Traveler123",
       text: "Tempatnya keren banget! Pengen ke sana suatu hari nanti.",
       timestamp: getPseudoUniqueTimestamp(),
@@ -423,7 +417,7 @@ export const initialCommentsData = {
       replies: [],
     },
     {
-      id: commentIds.mts_c2,
+      id: commentIdGen("mts", 2),
       author: "BackpackerJoe",
       text: "Ada tips budgeting buat ke sana gak? Soalnya kelihatannya mahal banget dari foto-fotonya.",
       timestamp: getPseudoUniqueTimestamp(),
@@ -432,8 +426,8 @@ export const initialCommentsData = {
       dislikes: 0,
       replies: [
         {
-          id: commentIds.mts_c2_r1,
-          parentId: commentIds.mts_c2,
+          id: replyIdGen("mts", 2, 1),
+          parentId: commentIdGen("mts", 2),
           author: "Traveler123",
           text: "Coba cari tiket promo dan nginap di hostel, lumayan hemat! Banyak juga makanan lokal yang murah dan enak.",
           timestamp: getPseudoUniqueTimestamp(),
@@ -447,7 +441,7 @@ export const initialCommentsData = {
   ],
   "ai-poetry": [
     {
-      id: commentIds.aip_c1,
+      id: commentIdGen("aip", 1),
       author: "PenyairAI",
       text: "Wow, AI bisa sekreatif ini? Sebagai penyair, saya merasa tertantang sekaligus terinspirasi.",
       timestamp: getPseudoUniqueTimestamp(),
@@ -456,8 +450,8 @@ export const initialCommentsData = {
       dislikes: 2,
       replies: [
         {
-          id: commentIds.aip_c1_r1,
-          parentId: commentIds.aip_c1,
+          id: replyIdGen("aip", 1, 1),
+          parentId: commentIdGen("aip", 1),
           author: "TechEnthusiast",
           text: "Setuju, ini kemajuan besar! Mungkin nanti ada kolaborasi penyair dan AI.",
           timestamp: getPseudoUniqueTimestamp(),
@@ -469,7 +463,7 @@ export const initialCommentsData = {
       ],
     },
     {
-      id: commentIds.aip_c2,
+      id: commentIdGen("aip", 2),
       author: "KritikusSastra",
       text: "Apakah ini benar-benar 'kreativitas' atau hanya simulasi pola yang canggih? Pertanyaan filosofis yang menarik untuk didiskusikan lebih lanjut.",
       timestamp: getPseudoUniqueTimestamp(),
@@ -481,7 +475,7 @@ export const initialCommentsData = {
   ],
   "trump-panama": [
     {
-      id: commentIds.tp_c1,
+      id: commentIdGen("tp", 1),
       author: "PolitikusHandal",
       text: "Ini pernyataan yang serius dan perlu ditanggapi dengan hati-hati oleh semua pihak terkait untuk menjaga stabilitas regional.",
       timestamp: getPseudoUniqueTimestamp(),
@@ -491,7 +485,7 @@ export const initialCommentsData = {
       replies: [],
     },
   ],
-  // Pastikan semua ID artikel dari allArticlesData memiliki entri di sini, minimal array kosong
+  // Pastikan semua ID artikel dari allArticlesData memiliki entri di sini, minimal array kosong []
   "remote-work-2025": [],
   "social-media-algo": [],
   "future-of-office": [],
@@ -523,11 +517,10 @@ export const initialCommentsData = {
   "new-space-missions": [],
 };
 
-// Fungsi utilitas untuk menghitung total komentar (bisa dipindah ke utils.js jika mau)
 export const calculateTotalComments = (commentsList) => {
   let count = 0;
   const countRecursively = (list) => {
-    if (!list || list.length === 0) return; // Pemeriksaan tambahan
+    if (!list || list.length === 0) return;
     for (const item of list) {
       count++;
       if (item.replies && item.replies.length > 0) {

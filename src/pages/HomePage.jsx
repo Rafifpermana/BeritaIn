@@ -1,12 +1,13 @@
+// src/pages/HomePage.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import ArticleCardStats from "../utils/ArticleCardStats"; // Impor komponen baru
+import ArticleCardStats from "../utils/ArticleCardStats";
 import {
   allArticlesData,
   initialCommentsData,
   calculateTotalComments,
-} from "../data/mockData"; // Impor data dan fungsi
-import { MessageSquare } from "lucide-react"; // Dibutuhkan untuk LatestUpdates jika hanya menampilkan comment count
+} from "../data/mockData";
+import { MessageSquare } from "lucide-react"; // ThumbsUp, ThumbsDown diimpor di ArticleCardStats
 
 // Komponen SectionTitle tetap sama
 const SectionTitle = ({ title }) => (
@@ -48,8 +49,19 @@ const SmallStoryItem = ({ image, title, author, date, link }) => (
   </div>
 );
 
+// Fungsi untuk membuat slug URL yang SEO-friendly (HARUS SAMA DENGAN DI NAVBAR & CATEGORYPAGE)
+// Idealnya, fungsi ini ada di file utils terpisah dan diimpor
+const createSlug = (text) => {
+  if (!text || typeof text !== "string") return "";
+  return text
+    .toLowerCase()
+    .replace(/ & /g, "-and-") // Ganti ' & ' dengan '-and-'
+    .replace(/\s+/g, "-") // Ganti spasi dengan '-'
+    .replace(/[^\w-]+/g, ""); // Hapus karakter non-alfanumerik kecuali '-'
+};
+
 const HomePage = () => {
-  // Daftar ID artikel untuk setiap bagian. Sesuaikan ID ini dengan yang ada di mockData.js
+  // Daftar ID artikel untuk setiap bagian.
   const popularPostIds = [
     "ai-poetry",
     "remote-work-2025",
@@ -98,12 +110,11 @@ const HomePage = () => {
   ];
   const mainTravelStoryId = "main-travel-story";
 
-  // Fungsi untuk mendapatkan data artikel lengkap berdasarkan ID dari mockData
   const getArticle = (id) => allArticlesData[id];
-  // Fungsi untuk mendapatkan jumlah komentar untuk artikel tertentu dari mockData
   const getCommentCountForArticle = (id) =>
     calculateTotalComments(initialCommentsData[id] || []);
 
+  // Daftar kategori ini juga idealnya konsisten dengan yang ada di Navbar
   const tagsCategoryData = [
     "Tech & Innovation",
     "Business & Economy",
@@ -112,16 +123,13 @@ const HomePage = () => {
     "Health & Wellness",
     "Sports",
     "Gaming",
-    "Esports",
-    "Virtual Worlds",
+    "Esport",
     "Travel & Adventure",
     "Politics & Global Affairs",
-    "Finance",
     "Cryptocurrency",
-    "Lifestyle & Trends",
-    "Social Media & Influencers",
     "Education",
     "Environment & Sustainability",
+    "Lifestyle & Trends",
   ];
   const moreTag = "More";
 
@@ -277,8 +285,6 @@ const HomePage = () => {
                       : ""
                   } gap-4 items-start`}
                 >
-                  {" "}
-                  {/* Penyesuaian jika 'isLarge' tidak ada */}
                   {item.image && (
                     <Link
                       to={`/article/${item.id}`}
@@ -368,6 +374,7 @@ const HomePage = () => {
       {/* === BAGIAN KETIGA (BREAKING NEWS & TAGS) === */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-12 md:mb-16">
         <section className="lg:col-span-2">
+          {/* ... (Kode Breaking News dengan ArticleCardStats seperti contoh di atas) ... */}
           <SectionTitle title="Breaking News" />
           <div className="space-y-5 md:space-y-6">
             {breakingNewsIds
@@ -417,17 +424,14 @@ const HomePage = () => {
             {tagsCategoryData.map((tag, index) => (
               <Link
                 key={index}
-                to={`/category/${tag
-                  .toLowerCase()
-                  .replace(/ & /g, "-")
-                  .replace(/ /g, "-")}`}
+                to={`/category/${createSlug(tag)}`} // <<--- PERBAIKAN DI SINI
                 className="bg-gray-200 text-gray-700 text-xs sm:text-sm px-3 py-1.5 rounded-md hover:bg-gray-300 hover:text-black transition-colors"
               >
                 {tag}
               </Link>
             ))}
             <Link
-              to="/categories"
+              to="/categories" // Asumsi ini adalah halaman yang menampilkan semua kategori
               className="bg-gray-700 text-white text-xs sm:text-sm px-3 py-1.5 rounded-md hover:bg-black transition-colors"
             >
               {moreTag}
@@ -438,6 +442,7 @@ const HomePage = () => {
 
       {/* === BAGIAN KEEMPAT (MUST-READ STORIES) === */}
       <section>
+        {/* ... (Kode Must-Read Stories dengan ArticleCardStats seperti contoh di atas) ... */}
         <SectionTitle title="Must-Read Stories" />
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8">
           {/* Kolom Kiri */}

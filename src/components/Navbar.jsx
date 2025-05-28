@@ -1,9 +1,38 @@
+// src/components/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom"; // Impor useLocation
 import { ChevronDown, Search, Menu, X, ChevronLeft } from "lucide-react";
+import logo2 from "../assets/logo2.png"; // Sesuaikan path jika perlu
+import ClientPortal from "../utils/Portal"; // Sesuaikan path jika Portal.jsx ada di utils
 
-import logo2 from "../assets/logo2.png"; // Pastikan path ini benar
-import ClientPortal from "../utils/Portal"; // Impor Portal yang baru dibuat (sesuaikan path jika perlu)
+// Fungsi createSlug bisa diletakkan di luar komponen atau diimpor dari utils
+// Pastikan fungsi ini sama dengan yang digunakan di HomePage.jsx dan CategoryPage.jsx
+const createSlug = (text) => {
+  if (!text || typeof text !== "string") return "";
+  return text
+    .toLowerCase()
+    .replace(/ & /g, "-and-")
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "");
+};
+
+// Daftar kategori (idealnya dari sumber yang sama dengan HomePage dan CategoryPage)
+const CATEGORIES_NAVBAR_LIST = [
+  "Tech & Innovation",
+  "Business & Economy",
+  "Entertainment & Pop Culture",
+  "Science & Discovery",
+  "Health & Wellness",
+  "Sports",
+  "Gaming",
+  "Esport",
+  "Travel & Adventure",
+  "Politics & Global Affairs",
+  "Cryptocurrency",
+  "Education",
+  "Environment & Sustainability",
+  "Lifestyle & Trends",
+];
 
 const Navbar = () => {
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
@@ -11,31 +40,48 @@ const Navbar = () => {
   const [isAuthSidebarOpen, setIsAuthSidebarOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [searchQuery, setSearchQuery] = useState("");
-
   const [showNavbar, setShowNavbar] = useState(true);
   const lastScrollYRef = useRef(0);
   const navbarRef = useRef(null);
-
-  const categories = [
-    "Tech & Innovation",
-    "Business & Economy",
-    "Entertainment & Pop Culture",
-    "Science & Discovery",
-    "Health & Wellness",
-    "Sports",
-    "Gaming",
-    "Esport",
-    "Travel & Adventure",
-    "Politics & Global Affairs",
-    "Cryptocurrency",
-    "Education",
-    "Environment & Sustainability",
-  ];
-
+  const navigate = useNavigate();
+  const location = useLocation(); // Hook untuk mendapatkan info lokasi saat ini
   const searchDropdownRef = useRef(null);
-  // Ref untuk panel mobile menu dan auth sidebar tidak lagi krusial jika logika klik luar hanya di overlay
-  // Namun, bisa tetap ada jika ada kegunaan lain.
 
+  // Sinkronisasi selectedCategory dengan URL
+  useEffect(() => {
+    const pathParts = location.pathname.split("/");
+    if (location.pathname === "/") {
+      // Jika di homepage, set ke "All Categories" KECUALI jika ada query param kategori
+      const queryParams = new URLSearchParams(location.search);
+      const categorySlugFromQuery = queryParams.get("category");
+      if (categorySlugFromQuery) {
+        const foundCategory = CATEGORIES_NAVBAR_LIST.find(
+          (cat) => createSlug(cat) === categorySlugFromQuery
+        );
+        if (foundCategory) {
+          setSelectedCategory(foundCategory);
+        } else {
+          setSelectedCategory("All Categories"); // atau slug yang diformat
+        }
+      } else {
+        setSelectedCategory("All Categories");
+      }
+    } else if (pathParts.length === 3 && pathParts[1] === "category") {
+      const slugFromUrl = pathParts[2];
+      const foundCategory = CATEGORIES_NAVBAR_LIST.find(
+        (cat) => createSlug(cat) === slugFromUrl
+      );
+      if (foundCategory) {
+        setSelectedCategory(foundCategory);
+      } else {
+        setSelectedCategory("All Categories"); // Fallback jika slug tidak dikenal
+      }
+    }
+    // Untuk halaman lain (seperti /search), selectedCategory tidak diubah oleh efek ini,
+    // ia akan tetap menyimpan nilai terakhir yang dipilih pengguna, yang berguna untuk konteks pencarian.
+  }, [location.pathname, location.search]); // Tambahkan location.search sebagai dependensi
+
+  // useEffect untuk auto-hide navbar
   useEffect(() => {
     const HIDE_THRESHOLD_PX = 10;
     lastScrollYRef.current = window.scrollY;
@@ -45,52 +91,57 @@ const Navbar = () => {
       const navbarHeight = navbarRef.current
         ? navbarRef.current.offsetHeight
         : 0;
-      if (currentScrollY < HIDE_THRESHOLD_PX + 5) {
-        setShowNavbar(true);
-      } else if (
+      if (currentScrollY < HIDE_THRESHOLD_PX + 5) setShowNavbar(true);
+      else if (
         currentScrollY > localLastScrollY &&
         currentScrollY > (navbarHeight > 0 ? navbarHeight : HIDE_THRESHOLD_PX)
-      ) {
+      )
         setShowNavbar(false);
-      } else if (currentScrollY < localLastScrollY) {
-        setShowNavbar(true);
-      }
+      else if (currentScrollY < localLastScrollY) setShowNavbar(true);
       lastScrollYRef.current = currentScrollY < 0 ? 0 : currentScrollY;
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // useEffect untuk klik di luar dropdown kategori desktop
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
         searchDropdownRef.current &&
         !searchDropdownRef.current.contains(event.target)
-      ) {
+      )
         setIsSearchDropdownOpen(false);
-      }
     };
-    if (isSearchDropdownOpen) {
+    if (isSearchDropdownOpen)
       document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSearchDropdownOpen]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      console.log(
-        "Searching for:",
-        searchQuery,
-        "in category:",
-        selectedCategory
-      );
-      setSearchQuery("");
-      setIsSearchDropdownOpen(false);
+    const trimmedQuery = searchQuery.trim();
+    if (trimmedQuery) {
+      const categorySlug =
+        selectedCategory === "All Categories" || !selectedCategory
+          ? ""
+          : createSlug(selectedCategory);
+      const queryParams = new URLSearchParams();
+      queryParams.append("q", trimmedQuery);
+      if (categorySlug) queryParams.append("category", categorySlug);
+      navigate(`/search?${queryParams.toString()}`);
+    }
+  };
+
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+    setIsSearchDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+
+    if (category === "All Categories") {
+      navigate("/");
+    } else {
+      navigate(`/category/${createSlug(category)}`);
     }
   };
 
@@ -100,7 +151,6 @@ const Navbar = () => {
       : `Cari di ${selectedCategory}...`;
 
   return (
-    // Navbar utama tetap dengan z-50
     <div
       ref={navbarRef}
       className={`w-full bg-white shadow-sm sticky top-0 z-50 transition-transform duration-300 ease-out ${
@@ -108,7 +158,7 @@ const Navbar = () => {
       }`}
     >
       <nav className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-gray-200">
-        {/* Mobile Layout (kode tetap sama) */}
+        {/* Mobile Layout */}
         <div className="flex items-center justify-between w-full lg:hidden">
           <button
             className="text-gray-600 p-2 rounded-md hover:bg-gray-100"
@@ -134,7 +184,7 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Desktop Layout (kode tetap sama) */}
+        {/* Desktop Layout */}
         <div className="hidden lg:flex items-center justify-between w-full">
           <Link to="/" className="flex items-center flex-shrink-0">
             <img src={logo2} alt="Logo BeritaIn" className="w-8 h-8" />
@@ -157,21 +207,18 @@ const Navbar = () => {
                 {isSearchDropdownOpen && (
                   <div className="absolute top-full left-0 mt-1 w-64 sm:w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[51]">
                     <div className="p-2 space-y-1 max-h-72 overflow-y-auto">
-                      {["All Categories", ...categories].map(
-                        (category, index) => (
+                      {["All Categories", ...CATEGORIES_NAVBAR_LIST].map(
+                        (cat, idx) => (
                           <button
-                            key={index}
-                            onClick={() => {
-                              setSelectedCategory(category);
-                              setIsSearchDropdownOpen(false);
-                            }}
+                            key={idx}
+                            onClick={() => handleCategorySelect(cat)}
                             className={`block w-full px-3 py-2 text-sm text-left rounded-md transition-colors ${
-                              selectedCategory === category
+                              selectedCategory === cat
                                 ? "bg-blue-50 text-blue-700 font-medium"
                                 : "text-gray-700 hover:bg-gray-100"
                             }`}
                           >
-                            {category}
+                            {cat}
                           </button>
                         )
                       )}
@@ -213,7 +260,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Search Bar (kode tetap sama) */}
+      {/* Mobile Search Bar */}
       <div className="lg:hidden px-4 sm:px-6 py-2.5 bg-gray-50 border-b border-gray-200">
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
@@ -232,17 +279,17 @@ const Navbar = () => {
         </form>
       </div>
 
-      {/* Mobile Category Menu (Full Screen Overlay) - Menggunakan Portal */}
+      {/* Mobile Category Menu (Menggunakan Portal) */}
       {isMobileMenuOpen && (
         <ClientPortal selector="mobile-menu-portal">
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-[55] lg:hidden" // z-index overlay
+            className="fixed inset-0 bg-black bg-opacity-50 z-[55] lg:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
           <div
             className={`fixed inset-x-0 top-0 z-[60] p-3 lg:hidden transform transition-transform duration-300 ease-out ${
               isMobileMenuOpen ? "translate-y-0" : "-translate-y-full"
-            }`} // z-index panel menu
+            }`}
           >
             <div className="bg-white rounded-xl shadow-xl max-h-[85vh] flex flex-col">
               <div className="flex justify-between items-center p-4 border-b border-gray-200">
@@ -258,23 +305,21 @@ const Navbar = () => {
               </div>
               <div className="p-3 overflow-y-auto">
                 <div className="space-y-1.5">
-                  {["All Categories", ...categories].map((category, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setSelectedCategory(category);
-                        setIsMobileMenuOpen(false);
-                        console.log("Mobile category selected:", category);
-                      }}
-                      className={`w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors ${
-                        selectedCategory === category
-                          ? "bg-blue-50 text-blue-700 font-medium"
-                          : "hover:bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
+                  {["All Categories", ...CATEGORIES_NAVBAR_LIST].map(
+                    (cat, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleCategorySelect(cat)}
+                        className={`w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors ${
+                          selectedCategory === cat
+                            ? "bg-blue-50 text-blue-700 font-medium"
+                            : "hover:bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    )
+                  )}
                 </div>
               </div>
             </div>
@@ -282,17 +327,17 @@ const Navbar = () => {
         </ClientPortal>
       )}
 
-      {/* Auth Sidebar - Slide from Right - Menggunakan Portal */}
+      {/* Auth Sidebar (Menggunakan Portal) */}
       {isAuthSidebarOpen && (
         <ClientPortal selector="auth-sidebar-portal">
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-[55] lg:hidden" // z-index overlay
+            className="fixed inset-0 bg-black bg-opacity-50 z-[55] lg:hidden"
             onClick={() => setIsAuthSidebarOpen(false)}
           ></div>
           <div
             className={`fixed inset-y-0 right-0 z-[60] w-72 max-w-[80vw] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:hidden ${
               isAuthSidebarOpen ? "translate-x-0" : "translate-x-full"
-            }`} // z-index panel sidebar
+            }`}
           >
             <div className="p-5 h-full flex flex-col">
               <div className="flex justify-between items-center mb-6">
@@ -307,18 +352,14 @@ const Navbar = () => {
               <div className="space-y-3 flex flex-col">
                 <Link
                   to="/login"
-                  onClick={() => {
-                    setIsAuthSidebarOpen(false);
-                  }}
+                  onClick={() => setIsAuthSidebarOpen(false)}
                   className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium text-center"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  onClick={() => {
-                    setIsAuthSidebarOpen(false);
-                  }}
+                  onClick={() => setIsAuthSidebarOpen(false)}
                   className="w-full bg-gray-600 text-white px-4 py-2.5 rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium text-center"
                 >
                   Sign Up
@@ -339,7 +380,7 @@ const Navbar = () => {
         </ClientPortal>
       )}
 
-      {/* Click Outside to Close Desktop Category Dropdown (kode tetap sama) */}
+      {/* Click Outside untuk Desktop Category Dropdown */}
       {isSearchDropdownOpen && !isMobileMenuOpen && (
         <div
           className="fixed inset-0 z-[49]"
