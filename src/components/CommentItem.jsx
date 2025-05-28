@@ -1,8 +1,8 @@
 // src/components/CommentItem.jsx
 import React, { useState } from "react";
-import { ThumbsUp, MessageSquare, Send } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageSquare, Send } from "lucide-react"; // Tambahkan ThumbsDown
 
-// Komponen ReplyForm tetap sama seperti sebelumnya
+// Komponen ReplyForm tetap sama
 const ReplyForm = ({ parentId, onSubmitReply, onCancel }) => {
   const [replyText, setReplyText] = useState("");
   const [replyAuthor, setReplyAuthor] = useState("");
@@ -21,8 +21,6 @@ const ReplyForm = ({ parentId, onSubmitReply, onCancel }) => {
       onSubmit={handleSubmit}
       className="mt-3 ml-8 pl-4 border-l-2 border-gray-200"
     >
-      {" "}
-      {/* Penyesuaian margin atas */}
       <input
         type="text"
         value={replyAuthor}
@@ -43,8 +41,7 @@ const ReplyForm = ({ parentId, onSubmitReply, onCancel }) => {
           type="submit"
           className="flex items-center space-x-1 px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 focus:outline-none transition-colors"
         >
-          <Send size={14} />
-          <span>Balas</span>
+          <Send size={14} /> <span>Balas</span>
         </button>
         {onCancel && (
           <button
@@ -61,6 +58,7 @@ const ReplyForm = ({ parentId, onSubmitReply, onCancel }) => {
 };
 
 const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
+  // Tambahkan dislikes ke destructuring dengan nilai default 0
   const {
     id,
     author,
@@ -68,32 +66,55 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
     timestamp,
     avatarUrl,
     likes: initialLikes = 0,
+    dislikes: initialDislikes = 0,
     replies = [],
   } = comment;
 
-  const [isLiked, setIsLiked] = useState(false);
   const [currentLikes, setCurrentLikes] = useState(initialLikes);
+  const [currentDislikes, setCurrentDislikes] = useState(initialDislikes);
+  const [userVote, setUserVote] = useState(null); // null, 'liked', 'disliked'
   const [showReplyForm, setShowReplyForm] = useState(false);
 
   const handleLikeComment = () => {
-    if (isLiked) {
+    if (userVote === "liked") {
+      // Unlike
       setCurrentLikes(currentLikes - 1);
+      setUserVote(null);
     } else {
+      // Like baru atau pindah dari dislike
       setCurrentLikes(currentLikes + 1);
+      if (userVote === "disliked") {
+        setCurrentDislikes(currentDislikes - 1);
+      }
+      setUserVote("liked");
     }
-    setIsLiked(!isLiked);
+    // TODO: Kirim update like ke backend
+  };
+
+  const handleDislikeComment = () => {
+    if (userVote === "disliked") {
+      // Un-dislike
+      setCurrentDislikes(currentDislikes - 1);
+      setUserVote(null);
+    } else {
+      // Dislike baru atau pindah dari like
+      setCurrentDislikes(currentDislikes + 1);
+      if (userVote === "liked") {
+        setCurrentLikes(currentLikes - 1);
+      }
+      setUserVote("disliked");
+    }
+    // TODO: Kirim update dislike ke backend
   };
 
   const toggleReplyForm = () => {
     setShowReplyForm(!showReplyForm);
   };
 
-  // Gaya indentasi berdasarkan level
   const indentStyle =
     indentLevel > 0 ? { marginLeft: `${indentLevel * 1.5}rem` } : {};
 
   return (
-    // Menghapus border dari sini, akan ditangani oleh parent list (CommentSection atau div replies)
     <div style={indentStyle} className="py-3">
       <div className="flex items-start space-x-3">
         <img
@@ -102,10 +123,7 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
           className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover flex-shrink-0"
         />
         <div className="flex-grow">
-          {/* Latar belakang bubble komentar disamakan */}
           <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
-            {" "}
-            {/* Menambah shadow-sm untuk sedikit kedalaman */}
             <div className="flex items-center justify-between mb-0.5">
               <p className="text-xs sm:text-sm font-semibold text-gray-800 hover:underline cursor-pointer">
                 {author}
@@ -113,20 +131,46 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
             </div>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{text}</p>
           </div>
-          <div className="flex items-center space-x-3 mt-1.5 pl-1">
+          <div className="flex items-center space-x-2 sm:space-x-3 mt-1.5 pl-1">
             {" "}
-            {/* mt-1.5 agar lebih rapat sedikit */}
+            {/* Penyesuaian space-x */}
             <button
               onClick={handleLikeComment}
               className={`text-xs font-medium flex items-center space-x-1 transition-colors
                           ${
-                            isLiked
+                            userVote === "liked"
                               ? "text-blue-600"
                               : "text-gray-500 hover:text-blue-600"
                           }`}
             >
-              <ThumbsUp size={14} className={isLiked ? "fill-blue-500" : ""} />
+              <ThumbsUp
+                size={14}
+                className={
+                  userVote === "liked" ? "fill-blue-500 text-blue-600" : ""
+                }
+              />{" "}
+              {/* Fill icon saat liked */}
               <span>{currentLikes > 0 ? currentLikes : "Suka"}</span>
+            </button>
+            {/* Tombol Dislike Baru */}
+            <button
+              onClick={handleDislikeComment}
+              className={`text-xs font-medium flex items-center space-x-1 transition-colors
+                          ${
+                            userVote === "disliked"
+                              ? "text-red-600"
+                              : "text-gray-500 hover:text-red-600"
+                          }`}
+            >
+              <ThumbsDown
+                size={14}
+                className={
+                  userVote === "disliked" ? "fill-red-500 text-red-600" : ""
+                }
+              />{" "}
+              {/* Fill icon saat disliked */}
+              <span>{currentDislikes > 0 ? currentDislikes : ""}</span>{" "}
+              {/* Hanya tampilkan angka jika > 0, atau "Tidak Suka" */}
             </button>
             <span className="text-xs text-gray-400">•</span>
             <button
@@ -159,16 +203,14 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
             />
           )}
 
-          {/* Render Balasan Komentar */}
           {replies && replies.length > 0 && (
-            // Menggunakan divide-y untuk garis pemisah antar balasan
             <div className="mt-3 space-y-0 divide-y divide-gray-200">
               {replies.map((reply) => (
                 <CommentItem
                   key={reply.id}
                   comment={reply}
                   onAddReply={onAddReply}
-                  indentLevel={indentLevel + 1} // Pertahankan indentLevel untuk balasan dari balasan
+                  indentLevel={indentLevel + 1}
                 />
               ))}
             </div>
