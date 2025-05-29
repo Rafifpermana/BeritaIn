@@ -1,67 +1,102 @@
+// src/components/Footer.jsx
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom"; // Impor Link dan useNavigate
 import {
   Twitter,
   Instagram,
   Youtube,
   ChevronDown,
   ChevronUp,
-} from "lucide-react";
+  Facebook, // Contoh jika ingin menambahkan ikon Facebook
+} from "lucide-react"; // Asumsi X (untuk Twitter baru) sudah ada jika digunakan di Navbar
+
+// Fungsi createSlug (HARUS SAMA DENGAN YANG DI NAVBAR, HOMEPAGE, CATEGORYPAGE)
+// Idealnya, impor dari file utilitas bersama.
+const createSlug = (text) => {
+  if (!text || typeof text !== "string") return "";
+  return text
+    .toLowerCase()
+    .replace(/ & /g, "-and-")
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "");
+};
+
+// Daftar kategori yang sama seperti di Navbar (untuk validasi atau referensi jika diperlukan)
+// Ini bisa juga tidak diperlukan di sini jika semua link adalah kategori yang valid.
+const CATEGORY_LINKS_IN_FOOTER = [
+  // Kategori yang ada di footerData.news, .lifestyle, .topics
+  "Sport",
+  "Entertainment",
+  "Gaming",
+  "Politics",
+  "Business",
+  "Tech",
+  "Science",
+  "Travel",
+  "Lifestyle",
+  "Education",
+  "Movie",
+  "Food & Culinary",
+  "Entrepreneurship",
+  "Startups",
+  "Cryptocurrency",
+  "Global Affairs",
+  "Local",
+  "Experience",
+  "Jakarta",
+  "SEA",
+  "Explore",
+];
 
 const Footer = () => {
   const [expandedSections, setExpandedSections] = useState({});
+  const navigate = useNavigate(); // Untuk navigasi jika diperlukan (meskipun Link sudah cukup)
 
+  // footerData tetap sama, kita akan memproses link-nya saat render
   const footerData = {
     about: {
       title: "About",
       links: [
-        "About Us",
-        "Terms and Condition",
-        "Privacy Policy",
-        "Cookie Policy",
+        // Link ini mungkin bukan kategori, jadi href="#" atau path statis
+        { name: "About Us", href: "/about-us" }, // Contoh path statis
+        { name: "Terms and Condition", href: "/terms" },
+        { name: "Privacy Policy", href: "/privacy" },
+        { name: "Cookie Policy", href: "/cookies" },
       ],
+      isCategoryLinks: false, // Flag untuk membedakan
     },
     news: {
       title: "News",
-      links: [
-        "Sport",
-        "Entertainment",
-        "Gaming",
-        "Politics",
-        "Business",
-        "Tech",
-        "Science",
-      ],
+      links: CATEGORY_LINKS_IN_FOOTER.slice(0, 7).map((name) => ({
+        name,
+        isCategory: true,
+      })), // Ambil dari list utama
+      isCategoryLinks: true,
     },
     lifestyle: {
       title: "Lifestyle",
-      links: [
-        "Travel",
-        "Lifestyle",
-        "Education",
-        "Movie",
-        "Food & Culinary",
-        "Entrepreneurship",
-        "Startups",
-      ],
+      links: CATEGORY_LINKS_IN_FOOTER.slice(7, 14).map((name) => ({
+        name,
+        isCategory: true,
+      })),
+      isCategoryLinks: true,
     },
     topics: {
       title: "Topics",
-      links: [
-        "Cryptocurrency",
-        "Global Affairs",
-        "Local",
-        "Experience",
-        "Jakarta",
-        "SEA",
-        "Explore",
-      ],
+      links: CATEGORY_LINKS_IN_FOOTER.slice(14).map((name) => ({
+        name,
+        isCategory: true,
+      })),
+      isCategoryLinks: true,
     },
   };
 
+  // Social icons (contoh, bisa ditambahkan Facebook atau X)
   const socialIcons = [
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Youtube, href: "#", label: "YouTube" },
+    { Icon: Twitter, href: "https://twitter.com", label: "Twitter" }, // Gunakan X jika Twitter baru
+    { Icon: Instagram, href: "https://instagram.com", label: "Instagram" },
+    { Icon: Youtube, href: "https://youtube.com", label: "YouTube" },
+    { Icon: Facebook, href: "https://facebook.com", label: "Facebook" },
   ];
 
   const toggleSection = (sectionKey) => {
@@ -71,133 +106,109 @@ const Footer = () => {
     }));
   };
 
+  const renderFooterLink = (linkItem, index) => {
+    if (linkItem.isCategory) {
+      return (
+        <li key={linkItem.name + index}>
+          <Link
+            to={`/category/${createSlug(linkItem.name)}`}
+            className="text-sm text-gray-600 hover:text-blue-600 hover:underline transition-colors duration-200 block py-1"
+          >
+            {linkItem.name}
+          </Link>
+        </li>
+      );
+    }
+    // Untuk link non-kategori seperti About Us, dll.
+    return (
+      <li key={linkItem.name + index}>
+        <Link
+          to={linkItem.href || "#"} // Gunakan href dari data atau fallback ke '#'
+          className="text-sm text-gray-600 hover:text-blue-600 hover:underline transition-colors duration-200 block py-1"
+        >
+          {linkItem.name}
+        </Link>
+      </li>
+    );
+  };
+
   return (
-    <footer className="bg-white border-t border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <footer className="bg-white border-t border-gray-200 text-gray-700">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
         {/* Mobile Accordion Layout (< sm) */}
-        <div className="block sm:hidden space-y-4">
+        <div className="block sm:hidden space-y-1">
           {Object.entries(footerData).map(([key, section]) => (
-            <div
-              key={key}
-              className="border-b border-gray-200 pb-4 last:border-b-0"
-            >
-              {" "}
-              {/* Menghilangkan border bawah untuk item terakhir */}
+            <div key={key} className="border-b border-gray-100 last:border-b-0">
               <button
                 onClick={() => toggleSection(key)}
                 className="flex justify-between items-center w-full py-3 text-left"
               >
-                <h3 className="text-base font-semibold text-gray-900">
+                <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                  {" "}
+                  {/* Disesuaikan dengan mobile Navbar */}
                   {section.title}
                 </h3>
                 {expandedSections[key] ? (
-                  <ChevronUp className="w-5 h-5 text-gray-500" />
+                  <ChevronUp className="w-4 h-4 text-gray-500" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-500" />
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
                 )}
               </button>
               {expandedSections[key] && (
-                <ul className="mt-3 space-y-3 pl-2">
-                  {section.links.map((link, index) => (
-                    <li key={index}>
-                      <a
-                        href="#"
-                        className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200 block py-1"
-                      >
-                        {link}
-                      </a>
-                    </li>
-                  ))}
+                <ul className="pt-2 pb-3 space-y-2 pl-3">
+                  {" "}
+                  {/* Padding disesuaikan */}
+                  {section.links.map((linkItem, index) =>
+                    renderFooterLink(linkItem, index)
+                  )}
                 </ul>
               )}
             </div>
           ))}
         </div>
 
-        {/* Tablet Layout (sm to lg) */}
-        <div className="hidden sm:grid lg:hidden grid-cols-2 gap-x-8 gap-y-10">
-          {" "}
-          {/* Menambah gap-y */}
+        {/* Tablet & Desktop Layout (sm+) */}
+        <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-10">
           {Object.entries(footerData).map(([key, section]) => (
             <div key={key}>
-              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
+              <h3 className="text-xs font-semibold text-gray-500 tracking-wider uppercase mb-4">
+                {" "}
+                {/* Font lebih kecil untuk judul kolom */}
                 {section.title}
               </h3>
-              <ul className="space-y-3">
-                {section.links.map((link, index) => (
-                  <li key={index}>
-                    <a
-                      href="#"
-                      className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* Desktop Layout (lg+) */}
-        <div className="hidden lg:grid grid-cols-4 gap-x-8 gap-y-10">
-          {" "}
-          {/* Menambah gap-y */}
-          {/* Kolom diambil dari footerData untuk konsistensi */}
-          {Object.values(footerData).map((section, sectionIndex) => (
-            <div key={sectionIndex}>
-              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-6">
-                {section.title}
-              </h3>
-              <ul className="space-y-4">
-                {section.links.map((link, linkIndex) => (
-                  <li key={linkIndex}>
-                    <a
-                      href="#"
-                      className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
+              <ul className="space-y-2.5">
+                {" "}
+                {/* Jarak antar link */}
+                {section.links.map((linkItem, index) =>
+                  renderFooterLink(linkItem, index)
+                )}
               </ul>
             </div>
           ))}
         </div>
 
         {/* Social Media, Nama Anda, dan Copyright Section */}
-        <div className="mt-10 sm:mt-12 pt-8 sm:pt-10 border-t border-gray-200">
-          <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center text-center md:text-left">
-            {/* Grup Ikon Media Sosial dan Nama Anda */}
-            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start">
-              <div className="flex space-x-5">
-                {" "}
-                {/* Sedikit menambah spasi antar ikon */}
-                {socialIcons.map((social, index) => {
-                  const IconComponent = social.icon;
-                  return (
-                    <a
-                      key={index}
-                      href={social.href}
-                      className="text-gray-500 hover:text-gray-700 transition-colors duration-200 p-1.5 hover:bg-gray-100 rounded-full" // Penyesuaian padding dan warna
-                      aria-label={social.label}
-                    >
-                      <IconComponent className="w-5 h-5" />
-                    </a>
-                  );
-                })}
-              </div>
-              <div className="mt-3 sm:mt-0 sm:ml-4">
-                <p className="text-sm text-gray-700 font-medium">
-                  Rafifpermana
-                </p>
-              </div>
+        <div className="mt-12 sm:mt-16 pt-8 border-t border-gray-200">
+          <div className="flex flex-col md:flex-row items-center justify-center md:justify-between text-center md:text-left space-y-4 md:space-y-0">
+            <div className="flex items-center space-x-4">
+              {socialIcons.map(({ Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank" // Buka di tab baru
+                  rel="noopener noreferrer" // Keamanan untuk target="_blank"
+                  className="text-gray-400 hover:text-blue-600 transition-colors"
+                  aria-label={label}
+                >
+                  <Icon className="w-5 h-5" />
+                </a>
+              ))}
             </div>
-
-            {/* Copyright Text */}
-            <div className="text-xs text-gray-500">
-              &copy; {new Date().getFullYear()} NamaWebsiteAnda. Hak Cipta
-              Dilindungi.
+            <div className="flex items-center text-sm text-gray-700">
+              <span>
+                Didesain oleh{" "}
+                <span className="font-semibold "> Rafifpermana</span>
+              </span>
             </div>
           </div>
         </div>
