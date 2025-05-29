@@ -1,7 +1,7 @@
+// src/pages/LoginPage.jsx
 import React, { useState } from "react";
-import { User, Lock } from "lucide-react";
+import { User, Lock, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
-import logoMagang from "../assets/logo.png";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -15,14 +15,15 @@ const LoginPage = () => {
 
   return (
     <div className="relative min-h-screen bg-blue-700 flex flex-col items-center justify-center p-4 overflow-hidden">
-      {/* Background SVG */}
-      <div className="absolute inset-0 pointer-events-none">
+      {/* Background SVG (tetap sama) */}
+      <div className="absolute inset-0 pointer-events-none opacity-80 sm:opacity-100">
         <svg
-          width="1280"
-          height="720"
+          width="100%"
+          height="100%"
           viewBox="0 0 1280 720"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="xMidYMid slice"
         >
           <ellipse cx="-43.6503" cy="720" rx="374.35" ry="362" fill="#264ECA" />
           <ellipse
@@ -46,53 +47,83 @@ const LoginPage = () => {
         </svg>
       </div>
 
-      {/* Logo */}
-      <div className="relative z-10 mb-8">
-        <div className="w-16 h-16 flex items-center justify-center bg-white rounded-md">
-          <span className="text-blue-700 font-bold">Logo</span>
-        </div>
+      {/* Logo dan Nama Aplikasi */}
+      <div className="relative z-10 mb-6 sm:mb-8">
+        <Link to="/" className="flex flex-col items-center group">
+          <span className="text-xl sm:text-3xl font-bold text-white group-hover:text-orange-200 transition-colors">
+            Berita
+            <span className="text-orange-600 group-hover:text-blue-200 transition-colors">
+              In
+            </span>
+          </span>
+        </Link>
       </div>
 
-      {/* Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="relative z-10 w-full max-w-sm flex flex-col space-y-4"
-      >
-        <div className="relative">
-          <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white opacity-75" />
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="USERNAME"
-            className="w-full  bg-transparent border border-white text-white placeholder-white placeholder-opacity-70 px-4 py-3 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-sm"
-          />
-        </div>
-        <div className="relative">
-          <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white opacity-75" />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="PASSWORD"
-            className="w-full  bg-transparent border border-white text-white placeholder-white placeholder-opacity-70 px-4 py-3 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-sm"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-white text-blue-700 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors text-sm"
-        >
-          LOGIN
-        </button>
-        <div className="flex justify-between text-xs text-white opacity-80">
-          <Link to="/register" className="hover:underline">
-            Sign Up
-          </Link>
-          <a href="#" className="hover:underline">
-            Forgot password?
-          </a>
-        </div>
-      </form>
+      {/* Form Card */}
+      <div className="relative z-10 w-full max-w-xs sm:max-w-sm bg-white/10 backdrop-blur-md p-6 sm:p-8 rounded-xl shadow-2xl">
+        <h2 className="text-lg sm:text-xl font-bold text-white text-center mb-1">
+          Selamat Datang!
+        </h2>
+        <p className="text-xs text-center text-blue-100 opacity-90 mb-6">
+          Masuk untuk melanjutkan.
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+          <div>
+            <label htmlFor="email" className="sr-only">
+              Email
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white opacity-75 w-4 h-4" />
+              <input
+                id="email"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="EMAIL"
+                required
+                className="w-full bg-transparent border border-white/50 text-white placeholder-white placeholder-opacity-70 px-3.5 py-2.5 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="password" className="sr-only">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white opacity-75 w-4 h-4" />
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="PASSWORD"
+                required
+                className="w-full bg-transparent border border-white/50 text-white placeholder-white placeholder-opacity-70 px-3.5 py-2.5 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-sm"
+              />
+            </div>
+          </div>
+          <div className="text-right mt-2 mb-3">
+            <a
+              href="#"
+              className="text-xs text-blue-200 hover:text-white hover:underline"
+            >
+              Lupa Password?
+            </a>
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-white text-blue-700 font-semibold py-2.5 rounded-lg hover:bg-gray-200 active:bg-gray-300 transition-colors text-sm shadow-md"
+          >
+            LOGIN
+          </button>
+          <div className="text-center text-xs text-white opacity-90 mt-6">
+            Belum punya akun?{" "}
+            <Link to="/register" className="font-medium hover:underline">
+              Daftar di sini
+            </Link>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
