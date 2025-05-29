@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from "react"; // useState dan useRef sudah tidak digunakan di sini
 import {
   BrowserRouter as Router,
@@ -18,8 +17,8 @@ import ScrollToTop from "./utils/ScrollToTop"; // <--- IMPORT KOMPONEN BARU
 
 // Layout dengan Navbar & Footer
 const MainLayout = () => {
-  const mobilePadding = "pt-[110px]";
-  const desktopPadding = "lg:pt-[68px]";
+  const mobilePadding = "pt-5";
+  const desktopPadding = "lg:pt-[25px]";
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
