@@ -1,95 +1,54 @@
 // src/pages/DetailPage.jsx
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useArticleInteractions } from "../contexts/ArticleInteractionContext";
+import { allArticlesData } from "../data/mockData";
 
 import InteractionBar from "../components/InteractionBar";
 import CommentSection from "../components/CommentSection";
-import {
-  allArticlesData,
-  initialCommentsData,
-  calculateTotalComments,
-} from "../data/mockData";
 
 const DetailPage = () => {
   const { articleId } = useParams();
-  const [article, setArticle] = useState(null);
+  const {
+    articleInteractions,
+    articleCommentsState,
+    toggleLikeArticle,
+    toggleDislikeArticle,
+    addCommentToArticle: contextAddCommentToArticle, // Alias agar jelas dari konteks
+    addReplyToComment: contextAddReplyToComment, // Alias
+    toggleLikeComment: contextToggleLikeCommentOnComment, // Alias
+    toggleDislikeComment: contextToggleDislikeCommentOnComment, // Alias
+    getCommentCountForArticleContext,
+  } = useArticleInteractions();
+
+  const [articleStaticData, setArticleStaticData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [comments, setComments] = useState([]);
   const commentSectionRef = useRef(null);
 
-  const totalCommentCount = useMemo(
-    () => calculateTotalComments(comments),
-    [comments]
-  );
+  // Ambil interaksi dan komentar untuk artikel saat ini dari konteks
+  const currentArticleInteractions = articleInteractions[articleId] || {
+    likes: 0,
+    dislikes: 0,
+    userVote: null,
+    isBookmarked: false,
+  };
+  const currentArticleComments = articleCommentsState[articleId] || [];
+  const totalCommentCountForDisplay =
+    getCommentCountForArticleContext(articleId);
 
   useEffect(() => {
     setLoading(true);
-    const foundArticle = allArticlesData[articleId];
-
-    if (foundArticle) {
-      setArticle(foundArticle);
-      setComments(initialCommentsData[articleId] || []);
+    const staticData = allArticlesData[articleId];
+    if (staticData) {
+      setArticleStaticData(staticData);
     } else {
-      setArticle(null);
-      setComments([]);
       console.warn(
-        `Artikel dengan ID "${articleId}" tidak ditemukan di allArticlesData.`
+        `Data statis artikel dengan ID "${articleId}" tidak ditemukan.`
       );
+      setArticleStaticData(null);
     }
     setLoading(false);
   }, [articleId]);
-
-  const handleAddComment = (author, text) => {
-    const newCommentEntry = {
-      id: Date.now(),
-      author: author.trim() === "" ? "Pengguna Anonim" : author,
-      text,
-      timestamp: Date.now(),
-      avatarUrl: "/placeholder-avatar.png",
-      likes: 0,
-      dislikes: 0,
-      replies: [],
-    };
-    setComments((prevComments) => [newCommentEntry, ...prevComments]);
-  };
-
-  const handleAddReply = (parentCommentId, replyAuthor, replyText) => {
-    const newReply = {
-      id: Date.now(),
-      parentId: parentCommentId,
-      author: replyAuthor.trim() === "" ? "Pengguna Anonim" : replyAuthor,
-      text: replyText,
-      timestamp: Date.now(),
-      avatarUrl: "/placeholder-avatar.png",
-      likes: 0,
-      dislikes: 0,
-      replies: [],
-    };
-    const addReplyToCommentList = (list, targetParentId, replyToAdd) => {
-      return list.map((comment) => {
-        if (comment.id === targetParentId) {
-          return {
-            ...comment,
-            replies: [replyToAdd, ...(comment.replies || [])],
-          };
-        }
-        if (comment.replies && comment.replies.length > 0) {
-          const updatedReplies = addReplyToCommentList(
-            comment.replies,
-            targetParentId,
-            replyToAdd
-          );
-          if (updatedReplies !== comment.replies) {
-            return { ...comment, replies: updatedReplies };
-          }
-        }
-        return comment;
-      });
-    };
-    setComments((prevComments) =>
-      addReplyToCommentList(prevComments, parentCommentId, newReply)
-    );
-  };
 
   const handleScrollToComments = () => {
     if (commentSectionRef.current) {
@@ -100,6 +59,20 @@ const DetailPage = () => {
     }
   };
 
+  // Handler yang dipanggil dari CommentSection, yang kemudian memanggil fungsi konteks
+  const handleAddCommentOnPage = (author, text) => {
+    contextAddCommentToArticle(articleId, author, text);
+  };
+
+  const handleAddReplyOnPage = (parentCommentId, replyAuthor, replyText) => {
+    contextAddReplyToComment(
+      articleId,
+      parentCommentId,
+      replyAuthor,
+      replyText
+    );
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12 text-center text-gray-500">
@@ -108,7 +81,7 @@ const DetailPage = () => {
     );
   }
 
-  if (!article) {
+  if (!articleStaticData) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
         <h1 className="text-3xl font-bold text-gray-700 mb-4">
@@ -129,12 +102,10 @@ const DetailPage = () => {
   }
 
   return (
-    // Mengurangi padding atas (pt) pada div ini
     <div className="bg-gray-50 min-h-screen pt-4 pb-8 sm:pt-6 sm:pb-10 md:pt-6 md:pb-12">
       <div className="container mx-auto px-4">
-        {" "}
-        {/* Padding horizontal container tetap */}
         <article className="max-w-3xl mx-auto bg-white p-4 sm:p-6 rounded-xl shadow-xl">
+          {/* ... (Breadcrumbs, Judul Artikel, Meta, Gambar Utama, Konten HTML - menggunakan articleStaticData) ... */}
           <div className="flex flex-wrap items-baseline gap-x-1.5 mb-4 text-xs text-gray-500">
             <Link
               to="/"
@@ -144,14 +115,12 @@ const DetailPage = () => {
             </Link>
             <span className="text-gray-400 flex-shrink-0">&gt;</span>
             <span className="text-gray-700 font-medium truncate min-w-0">
-              {article.title}
+              {articleStaticData.title}
             </span>
           </div>
-
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-3 leading-tight tracking-tight break-words">
-            {article.title}
+            {articleStaticData.title}
           </h1>
-
           <div className="flex flex-wrap items-center text-xs text-gray-600 mb-6">
             <span>
               By{" "}
@@ -159,41 +128,43 @@ const DetailPage = () => {
                 href="#"
                 className="font-semibold text-blue-700 hover:underline break-words"
               >
-                {article.author}
+                {articleStaticData.author}
               </a>
             </span>
             <span className="text-gray-400 mx-1.5 sm:mx-2">•</span>
             <span>
-              {new Date(article.date).toLocaleDateString("id-ID", {
+              {new Date(articleStaticData.date).toLocaleDateString("id-ID", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
               })}
             </span>
           </div>
-
-          {article.imageUrl && (
+          {articleStaticData.imageUrl && (
             <div className="mb-6 rounded-lg overflow-hidden shadow-md">
               <img
-                src={article.imageUrl}
-                alt={article.title}
+                src={articleStaticData.imageUrl}
+                alt={articleStaticData.title}
                 className="w-full h-auto object-cover aspect-video"
               />
             </div>
           )}
-
           <div
-            className="prose prose-sm sm:prose-base lg:prose-lg max-w-none text-gray-700 leading-relaxed selection:bg-blue-200 selection:text-blue-900 break-words"
-            dangerouslySetInnerHTML={{ __html: article.contentHTML }}
+            className="prose prose-sm sm:prose-base lg:prose-lg max-w-none text-gray-700 ..."
+            dangerouslySetInnerHTML={{ __html: articleStaticData.contentHTML }}
           />
 
           <div className="mt-10 sm:mt-12">
             <InteractionBar
-              articleTitle={article.title}
+              articleTitle={articleStaticData.title}
               articleUrl={window.location.href}
-              initialLikes={article.initialLikes || 0}
-              initialDislikes={article.initialDislikes || 0}
-              commentCount={totalCommentCount}
+              likes={currentArticleInteractions.likes}
+              dislikes={currentArticleInteractions.dislikes}
+              userVote={currentArticleInteractions.userVote}
+              isBookmarked={currentArticleInteractions.isBookmarked}
+              onLikeToggle={() => toggleLikeArticle(articleId)}
+              onDislikeToggle={() => toggleDislikeArticle(articleId)}
+              commentCount={totalCommentCountForDisplay}
               onCommentClick={handleScrollToComments}
             />
           </div>
@@ -204,9 +175,15 @@ const DetailPage = () => {
           >
             <CommentSection
               articleId={articleId}
-              comments={comments}
-              onAddComment={handleAddComment}
-              onAddReply={handleAddReply}
+              comments={currentArticleComments} // Dari konteks
+              onAddComment={handleAddCommentOnPage}
+              onAddReply={handleAddReplyOnPage}
+              onToggleLikeComment={(commentId) =>
+                contextToggleLikeCommentOnComment(articleId, commentId)
+              }
+              onToggleDislikeComment={(commentId) =>
+                contextToggleDislikeCommentOnComment(articleId, commentId)
+              }
             />
           </div>
         </article>
@@ -214,5 +191,4 @@ const DetailPage = () => {
     </div>
   );
 };
-
 export default DetailPage;

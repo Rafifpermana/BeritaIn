@@ -1,8 +1,8 @@
 // src/components/CommentItem.jsx
 import React, { useState } from "react";
-import { ThumbsUp, ThumbsDown, MessageSquare, Send } from "lucide-react"; // Tambahkan ThumbsDown
+import { ThumbsUp, ThumbsDown, MessageSquare, Send } from "lucide-react";
 
-// Komponen ReplyForm tetap sama
+// Komponen ReplyForm (tetap sama, pastikan onSubmitReply menerima parentId, author, text)
 const ReplyForm = ({ parentId, onSubmitReply, onCancel }) => {
   const [replyText, setReplyText] = useState("");
   const [replyAuthor, setReplyAuthor] = useState("");
@@ -10,6 +10,8 @@ const ReplyForm = ({ parentId, onSubmitReply, onCancel }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (replyText.trim() === "") return;
+    // onSubmitReply sekarang dipanggil dari DetailPage melalui CommentSection dan CommentItem
+    // yang akan memanggil fungsi konteks dengan articleId, parentId, author, text
     onSubmitReply(parentId, replyAuthor, replyText);
     setReplyText("");
     setReplyAuthor("");
@@ -57,54 +59,33 @@ const ReplyForm = ({ parentId, onSubmitReply, onCancel }) => {
   );
 };
 
-const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
-  // Tambahkan dislikes ke destructuring dengan nilai default 0
+const CommentItem = ({
+  comment,
+  onAddReply,
+  onToggleLikeComment,
+  onToggleDislikeComment,
+  indentLevel = 0,
+}) => {
   const {
     id,
     author,
     text,
     timestamp,
     avatarUrl,
-    likes: initialLikes = 0,
-    dislikes: initialDislikes = 0,
+    likes = 0,
+    dislikes = 0,
+    userVoteOnComment = null,
     replies = [],
-  } = comment;
+  } = comment; // Data diambil dari prop 'comment' yang berasal dari konteks
 
-  const [currentLikes, setCurrentLikes] = useState(initialLikes);
-  const [currentDislikes, setCurrentDislikes] = useState(initialDislikes);
-  const [userVote, setUserVote] = useState(null); // null, 'liked', 'disliked'
   const [showReplyForm, setShowReplyForm] = useState(false);
 
-  const handleLikeComment = () => {
-    if (userVote === "liked") {
-      // Unlike
-      setCurrentLikes(currentLikes - 1);
-      setUserVote(null);
-    } else {
-      // Like baru atau pindah dari dislike
-      setCurrentLikes(currentLikes + 1);
-      if (userVote === "disliked") {
-        setCurrentDislikes(currentDislikes - 1);
-      }
-      setUserVote("liked");
-    }
-    // TODO: Kirim update like ke backend
+  const handleLike = () => {
+    onToggleLikeComment(id); // Panggil handler dari props dengan comment.id
   };
 
-  const handleDislikeComment = () => {
-    if (userVote === "disliked") {
-      // Un-dislike
-      setCurrentDislikes(currentDislikes - 1);
-      setUserVote(null);
-    } else {
-      // Dislike baru atau pindah dari like
-      setCurrentDislikes(currentDislikes + 1);
-      if (userVote === "liked") {
-        setCurrentLikes(currentLikes - 1);
-      }
-      setUserVote("disliked");
-    }
-    // TODO: Kirim update dislike ke backend
+  const handleDislike = () => {
+    onToggleDislikeComment(id); // Panggil handler dari props dengan comment.id
   };
 
   const toggleReplyForm = () => {
@@ -124,21 +105,17 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
         />
         <div className="flex-grow">
           <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between mb-0.5">
-              <p className="text-xs sm:text-sm font-semibold text-gray-800 hover:underline cursor-pointer">
-                {author}
-              </p>
-            </div>
+            <p className="text-xs sm:text-sm font-semibold text-gray-800 hover:underline cursor-pointer">
+              {author}
+            </p>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{text}</p>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-3 mt-1.5 pl-1">
-            {" "}
-            {/* Penyesuaian space-x */}
             <button
-              onClick={handleLikeComment}
+              onClick={handleLike} // Menggunakan handler baru
               className={`text-xs font-medium flex items-center space-x-1 transition-colors
                           ${
-                            userVote === "liked"
+                            userVoteOnComment === "liked"
                               ? "text-blue-600"
                               : "text-gray-500 hover:text-blue-600"
                           }`}
@@ -146,18 +123,18 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
               <ThumbsUp
                 size={14}
                 className={
-                  userVote === "liked" ? "fill-blue-500 text-blue-600" : ""
+                  userVoteOnComment === "liked"
+                    ? "fill-blue-500 text-blue-600"
+                    : ""
                 }
-              />{" "}
-              {/* Fill icon saat liked */}
-              <span>{currentLikes > 0 ? currentLikes : "Suka"}</span>
+              />
+              <span>{likes > 0 ? likes : "Suka"}</span>
             </button>
-            {/* Tombol Dislike Baru */}
             <button
-              onClick={handleDislikeComment}
+              onClick={handleDislike} // Menggunakan handler baru
               className={`text-xs font-medium flex items-center space-x-1 transition-colors
                           ${
-                            userVote === "disliked"
+                            userVoteOnComment === "disliked"
                               ? "text-red-600"
                               : "text-gray-500 hover:text-red-600"
                           }`}
@@ -165,12 +142,12 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
               <ThumbsDown
                 size={14}
                 className={
-                  userVote === "disliked" ? "fill-red-500 text-red-600" : ""
+                  userVoteOnComment === "disliked"
+                    ? "fill-red-500 text-red-600"
+                    : ""
                 }
-              />{" "}
-              {/* Fill icon saat disliked */}
-              <span>{currentDislikes > 0 ? currentDislikes : ""}</span>{" "}
-              {/* Hanya tampilkan angka jika > 0, atau "Tidak Suka" */}
+              />
+              <span>{dislikes > 0 ? dislikes : ""}</span>
             </button>
             <span className="text-xs text-gray-400">•</span>
             <button
@@ -194,15 +171,13 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
               })}
             </span>
           </div>
-
           {showReplyForm && (
             <ReplyForm
               parentId={id}
-              onSubmitReply={onAddReply}
+              onSubmitReply={onAddReply} // onAddReply diteruskan ke ReplyForm
               onCancel={() => setShowReplyForm(false)}
             />
           )}
-
           {replies && replies.length > 0 && (
             <div className="mt-3 space-y-0 divide-y divide-gray-200">
               {replies.map((reply) => (
@@ -210,6 +185,8 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
                   key={reply.id}
                   comment={reply}
                   onAddReply={onAddReply}
+                  onToggleLikeComment={onToggleLikeComment}
+                  onToggleDislikeComment={onToggleDislikeComment}
                   indentLevel={indentLevel + 1}
                 />
               ))}
@@ -220,5 +197,4 @@ const CommentItem = ({ comment, onAddReply, indentLevel = 0 }) => {
     </div>
   );
 };
-
 export default CommentItem;
