@@ -8,33 +8,23 @@ import {
   LogOut,
   Bell,
   Award,
-} from "lucide-react";
-
-// Data Pengguna Awal (bisa juga dari konteks auth yang lebih global nantinya)
-const initialDashboardUserData = {
-  username: "ipsum_Larisun",
-  email: "ipsum.larisun@example.com", // Diasumsikan email tidak diedit di halaman profil ini
-  avatarUrl: "/placeholder-avatar.png", // Ganti dengan path avatar default Anda
-  points: 85,
-};
+  ListChecks,
+} from "lucide-react"; // CloseIcon tidak dipakai langsung di sini
+import { useArticleInteractions } from "../hooks/useArticleInteractions"; // <-- PERBAIKI IMPOR INI
 
 const UserDashboardPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  // State untuk data pengguna yang bisa diedit, dikelola di sini
-  const [currentUsername, setCurrentUsername] = useState(
-    initialDashboardUserData.username
-  );
-  const [currentAvatar, setCurrentAvatar] = useState(
-    initialDashboardUserData.avatarUrl
-  );
-  const [currentUserPoints, setCurrentUserPoints] = useState(
-    initialDashboardUserData.points
-  ); // Jika poin juga dikelola di sini
+  // Ambil dari konteks yang benar
+  const {
+    notifications,
+    unreadNotificationCount,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+  } = useArticleInteractions();
 
   const sidebarLinks = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard/user" }, // Ini akan merender DashboardOverview (Pengaturan Profil)
+    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard/user" },
     {
       name: "Bookmark",
       icon: BookmarkIconLucide,
@@ -46,34 +36,37 @@ const UserDashboardPage = () => {
       icon: Info,
       path: "/dashboard/user/guidelines",
     },
+    {
+      name: "Semua Notifikasi",
+      icon: ListChecks,
+      path: "/dashboard/user/all-notifications",
+    },
   ];
 
-  // State Notifikasi
+  const userName = "ipsum_Larisun"; // Placeholder
+  const userAvatarPlaceholder = "/placeholder-avatar.png"; // Placeholder
+  // currentUserPoints sekarang akan diteruskan melalui Outlet context jika diperlukan oleh child
+  const currentUserPoints = 85; // Placeholder, idealnya dari konteks Auth atau UserProfileContext
+
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      message: "Komentar Anda pada artikel 'AI Poetry' telah dibalas.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-      read: false,
-      link: "/article/ai-poetry#comment-xyz",
-    },
-    {
-      id: 2,
-      message: "Artikel baru di kategori 'Tech & Innovation'.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-      read: false,
-      link: "/category/tech-and-innovation",
-    },
-  ]);
   const notificationButtonRef = useRef(null);
   const notificationPanelRef = useRef(null);
-  const unreadNotificationCount = notifications.filter((n) => !n.read).length;
 
   const toggleNotifications = () =>
     setIsNotificationsOpen(!isNotificationsOpen);
-  const markAllAsRead = () =>
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+
+  const handleMarkAllAsReadAndClose = () => {
+    markAllNotificationsAsRead();
+    setIsNotificationsOpen(false);
+  };
+
+  const handleNotificationItemClick = (notification) => {
+    if (!notification.read) {
+      markNotificationAsRead(notification.id);
+    }
+    setIsNotificationsOpen(false);
+    // Navigasi sudah ditangani oleh <Link>
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -96,21 +89,17 @@ const UserDashboardPage = () => {
     navigate("/login");
   };
 
-  // Fungsi yang akan diteruskan ke DashboardOverview (Pengaturan Profil) untuk update
-  const handleUsernameUpdate = (newUsernameValue) => {
-    setCurrentUsername(newUsernameValue);
-    console.log("Username diupdate di UserDashboardPage:", newUsernameValue);
-    // TODO: Panggil API untuk simpan ke backend
-  };
-
-  const handleAvatarUpdate = (newAvatarDataUrl) => {
-    setCurrentAvatar(newAvatarDataUrl);
-    console.log("Avatar diupdate di UserDashboardPage");
-    // TODO: Panggil API untuk unggah dan simpan avatar ke backend
-  };
+  const recentNotificationsForDropdown = [...notifications] // Ambil dari konteks
+    .sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )
+    .sort((a, b) => (a.read === b.read ? 0 : a.read ? 1 : -1))
+    .slice(0, 5);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Header Utama Dashboard (termasuk tombol notifikasi) */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -131,7 +120,9 @@ const UserDashboardPage = () => {
                 >
                   <Bell size={22} />
                   {unreadNotificationCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-2.5 w-2.5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                    <span className="absolute top-0 right-0 block h-2 w-2 p-0.5 transform -translate-y-0.5 translate-x-0.5 rounded-full bg-red-500 ring-1 ring-white text-[8px] flex items-center justify-center text-white">
+                      {/* {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount} */}
+                    </span>
                   )}
                 </button>
                 {isNotificationsOpen && (
@@ -141,11 +132,11 @@ const UserDashboardPage = () => {
                   >
                     <div className="flex justify-between items-center p-3 border-b border-gray-200">
                       <h3 className="text-sm font-semibold text-gray-800">
-                        Notifikasi
+                        Notifikasi Terbaru
                       </h3>
                       {unreadNotificationCount > 0 && (
                         <button
-                          onClick={markAllAsRead}
+                          onClick={handleMarkAllAsReadAndClose}
                           className="text-xs text-blue-600 hover:underline"
                         >
                           Tandai semua dibaca
@@ -153,23 +144,23 @@ const UserDashboardPage = () => {
                       )}
                     </div>
                     <div className="overflow-y-auto flex-grow">
-                      {notifications.length === 0 ? (
+                      {recentNotificationsForDropdown.length === 0 ? (
                         <p className="text-sm text-gray-500 p-4 text-center">
                           Tidak ada notifikasi.
                         </p>
                       ) : (
-                        notifications.map((notif) => (
+                        recentNotificationsForDropdown.map((notif) => (
                           <Link
                             to={notif.link || "#"}
                             key={notif.id}
                             className={`block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
                               !notif.read ? "bg-blue-50" : ""
                             }`}
-                            onClick={() => setIsNotificationsOpen(false)}
+                            onClick={() => handleNotificationItemClick(notif)}
                           >
                             <p
                               className={`text-xs text-gray-800 mb-0.5 ${
-                                !notif.read ? "font-semibold" : "font-normal"
+                                !notif.read ? "font-bold" : "font-normal"
                               }`}
                             >
                               {notif.message}
@@ -192,7 +183,7 @@ const UserDashboardPage = () => {
                     {notifications.length > 0 && (
                       <div className="p-2 border-t border-gray-200 text-center">
                         <Link
-                          to="/dashboard/user/notifications/all"
+                          to="/dashboard/user/all-notifications"
                           onClick={() => setIsNotificationsOpen(false)}
                           className="text-xs text-blue-600 hover:underline"
                         >
@@ -206,11 +197,11 @@ const UserDashboardPage = () => {
               <div className="flex items-center space-x-2">
                 <img
                   className="h-8 w-8 rounded-full object-cover"
-                  src={currentAvatar}
+                  src={userAvatarPlaceholder}
                   alt="User Avatar"
                 />
                 <span className="text-sm font-medium text-gray-700 hidden sm:block">
-                  {currentUsername}
+                  {userName}
                 </span>
               </div>
             </div>
@@ -279,17 +270,7 @@ const UserDashboardPage = () => {
             </div>
           </aside>
           <main className="flex-1 min-w-0">
-            <Outlet
-              context={{
-                // Data yang diteruskan ke child routes (DashboardOverview, UserPointsPage, dll.)
-                currentUsername,
-                currentAvatar,
-                onUsernameUpdate: handleUsernameUpdate,
-                onAvatarUpdate: handleAvatarUpdate,
-                currentUserEmail: initialDashboardUserData.email,
-                currentUserPoints,
-              }}
-            />
+            <Outlet context={{ currentUserPoints }} />
           </main>
         </div>
       </div>

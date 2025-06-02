@@ -1,25 +1,12 @@
-// src/contexts/ArticleInteractionContext.jsx
-/* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useState, useContext } from "react";
+import React, { useState } from "react";
+import { ArticleInteractionContext } from "./ArticleInteractionContextDefinition"; // Impor konteks dari definisi
 import {
   allArticlesData as initialArticlesStaticData,
   initialCommentsData,
   calculateTotalComments,
-} from "../data/mockData";
+} from "../data/mockData"; // Pastikan mockData.js tidak ada error sintaks juga
 
-const ArticleInteractionContext = createContext(null);
-
-export const useArticleInteractions = () => {
-  const context = useContext(ArticleInteractionContext);
-  if (context === undefined || context === null) {
-    throw new Error(
-      "useArticleInteractions must be used within an ArticleInteractionProvider"
-    );
-  }
-  return context;
-};
-
-// Fungsi helper rekursif untuk update vote pada komentar/balasan
+// --- Fungsi Helper (bisa tetap di sini atau dipindah ke utils jika sangat umum) ---
 const updateCommentVoteRecursive = (commentList, targetCommentId, voteType) => {
   if (!Array.isArray(commentList)) return [];
   return commentList.map((comment) => {
@@ -28,7 +15,7 @@ const updateCommentVoteRecursive = (commentList, targetCommentId, voteType) => {
       likes: comment.likes || 0,
       dislikes: comment.dislikes || 0,
       userVoteOnComment: comment.userVoteOnComment || null,
-      replies: comment.replies || [], // Pastikan replies selalu array
+      replies: comment.replies || [],
     };
 
     if (comment.id === targetCommentId) {
@@ -69,7 +56,6 @@ const updateCommentVoteRecursive = (commentList, targetCommentId, voteType) => {
   });
 };
 
-// Fungsi helper rekursif untuk menambah balasan
 const addReplyRecursive = (commentList, targetParentId, replyToAdd) => {
   if (!Array.isArray(commentList)) return [];
   return commentList.map((comment) => {
@@ -77,18 +63,19 @@ const addReplyRecursive = (commentList, targetParentId, replyToAdd) => {
     if (comment.id === targetParentId) {
       newCommentData.replies = [replyToAdd, ...newCommentData.replies];
     } else if (newCommentData.replies.length > 0) {
-      const updatedReplies = addReplyRecursive(
+      const updatedChildReplies = addReplyRecursive(
         newCommentData.replies,
         targetParentId,
         replyToAdd
       );
-      if (updatedReplies !== newCommentData.replies) {
-        newCommentData.replies = updatedReplies;
+      if (updatedChildReplies !== newCommentData.replies) {
+        newCommentData.replies = updatedChildReplies;
       }
     }
     return newCommentData;
   });
 };
+// --- Akhir Fungsi Helper ---
 
 export const ArticleInteractionProvider = ({ children }) => {
   const [articleInteractions, setArticleInteractions] = useState(() => {
@@ -108,22 +95,62 @@ export const ArticleInteractionProvider = ({ children }) => {
   const [articleCommentsState, setArticleCommentsState] = useState(() => {
     const initialisedComments = {};
     Object.keys(initialCommentsData).forEach((articleId) => {
-      const addVoteFieldRecursive = (commentsArray) => {
+      const addInitialFieldsRecursive = (commentsArray) => {
         if (!Array.isArray(commentsArray)) return [];
         return commentsArray.map((c) => ({
           ...c,
           userVoteOnComment: c.userVoteOnComment || null,
           likes: c.likes || 0,
           dislikes: c.dislikes || 0,
-          replies: addVoteFieldRecursive(c.replies || []),
+          replies: addInitialFieldsRecursive(c.replies || []),
         }));
       };
-      initialisedComments[articleId] = addVoteFieldRecursive(
+      initialisedComments[articleId] = addInitialFieldsRecursive(
         initialCommentsData[articleId] || []
       );
     });
     return initialisedComments;
   });
+
+  const [notifications, setNotifications] = useState([
+    {
+      id: Date.now() + 1,
+      message: "Selamat datang di sistem notifikasi baru!",
+      timestamp: new Date().toISOString(),
+      read: false,
+      link: "#",
+    },
+    {
+      id: Date.now() + 2,
+      message: "Ada update pada artikel 'AI Poetry'.",
+      timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+      read: true,
+      link: "/article/ai-poetry",
+    },
+  ]);
+
+  const unreadNotificationCount = notifications.filter((n) => !n.read).length;
+
+  const addNotification = (message, link = "#") => {
+    const newNotification = {
+      id: Date.now(),
+      message,
+      timestamp: new Date().toISOString(),
+      read: false,
+      link,
+    };
+    setNotifications((prev) => [newNotification, ...prev].slice(0, 20));
+  };
+
+  const markNotificationAsRead = (notificationId) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+    );
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
 
   const toggleLikeArticle = (articleId) => {
     setArticleInteractions((prev) => {
@@ -137,20 +164,17 @@ export const ArticleInteractionProvider = ({ children }) => {
       let newDislikes = current.dislikes;
       let newUserVote = current.userVote;
       let newIsBookmarked = current.isBookmarked;
-
       if (newUserVote === "liked") {
         newLikes = Math.max(0, newLikes - 1);
         newUserVote = null;
         newIsBookmarked = false;
       } else {
         newLikes++;
-        if (newUserVote === "disliked") {
+        if (newUserVote === "disliked")
           newDislikes = Math.max(0, newDislikes - 1);
-        }
         newUserVote = "liked";
         newIsBookmarked = true;
       }
-
       return {
         ...prev,
         [articleId]: {
@@ -176,7 +200,6 @@ export const ArticleInteractionProvider = ({ children }) => {
       let newDislikes = current.dislikes;
       let newUserVote = current.userVote;
       let newIsBookmarked = current.isBookmarked;
-
       if (newUserVote === "disliked") {
         newDislikes = Math.max(0, newDislikes - 1);
         newUserVote = null;
@@ -188,7 +211,6 @@ export const ArticleInteractionProvider = ({ children }) => {
         }
         newUserVote = "disliked";
       }
-
       return {
         ...prev,
         [articleId]: {
@@ -214,7 +236,6 @@ export const ArticleInteractionProvider = ({ children }) => {
       userVoteOnComment: null,
       replies: [],
     };
-
     setArticleCommentsState((prev) => ({
       ...prev,
       [articleId]: [newComment, ...(prev[articleId] || [])],
@@ -227,6 +248,8 @@ export const ArticleInteractionProvider = ({ children }) => {
     replyAuthor,
     replyText
   ) => {
+    const articleTitle =
+      initialArticlesStaticData[articleId]?.title || "sebuah artikel";
     const newReply = {
       id: Date.now(),
       parentId: parentCommentId,
@@ -239,7 +262,6 @@ export const ArticleInteractionProvider = ({ children }) => {
       userVoteOnComment: null,
       replies: [],
     };
-
     setArticleCommentsState((prev) => ({
       ...prev,
       [articleId]: addReplyRecursive(
@@ -248,9 +270,13 @@ export const ArticleInteractionProvider = ({ children }) => {
         newReply
       ),
     }));
+    addNotification(
+      `Balasan baru dari ${replyAuthor} di artikel "${articleTitle}"`,
+      `/article/${articleId}#comment-${newReply.id}`
+    );
   };
 
-  const toggleLikeCommentContext = (articleId, commentId) => {
+  const toggleCommentLike = (articleId, commentId) => {
     setArticleCommentsState((prev) => ({
       ...prev,
       [articleId]: updateCommentVoteRecursive(
@@ -261,7 +287,7 @@ export const ArticleInteractionProvider = ({ children }) => {
     }));
   };
 
-  const toggleDislikeCommentContext = (articleId, commentId) => {
+  const toggleCommentDislike = (articleId, commentId) => {
     setArticleCommentsState((prev) => ({
       ...prev,
       [articleId]: updateCommentVoteRecursive(
@@ -279,12 +305,17 @@ export const ArticleInteractionProvider = ({ children }) => {
   const value = {
     articleInteractions,
     articleCommentsState,
+    notifications,
+    unreadNotificationCount,
     toggleLikeArticle,
     toggleDislikeArticle,
     addCommentToArticle,
     addReplyToComment: addReplyToCommentContext,
-    toggleLikeComment: toggleLikeCommentContext,
-    toggleDislikeComment: toggleDislikeCommentContext,
+    toggleCommentLike, // Fungsi untuk like/dislike komentar
+    toggleCommentDislike, // Fungsi untuk like/dislike komentar
+    addNotification,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
     getCommentCountForArticleContext,
     isArticleBookmarked: (articleId) =>
       !!articleInteractions[articleId]?.isBookmarked,

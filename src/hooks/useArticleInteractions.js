@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { ArticleInteractionContext } from "../contexts/ArticleInteractionContext";
+import { ArticleInteractionContext } from "../contexts/ArticleInteractionContextDefinition";
 
 export const useArticleInteractions = () => {
   const context = useContext(ArticleInteractionContext);

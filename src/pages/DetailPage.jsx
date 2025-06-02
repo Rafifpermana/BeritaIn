@@ -1,7 +1,7 @@
 // src/pages/DetailPage.jsx
 import React, { useEffect, useState, useRef } from "react"; // useMemo tidak lagi dibutuhkan jika totalCommentCount dihitung langsung
 import { useParams, Link } from "react-router-dom";
-import { useArticleInteractions } from "../contexts/ArticleInteractionContext";
+import { useArticleInteractions } from "../hooks/useArticleInteractions";
 import { allArticlesData } from "../data/mockData";
 
 import InteractionBar from "../components/InteractionBar";

@@ -11,7 +11,7 @@ import {
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./utils/ScrollToTop";
-import { ArticleInteractionProvider } from "./contexts/ArticleInteractionContext";
+import { ArticleInteractionProvider } from "./contexts/ArticleInteractionProvider"; // <-- IMPOR BARU
 
 // Halaman Utama
 import HomePage from "./pages/HomePage";
@@ -26,16 +26,15 @@ import RegisterPage from "./pages/RegisterPage";
 // Halaman Dashboard & Komponen Terkait
 import UserDashboardPage from "./pages/UserDashboardPage";
 import UserBookmarksPage from "./dashboard/UserBookmarks";
-import DashboardOverview from "./dashboard/DashboardOverview"; // Impor dari file terpisah
-import CommunityGuidelinesPage from "./dashboard/CommunityGuidelines";
 import UserPointsPage from "./dashboard/UserPoints";
-
-// Komponen StatCard dan ikonnya tidak lagi perlu diimpor di App.jsx, karena sudah di DashboardOverview.jsx
+import CommunityGuidelinesPage from "./dashboard/CommunityGuidelines";
+import DashboardOverview from "./dashboard/DashboardOverview";
+import UserNotificationsPage from "./dashboard/UserNotifications"; // <-- Impor halaman notifikasi
 
 // Layout Utama Aplikasi (Navbar & Footer)
 const MainLayout = () => {
-  const mobilePadding = "pt-5";
-  const desktopNavbarHeight = "lg:pt-[15px]";
+  const mobilePadding = "pt-24";
+  const desktopNavbarHeight = "lg:pt-[72px]";
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
@@ -54,7 +53,6 @@ function App() {
       <ArticleInteractionProvider>
         <ScrollToTop />
         <Routes>
-          {/* ... (Rute Login, Register, dan MainLayout lainnya tetap sama) ... */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
@@ -68,8 +66,12 @@ function App() {
           <Route path="/dashboard/user" element={<UserDashboardPage />}>
             <Route index element={<DashboardOverview />} />
             <Route path="bookmarks" element={<UserBookmarksPage />} />
+            <Route path="points" element={<UserPointsPage />} />
             <Route path="guidelines" element={<CommunityGuidelinesPage />} />
-            <Route path="points" element={<UserPointsPage />} />{" "}
+            <Route
+              path="all-notifications"
+              element={<UserNotificationsPage />}
+            />{" "}
             {/* <-- RUTE BARU */}
           </Route>
         </Routes>

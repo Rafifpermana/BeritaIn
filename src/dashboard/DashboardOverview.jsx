@@ -316,7 +316,7 @@ const DashboardOverview = () => {
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <div className="pb-4">
+      <div className="pb-4 mb-4 border-b border-gray-300">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
           Pengaturan Akun Saya
         </h1>
