@@ -1,23 +1,33 @@
+// src/components/CommentForm.jsx
 import React, { useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Info } from "lucide-react"; // Tambahkan Info untuk ikon pesan
 
 const CommentForm = ({
   onSubmitComment,
   currentUserAvatar = "/placeholder-avatar.png",
+  currentUserPoints,
 }) => {
   const [commentText, setCommentText] = useState("");
-  // Nama author bisa diambil dari state global/konteks jika user login
-  const [commentAuthor, setCommentAuthor] = useState(""); // Atau biarkan kosong untuk anonim
+  const [commentAuthor, setCommentAuthor] = useState("");
+
+  const MIN_POINTS_TO_COMMENT = 50; // Definisikan batas minimal poin
+  const canComment = currentUserPoints >= MIN_POINTS_TO_COMMENT;
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!canComment) {
+      // Meskipun sudah disabled, ini sebagai pengaman tambahan
+      alert(
+        `Anda memerlukan minimal ${MIN_POINTS_TO_COMMENT} poin untuk berkomentar.`
+      );
+      return;
+    }
     if (commentText.trim() === "") return;
-    // Jika commentAuthor kosong, set default "Pengguna Anonim"
     const authorToSubmit =
       commentAuthor.trim() === "" ? "Pengguna Anonim" : commentAuthor.trim();
     onSubmitComment(authorToSubmit, commentText);
     setCommentText("");
-    setCommentAuthor(""); // Reset nama setelah submit, atau biarkan jika ingin tetap
+    // setCommentAuthor(''); // Biarkan nama terisi jika pengguna ingin berkomentar lagi
   };
 
   return (
@@ -37,22 +47,53 @@ const CommentForm = ({
             value={commentAuthor}
             onChange={(e) => setCommentAuthor(e.target.value)}
             placeholder="Nama Anda (opsional)"
-            className="w-full mb-2 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            disabled={!canComment} // Nonaktifkan jika tidak bisa komentar
+            className={`w-full mb-2 px-3 py-2 text-sm border rounded-md focus:ring-1 focus:border-blue-500 outline-none transition-colors
+                        ${
+                          !canComment
+                            ? "bg-gray-200 cursor-not-allowed"
+                            : "border-gray-300 focus:ring-blue-500"
+                        }`}
           />
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Tulis komentar Anda..."
+            placeholder={
+              canComment
+                ? "Tulis komentar Anda..."
+                : "Poin Anda tidak cukup untuk berkomentar."
+            }
             rows="3"
             required
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            disabled={!canComment} // Nonaktifkan jika tidak bisa komentar
+            className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:border-blue-500 outline-none resize-none transition-colors
+                        ${
+                          !canComment
+                            ? "bg-gray-200 cursor-not-allowed placeholder-red-500"
+                            : "border-gray-300 focus:ring-blue-500"
+                        }`}
           />
+          {!canComment && (
+            <div className="mt-2 flex items-center text-xs text-red-600 bg-red-100 border border-red-300 p-2 rounded-md">
+              <Info size={16} className="mr-2 flex-shrink-0" />
+              <span>
+                Anda memerlukan minimal {MIN_POINTS_TO_COMMENT} poin untuk dapat
+                berkomentar.
+              </span>
+            </div>
+          )}
           <button
             type="submit"
-            className="mt-3 flex items-center space-x-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            disabled={!canComment} // Nonaktifkan jika tidak bisa komentar
+            className={`mt-3 flex items-center space-x-1.5 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 
+                        ${
+                          canComment
+                            ? "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
+                            : "bg-gray-400 cursor-not-allowed"
+                        }`}
           >
             <Send size={16} />
-            <span>Kirim</span>
+            <span>{canComment ? "Kirim" : "Tidak Bisa Komentar"}</span>
           </button>
         </div>
       </div>

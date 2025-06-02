@@ -1,55 +1,102 @@
 // src/components/CommentItem.jsx
 import React, { useState } from "react";
-import { ThumbsUp, ThumbsDown, MessageSquare, Send } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageSquare, Send, Info } from "lucide-react"; // Tambahkan Info untuk ikon pesan error
 
-// Komponen ReplyForm (tetap sama, pastikan onSubmitReply menerima parentId, author, text)
-const ReplyForm = ({ parentId, onSubmitReply, onCancel }) => {
+// Komponen ReplyForm sekarang di dalam CommentItem dan memiliki logika poin
+const ReplyForm = ({
+  parentId,
+  onSubmitReply,
+  onCancel,
+  currentUserPoints,
+}) => {
   const [replyText, setReplyText] = useState("");
   const [replyAuthor, setReplyAuthor] = useState("");
 
+  const MIN_POINTS_TO_REPLY = 50; // Batas poin untuk membalas (bisa sama atau beda dengan komentar utama)
+  const canReply = currentUserPoints >= MIN_POINTS_TO_REPLY;
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!canReply) {
+      // Pengaman tambahan
+      alert(
+        `Anda memerlukan minimal ${MIN_POINTS_TO_REPLY} poin untuk membalas.`
+      );
+      return;
+    }
     if (replyText.trim() === "") return;
-    // onSubmitReply sekarang dipanggil dari DetailPage melalui CommentSection dan CommentItem
-    // yang akan memanggil fungsi konteks dengan articleId, parentId, author, text
-    onSubmitReply(parentId, replyAuthor, replyText);
+
+    const authorToSubmit =
+      replyAuthor.trim() === "" ? "Pengguna Anonim" : replyAuthor;
+    onSubmitReply(parentId, authorToSubmit, replyText); // parentId, author, text
     setReplyText("");
-    setReplyAuthor("");
+    setReplyAuthor(""); // Reset author juga jika diinginkan
     if (onCancel) onCancel();
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-3 ml-8 pl-4 border-l-2 border-gray-200"
+      className="mt-3 ml-8 pl-4 border-l-2 border-gray-200" // Styling dasar untuk form balasan
     >
       <input
         type="text"
         value={replyAuthor}
         onChange={(e) => setReplyAuthor(e.target.value)}
         placeholder="Nama Anda (opsional)"
-        className="w-full mb-2 px-3 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+        disabled={!canReply}
+        className={`w-full mb-2 px-3 py-1.5 text-xs border rounded-md focus:ring-1 focus:border-blue-500 outline-none transition-colors
+                    ${
+                      !canReply
+                        ? "bg-gray-200 cursor-not-allowed text-gray-400"
+                        : "border-gray-300 focus:ring-blue-500"
+                    }`}
       />
       <textarea
         value={replyText}
         onChange={(e) => setReplyText(e.target.value)}
-        placeholder="Tulis balasan Anda..."
+        placeholder={
+          canReply
+            ? "Tulis balasan Anda..."
+            : "Poin Anda tidak cukup untuk membalas."
+        }
         rows="2"
         required
-        className="w-full mb-2 px-3 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+        disabled={!canReply}
+        className={`w-full mb-2 px-3 py-1.5 text-xs border rounded-md focus:ring-1 focus:border-blue-500 outline-none resize-none transition-colors
+                    ${
+                      !canReply
+                        ? "bg-gray-200 cursor-not-allowed placeholder-red-500 text-gray-400"
+                        : "border-gray-300 focus:ring-blue-500"
+                    }`}
       />
+      {!canReply && (
+        <div className="mb-2 flex items-center text-xs text-red-600">
+          {" "}
+          {/* Pesan error jika poin tidak cukup */}
+          <Info size={14} className="mr-1 flex-shrink-0" />
+          <span>Minimal {MIN_POINTS_TO_REPLY} poin untuk membalas.</span>
+        </div>
+      )}
       <div className="flex items-center space-x-2">
         <button
           type="submit"
-          className="flex items-center space-x-1 px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 focus:outline-none transition-colors"
+          disabled={!canReply}
+          className={`flex items-center space-x-1 px-3 py-1 text-xs font-medium rounded-md transition-colors focus:outline-none
+                      ${
+                        canReply
+                          ? "bg-blue-500 text-white hover:bg-blue-600"
+                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      }`}
         >
-          <Send size={14} /> <span>Balas</span>
+          <Send size={14} /> <span>{canReply ? "Balas" : "Tidak Bisa"}</span>
         </button>
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-1 text-xs text-gray-600 hover:bg-gray-200 rounded-md"
+            disabled={!canReply && false} // Tombol batal selalu aktif atau bisa dinonaktifkan juga
+            className="px-3 py-1 text-xs text-gray-600 hover:bg-gray-200 rounded-md transition-colors"
           >
             Batal
           </button>
@@ -65,6 +112,7 @@ const CommentItem = ({
   onToggleLikeComment,
   onToggleDislikeComment,
   indentLevel = 0,
+  currentUserPointsForReply, // Terima prop poin pengguna untuk membalas
 }) => {
   const {
     id,
@@ -76,16 +124,16 @@ const CommentItem = ({
     dislikes = 0,
     userVoteOnComment = null,
     replies = [],
-  } = comment; // Data diambil dari prop 'comment' yang berasal dari konteks
+  } = comment;
 
   const [showReplyForm, setShowReplyForm] = useState(false);
 
   const handleLike = () => {
-    onToggleLikeComment(id); // Panggil handler dari props dengan comment.id
+    onToggleLikeComment(id);
   };
 
   const handleDislike = () => {
-    onToggleDislikeComment(id); // Panggil handler dari props dengan comment.id
+    onToggleDislikeComment(id);
   };
 
   const toggleReplyForm = () => {
@@ -112,7 +160,7 @@ const CommentItem = ({
           </div>
           <div className="flex items-center space-x-2 sm:space-x-3 mt-1.5 pl-1">
             <button
-              onClick={handleLike} // Menggunakan handler baru
+              onClick={handleLike}
               className={`text-xs font-medium flex items-center space-x-1 transition-colors
                           ${
                             userVoteOnComment === "liked"
@@ -131,7 +179,7 @@ const CommentItem = ({
               <span>{likes > 0 ? likes : "Suka"}</span>
             </button>
             <button
-              onClick={handleDislike} // Menggunakan handler baru
+              onClick={handleDislike}
               className={`text-xs font-medium flex items-center space-x-1 transition-colors
                           ${
                             userVoteOnComment === "disliked"
@@ -174,8 +222,9 @@ const CommentItem = ({
           {showReplyForm && (
             <ReplyForm
               parentId={id}
-              onSubmitReply={onAddReply} // onAddReply diteruskan ke ReplyForm
+              onSubmitReply={onAddReply}
               onCancel={() => setShowReplyForm(false)}
+              currentUserPoints={currentUserPointsForReply} // Teruskan poin ke ReplyForm
             />
           )}
           {replies && replies.length > 0 && (
@@ -188,6 +237,7 @@ const CommentItem = ({
                   onToggleLikeComment={onToggleLikeComment}
                   onToggleDislikeComment={onToggleDislikeComment}
                   indentLevel={indentLevel + 1}
+                  currentUserPointsForReply={currentUserPointsForReply} // Teruskan poin ke balasan berantai
                 />
               ))}
             </div>

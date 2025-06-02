@@ -3,17 +3,17 @@ import React from "react";
 import CommentForm from "./CommentForm";
 import CommentItem from "./CommentItem";
 import { MessageSquare } from "lucide-react";
-import { calculateTotalComments } from "../data/mockData"; // Impor jika ingin hitung total di sini juga
+import { calculateTotalComments } from "../data/mockData";
 
 const CommentSection = ({
-  articleId, // articleId bisa tidak perlu lagi jika handler sudah menyertakannya
+  articleId,
   comments = [],
   onAddComment,
   onAddReply,
   onToggleLikeComment,
   onToggleDislikeComment,
+  currentUserPoints, // <-- TERIMA PROP BARU
 }) => {
-  // Hitung total komentar (termasuk balasan) untuk tampilan di judul seksi ini
   const totalCommentsForSectionTitle = calculateTotalComments(comments);
 
   return (
@@ -22,18 +22,24 @@ const CommentSection = ({
         <MessageSquare size={24} className="text-blue-600" />
         <span>Komentar ({totalCommentsForSectionTitle})</span>
       </h3>
-      <CommentForm onSubmitComment={onAddComment} />{" "}
-      {/* onAddComment sudah menerima (author, text) */}
+
+      <CommentForm
+        onSubmitComment={onAddComment}
+        currentUserPoints={currentUserPoints} // <-- TERUSKAN KE COMMENTFORM
+      />
+
       <div className="mt-6 space-y-0 divide-y divide-gray-200">
         {comments.length > 0 ? (
           comments.map((comment) => (
             <CommentItem
               key={comment.id}
-              comment={comment} // Objek comment sekarang berisi likes, dislikes, userVoteOnComment dari konteks
-              onAddReply={onAddReply}
+              comment={comment}
+              onAddReply={onAddReply} // Pastikan onAddReply juga mempertimbangkan poin jika perlu
               onToggleLikeComment={onToggleLikeComment}
               onToggleDislikeComment={onToggleDislikeComment}
-              // indentLevel tidak perlu untuk top-level, defaultnya 0
+              // Untuk balasan, kita juga bisa meneruskan currentUserPoints ke CommentItem -> ReplyForm
+              // Jika logika poin berlaku juga untuk membalas
+              currentUserPointsForReply={currentUserPoints}
             />
           ))
         ) : (
