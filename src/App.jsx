@@ -25,15 +25,17 @@ import RegisterPage from "./pages/RegisterPage";
 
 // Halaman Dashboard & Komponen Terkait
 import UserDashboardPage from "./pages/UserDashboardPage";
-import UserBookmarksPage from "./pages/UserBookmarksPage";
-import DashboardOverview from "./dashboard/DashboardOverview"; // <-- IMPOR BARU
+import UserBookmarksPage from "./dashboard/UserBookmarks";
+import DashboardOverview from "./dashboard/DashboardOverview"; // Impor dari file terpisah
+import CommunityGuidelinesPage from "./dashboard/CommunityGuidelines";
+import UserPointsPage from "./dashboard/UserPoints";
 
 // Komponen StatCard dan ikonnya tidak lagi perlu diimpor di App.jsx, karena sudah di DashboardOverview.jsx
 
 // Layout Utama Aplikasi (Navbar & Footer)
 const MainLayout = () => {
-  const mobilePadding = "pt-24";
-  const desktopNavbarHeight = "lg:pt-[72px]";
+  const mobilePadding = "pt-5";
+  const desktopNavbarHeight = "lg:pt-[15px]";
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
@@ -52,6 +54,7 @@ function App() {
       <ArticleInteractionProvider>
         <ScrollToTop />
         <Routes>
+          {/* ... (Rute Login, Register, dan MainLayout lainnya tetap sama) ... */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
@@ -62,12 +65,12 @@ function App() {
             <Route path="search" element={<SearchResultsPage />} />
           </Route>
 
-          {/* Rute Dashboard dengan UserDashboardPage sebagai Layout */}
           <Route path="/dashboard/user" element={<UserDashboardPage />}>
-            <Route index element={<DashboardOverview />} />{" "}
-            {/* Sekarang menggunakan komponen impor */}
+            <Route index element={<DashboardOverview />} />
             <Route path="bookmarks" element={<UserBookmarksPage />} />
-            {/* Rute dashboard lainnya bisa ditambahkan di sini */}
+            <Route path="guidelines" element={<CommunityGuidelinesPage />} />
+            <Route path="points" element={<UserPointsPage />} />{" "}
+            {/* <-- RUTE BARU */}
           </Route>
         </Routes>
       </ArticleInteractionProvider>

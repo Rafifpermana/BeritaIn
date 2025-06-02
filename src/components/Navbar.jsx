@@ -1,9 +1,11 @@
 // src/components/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { ChevronDown, Search, Menu, X, ChevronLeft } from "lucide-react"; // X sudah diimpor
+import { ChevronDown, Search, Menu, X, ChevronLeft } from "lucide-react";
+// import logo2 from "../assets/logo2.png"; // Komentari atau hapus jika tidak lagi menggunakan gambar logo
 import ClientPortal from "../utils/Portal"; // Sesuaikan path jika Portal.jsx ada di utils
 
+// Fungsi createSlug (konsisten dengan yang lain)
 const createSlug = (text) => {
   if (!text || typeof text !== "string") return "";
   return text
@@ -13,6 +15,7 @@ const createSlug = (text) => {
     .replace(/[^\w-]+/g, "");
 };
 
+// Daftar kategori (konsisten)
 const CATEGORIES_NAVBAR_LIST = [
   "Tech & Innovation",
   "Business & Economy",
@@ -42,9 +45,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchDropdownRef = useRef(null);
-  const searchInputRef = useRef(null); // Ref untuk input search
+  const searchInputRef = useRef(null);
 
-  // Sinkronisasi selectedCategory dengan URL (tetap sama)
+  // Sinkronisasi selectedCategory dengan URL
   useEffect(() => {
     const pathParts = location.pathname.split("/");
     if (location.pathname === "/") {
@@ -69,9 +72,8 @@ const Navbar = () => {
     }
   }, [location.pathname, location.search]);
 
-  // useEffect untuk auto-hide navbar (tetap sama)
+  // useEffect untuk auto-hide navbar
   useEffect(() => {
-    /* ... logika handleScroll ... */
     const HIDE_THRESHOLD_PX = 10;
     lastScrollYRef.current = window.scrollY;
     const handleScroll = () => {
@@ -93,9 +95,8 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // useEffect untuk klik di luar dropdown kategori desktop (tetap sama)
+  // useEffect untuk klik di luar dropdown kategori desktop
   useEffect(() => {
-    /* ... logika handleClickOutside dropdown ... */
     const handleClickOutside = (event) => {
       if (
         searchDropdownRef.current &&
@@ -120,7 +121,8 @@ const Navbar = () => {
       queryParams.append("q", trimmedQuery);
       if (categorySlug) queryParams.append("category", categorySlug);
       navigate(`/search?${queryParams.toString()}`);
-      // Tidak clear searchQuery di sini agar pengguna lihat apa yang mereka cari di halaman hasil
+      // Biarkan searchQuery agar pengguna lihat apa yang mereka cari,
+      // atau setSearchQuery("") jika ingin dikosongkan setelah submit.
     }
   };
 
@@ -128,8 +130,7 @@ const Navbar = () => {
     setSelectedCategory(category);
     setIsSearchDropdownOpen(false);
     setIsMobileMenuOpen(false);
-    setSearchQuery(""); // <-- RESET SEARCH QUERY KETIKA KATEGORI DIUBAH
-
+    setSearchQuery(""); // Reset search query ketika kategori diubah
     if (category === "All Categories") {
       navigate("/");
     } else {
@@ -140,7 +141,7 @@ const Navbar = () => {
   const clearSearchQuery = () => {
     setSearchQuery("");
     if (searchInputRef.current) {
-      searchInputRef.current.focus(); // Fokus kembali ke input setelah clear
+      searchInputRef.current.focus();
     }
   };
 
@@ -157,7 +158,7 @@ const Navbar = () => {
       }`}
     >
       <nav className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-gray-200">
-        {/* Mobile Layout (logo diubah sedikit) */}
+        {/* Mobile Layout */}
         <div className="flex items-center justify-between w-full lg:hidden">
           <button
             className="text-gray-600 p-2 rounded-md hover:bg-gray-100"
@@ -166,8 +167,9 @@ const Navbar = () => {
             <Menu className="w-6 h-6" />
           </button>
           <Link to="/" className="flex items-center">
-            {/* Menggunakan span untuk logo seperti di desktop */}
             <span className="text-orange-500 font-bold text-xl">
+              {" "}
+              {/* Ukuran font disesuaikan */}
               Berita<span className="text-blue-600">In</span>
             </span>
           </Link>
@@ -179,10 +181,9 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Desktop Layout (logo diubah sedikit) */}
+        {/* Desktop Layout */}
         <div className="hidden lg:flex items-center justify-between w-full">
           <Link to="/" className="flex items-center flex-shrink-0">
-            {/* Menggunakan span untuk logo agar konsisten */}
             <span className="text-orange-500 font-bold text-2xl">
               Berita<span className="text-blue-600">In</span>
             </span>
@@ -199,7 +200,7 @@ const Navbar = () => {
                   </span>
                   <ChevronDown className="ml-1.5 w-4 h-4 flex-shrink-0" />
                 </button>
-                {isSearchDropdownOpen /* ... dropdown kategori ... */ && (
+                {isSearchDropdownOpen && (
                   <div className="absolute top-full left-0 mt-1 w-64 sm:w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[51]">
                     <div className="p-2 space-y-1 max-h-72 overflow-y-auto">
                       {["All Categories", ...CATEGORIES_NAVBAR_LIST].map(
@@ -223,20 +224,18 @@ const Navbar = () => {
               </div>
               <form onSubmit={handleSearchSubmit} className="flex-1 relative">
                 <input
-                  ref={searchInputRef} // Tambahkan ref ke input
+                  ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={searchPlaceholder}
-                  // Tambah pr (padding-right) jika ikon X ada, agar teks tidak tertutup ikon X
                   className={`w-full px-4 py-2 ${
                     searchQuery ? "pr-10" : "pr-10"
                   } border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm`}
                 />
-                {/* Tombol Search atau Clear (X) */}
                 {searchQuery ? (
                   <button
-                    type="button" // type="button" agar tidak submit form
+                    type="button"
                     onClick={clearSearchQuery}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                     aria-label="Clear search query"
@@ -245,7 +244,7 @@ const Navbar = () => {
                   </button>
                 ) : (
                   <button
-                    type="submit" // type="submit" untuk ikon search
+                    type="submit"
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600 transition-colors"
                     aria-label="Search"
                   >
@@ -276,7 +275,7 @@ const Navbar = () => {
       <div className="lg:hidden px-4 sm:px-6 py-2.5 bg-gray-50 border-b border-gray-200">
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
-            ref={searchInputRef} // Tambahkan ref juga di sini jika ingin clearSearchQuery berfungsi dari sini juga
+            ref={searchInputRef} // Bisa juga gunakan ref yang sama jika hanya satu yang visible pada satu waktu
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -309,7 +308,6 @@ const Navbar = () => {
       {/* Mobile Category Menu (Menggunakan Portal) */}
       {isMobileMenuOpen && (
         <ClientPortal selector="mobile-menu-portal">
-          {/* ... Konten MobileCategoryMenu tetap sama, pastikan onClick memanggil handleCategorySelect ... */}
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-[55] lg:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
@@ -355,15 +353,60 @@ const Navbar = () => {
         </ClientPortal>
       )}
 
-      {/* Auth Sidebar (Menggunakan Portal) (kode tetap sama) */}
+      {/* Auth Sidebar (Menggunakan Portal) */}
       {isAuthSidebarOpen && (
         <ClientPortal selector="auth-sidebar-portal">
-          {" "}
-          {/* ... Konten Auth Sidebar ... */}{" "}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-[55] lg:hidden"
+            onClick={() => setIsAuthSidebarOpen(false)}
+          ></div>
+          <div
+            className={`fixed inset-y-0 right-0 z-[60] w-72 max-w-[80vw] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:hidden ${
+              isAuthSidebarOpen ? "translate-x-0" : "translate-x-full"
+            }`}
+          >
+            <div className="p-5 h-full flex flex-col">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">Akun</h2>
+                <button
+                  onClick={() => setIsAuthSidebarOpen(false)}
+                  className="text-gray-500 hover:text-gray-700 p-1 rounded-md hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="space-y-3 flex flex-col">
+                <Link
+                  to="/login"
+                  onClick={() => setIsAuthSidebarOpen(false)}
+                  className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium text-center"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setIsAuthSidebarOpen(false)}
+                  className="w-full bg-gray-600 text-white px-4 py-2.5 rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium text-center"
+                >
+                  Sign Up
+                </Link>
+              </div>
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="space-y-1.5">
+                  <button className="w-full text-left px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    Bantuan & Dukungan
+                  </button>
+                  <button className="w-full text-left px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    Pengaturan
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </ClientPortal>
       )}
 
-      {/* Click Outside untuk Desktop Category Dropdown (kode tetap sama) */}
+      {/* Click Outside untuk Desktop Category Dropdown */}
       {isSearchDropdownOpen && !isMobileMenuOpen && (
         <div
           className="fixed inset-0 z-[49]"

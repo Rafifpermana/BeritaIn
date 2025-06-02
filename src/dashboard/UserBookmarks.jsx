@@ -6,7 +6,7 @@ import { allArticlesData } from "../data/mockData";
 import ArticleCardStats from "../utils/ArticleCardStats";
 import { Bookmark } from "lucide-react";
 
-const UserBookmarksPage = () => {
+const UserBookmarks = () => {
   const { articleInteractions, getCommentCountForArticleContext } =
     useArticleInteractions();
 
@@ -111,4 +111,4 @@ const UserBookmarksPage = () => {
   );
 };
 
-export default UserBookmarksPage;
+export default UserBookmarks;

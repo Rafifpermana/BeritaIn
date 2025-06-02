@@ -4,11 +4,11 @@ import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
   Bookmark as BookmarkIconLucide,
+  Info,
   LogOut,
   Bell,
-} from "lucide-react";
-// Logo untuk header dashboard (jika berbeda dari logo utama)
-// import dashboardLogo from '../assets/dashboard-logo.png';
+  Award,
+} from "lucide-react"; // Tambahkan Award
 
 const UserDashboardPage = () => {
   const location = useLocation();
@@ -20,6 +20,12 @@ const UserDashboardPage = () => {
       name: "Bookmark",
       icon: BookmarkIconLucide,
       path: "/dashboard/user/bookmarks",
+    },
+    { name: "Poin Saya", icon: Award, path: "/dashboard/user/points" }, // <-- LINK BARU UNTUK POIN
+    {
+      name: "Panduan Komunitas",
+      icon: Info,
+      path: "/dashboard/user/guidelines",
     },
   ];
 
@@ -39,8 +45,6 @@ const UserDashboardPage = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <Link to="/" className="flex-shrink-0">
-                {" "}
-                {/* Link ke homepage aplikasi utama */}
                 <span className="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
                   Logo Utama
                 </span>
@@ -66,10 +70,7 @@ const UserDashboardPage = () => {
         </div>
       </header>
 
-      {/* Teks Judul Halaman Dashboard (jika diperlukan di luar header) */}
       <div className="bg-gray-100 pt-4 pb-2">
-        {" "}
-        {/* Memberi sedikit ruang */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-lg font-semibold text-gray-600 uppercase tracking-wider">
             Dashboard User
@@ -77,47 +78,47 @@ const UserDashboardPage = () => {
         </div>
       </div>
 
-      {/* Konten Dashboard dengan Sidebar */}
       <div className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <div className="lg:flex lg:space-x-6">
+        <div className="lg:flex lg:items-start lg:space-x-6">
           {/* Sidebar */}
           <aside className="w-full lg:w-60 xl:w-64 flex-shrink-0 mb-6 lg:mb-0">
             <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md h-full flex flex-col justify-between">
               <div>
                 <div className="flex items-center space-x-2 mb-6 pb-3 border-b border-gray-200">
-                  {/* Anda bisa menaruh logo dashboard spesifik atau nama user di sini */}
                   <div className="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700">
                     Logo Dash
                   </div>
                 </div>
                 <nav className="space-y-1.5">
-                  {sidebarLinks.map((link) => (
-                    <Link
-                      key={link.name}
-                      to={link.path}
-                      className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out
-                                  ${
-                                    location.pathname === link.path ||
-                                    (link.path !== "/dashboard/user" &&
-                                      location.pathname.startsWith(link.path))
-                                      ? "bg-blue-600 text-white shadow-sm"
-                                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                  }`}
-                    >
-                      <link.icon
-                        size={18}
-                        className={`mr-3 flex-shrink-0 
+                  {sidebarLinks.map((link) => {
+                    const isActive =
+                      location.pathname === link.path ||
+                      (link.path !== "/dashboard/user" &&
+                        location.pathname.startsWith(link.path));
+                    return (
+                      <Link
+                        key={link.name}
+                        to={link.path}
+                        className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out
                                     ${
-                                      location.pathname === link.path ||
-                                      (link.path !== "/dashboard/user" &&
-                                        location.pathname.startsWith(link.path))
-                                        ? "text-white"
-                                        : "text-gray-400 group-hover:text-gray-500"
+                                      isActive
+                                        ? "bg-blue-600 text-white shadow-sm"
+                                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                                     }`}
-                      />
-                      {link.name}
-                    </Link>
-                  ))}
+                      >
+                        <link.icon
+                          size={18}
+                          className={`mr-3 flex-shrink-0 
+                                      ${
+                                        isActive
+                                          ? "text-white"
+                                          : "text-gray-400 group-hover:text-gray-500"
+                                      }`}
+                        />
+                        {link.name}
+                      </Link>
+                    );
+                  })}
                 </nav>
               </div>
               <div className="mt-auto pt-4 border-t border-gray-200">
@@ -135,10 +136,8 @@ const UserDashboardPage = () => {
             </div>
           </aside>
 
-          {/* Main Content Panel sekarang merender Outlet */}
           <main className="flex-1 min-w-0">
-            <Outlet />{" "}
-            {/* Konten (DashboardOverview atau UserBookmarksPage) akan dirender di sini */}
+            <Outlet />
           </main>
         </div>
       </div>

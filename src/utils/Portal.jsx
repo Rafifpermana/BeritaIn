@@ -1,25 +1,38 @@
-// src/components/Portal.jsx (Versi Sederhana)
-import { useEffect, useState } from "react";
+// src/utils/Portal.jsx
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 
-const ClientPortal = ({ children, selector = "portal-root" }) => {
+const ClientPortal = ({ children, selector }) => {
+  // selector sekarang prop yang wajib
+  const ref = useRef(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    // Opsional: membuat div jika tidak ada
-    let portalContainer = document.getElementById(selector);
-    if (!portalContainer) {
-      portalContainer = document.createElement("div");
-      portalContainer.setAttribute("id", selector);
-      document.body.appendChild(portalContainer);
-    }
-    return () => setMounted(false); // Tidak menghapus container agar bisa dipakai ulang
-  }, [selector]);
+    // Mencoba mendapatkan elemen target portal
+    ref.current = document.getElementById(selector);
 
-  return mounted
-    ? createPortal(children, document.getElementById(selector) || document.body)
-    : null;
+    // Jika elemen target tidak ada, buat dan tambahkan ke body
+    if (!ref.current) {
+      const newPortalNode = document.createElement("div");
+      newPortalNode.setAttribute("id", selector);
+      document.body.appendChild(newPortalNode);
+      ref.current = newPortalNode;
+    }
+
+    setMounted(true); // Tandai bahwa komponen sudah mounted di client-side
+
+    // Opsional: Logika cleanup jika portal node dibuat secara dinamis dan ingin dihapus saat unmount.
+    // Untuk kebanyakan kasus, membiarkan div portal persisten tidak masalah.
+    // return () => {
+    //   if (ref.current && ref.current.parentNode === document.body && ref.current.childNodes.length === 0 && ref.current.getAttribute('id') === selector) {
+    //     // Hanya hapus jika itu adalah node yang kita buat dan kosong
+    //     // Ini bisa lebih kompleks jika beberapa portal menggunakan selector yang sama
+    //   }
+    // };
+  }, [selector]); // Jalankan efek ini jika selector berubah
+
+  // Hanya render portal jika sudah mounted dan target node ada
+  return mounted && ref.current ? createPortal(children, ref.current) : null;
 };
 
 export default ClientPortal;

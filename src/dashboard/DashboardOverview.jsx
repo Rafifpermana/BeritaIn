@@ -1,14 +1,18 @@
 // src/pages/dashboard/DashboardOverview.jsx
 import React from "react";
-import StatCard from "../dashboard/StatCard"; // Sesuaikan path jika StatCard ada di ../../components/dashboard/
+import StatCard from "../dashboard/StatCard";
 import {
   Star,
   Link2 as LinkIcon,
   Settings as SettingsIcon,
-} from "lucide-react";
+} from "lucide-react"; // Award tidak lagi diperlukan di sini
 
 const DashboardOverview = () => {
+  // userPoints tidak lagi dikelola atau ditampilkan di sini
+  // const [userPoints, setUserPoints] = React.useState(85);
+
   const statsData = [
+    // Data dikembalikan ke 5 item atau sesuai kebutuhan Anda tanpa poin
     {
       value: "111",
       title: "Total Reviews",
@@ -28,7 +32,7 @@ const DashboardOverview = () => {
       title: "Review Request Sent",
       description: "10% increase from last week",
       Icon: LinkIcon,
-      iconColorClass: "text-green-500",
+      iconColorClass: "text-teal-500",
     },
     {
       value: "4.5",
@@ -45,7 +49,7 @@ const DashboardOverview = () => {
       iconColorClass: "text-red-500",
     },
   ];
-  const userName = "Pengguna"; // Placeholder, idealnya dari state auth atau props
+  const userName = "Pengguna";
 
   return (
     <>
@@ -55,6 +59,8 @@ const DashboardOverview = () => {
         </h1>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5">
+        {" "}
+        {/* Disesuaikan untuk 5 item */}
         {statsData.map((stat, index) => (
           <StatCard
             key={index}
@@ -66,11 +72,7 @@ const DashboardOverview = () => {
           />
         ))}
       </div>
-      {/* Anda bisa menambahkan lebih banyak konten untuk overview dashboard di sini */}
-      {/* <div className="mt-6 bg-white p-6 rounded-xl shadow-md">
-                <h2 className="text-lg font-semibold text-gray-800">Aktivitas Terbaru</h2>
-                <p className="text-gray-600 mt-2">...</p>
-            </div> */}
+      {/* Teks peringatan poin dihapus dari sini */}
     </>
   );
 };
