@@ -29,7 +29,14 @@ import UserBookmarksPage from "./dashboard/UserBookmarks";
 import UserPointsPage from "./dashboard/UserPoints";
 import CommunityGuidelinesPage from "./dashboard/CommunityGuidelines";
 import DashboardOverview from "./dashboard/DashboardOverview";
-import UserNotificationsPage from "./dashboard/UserNotifications"; // <-- Impor halaman notifikasi
+import UserNotificationsPage from "./dashboard/UserNotifications";
+
+//admin dasboard
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminOverview from "./dashboard/admin/AdminOverview";
+import UserManagementPage from "./pages/admin/UserManagementPage";
+import CommentModerationPage from "./pages/admin/CommentModerationPage";
+import SiteSettingsPage from "./pages/admin/SiteSettingsPage";
 
 // Layout Utama Aplikasi (Navbar & Footer)
 const MainLayout = () => {
@@ -71,8 +78,15 @@ function App() {
             <Route
               path="all-notifications"
               element={<UserNotificationsPage />}
-            />{" "}
-            {/* <-- RUTE BARU */}
+            />
+          </Route>
+
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />}>
+            <Route index element={<AdminOverview />} />
+            <Route path="users" element={<UserManagementPage />} />
+            <Route path="comments" element={<CommentModerationPage />} />
+            <Route path="settings" element={<SiteSettingsPage />} />
+            {/* Tambahkan rute admin lainnya di sini */}
           </Route>
         </Routes>
       </ArticleInteractionProvider>

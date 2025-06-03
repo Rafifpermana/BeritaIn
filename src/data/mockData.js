@@ -1,16 +1,12 @@
-// src/data/mockData.js
-
-// Impor gambar-gambar Anda
 import gambarTembok from "../assets/tembok.jpg";
 import robo1 from "../assets/robot.jpg";
-import robo2 from "../assets/robot 2.jpeg"; // Perhatikan spasi pada nama file ini
+import robo2 from "../assets/robot 2.jpeg";
 import robo3 from "../assets/robot3.jpg";
-import robo4 from "../assets/robot5.jpeg"; // Anda menamakannya robo4, tapi filenya robot5.jpeg, saya ikuti variabel robo4
+import robo4 from "../assets/robot5.jpeg";
 
-// Helper untuk timestamp (tetap sama)
 let dateCounterForTimestamp = Date.now();
 const getPseudoUniqueTimestamp = () => {
-  dateCounterForTimestamp -= (Math.floor(Math.random() * 60) + 30) * 1000 * 60; // Mundur beberapa menit hingga jam
+  dateCounterForTimestamp -= (Math.floor(Math.random() * 60) + 30) * 1000 * 60;
   return dateCounterForTimestamp;
 };
 
@@ -26,7 +22,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 120,
     initialDislikes: 5,
-    contentHTML: `<p>Detail perjalanan yang menakjubkan, penuh dengan pemandangan indah dan pengalaman tak terlupakan. Dari pegunungan yang menjulang tinggi hingga pantai berpasir putih, dunia ini menawarkan begitu banyak keajaiban untuk dijelajahi.</p><p>Artikel ini akan membawa Anda melalui beberapa destinasi paling menakjubkan yang wajib masuk dalam daftar perjalanan Anda berikutnya. Siapkan diri Anda untuk terinspirasi!</p>`,
+    contentHTML: `<p>Detail perjalanan yang menakjubkan...</p>`,
   },
   "ai-poetry": {
     id: "ai-poetry",
@@ -39,7 +35,7 @@ export const allArticlesData = {
     imageUrl: robo1,
     initialLikes: 95,
     initialDislikes: 2,
-    contentHTML: `<p>Sebuah terobosan baru dalam kecerdasan buatan telah menggemparkan dunia sastra. Mesin yang ditenagai oleh algoritma canggih kini dilaporkan mampu menghasilkan puisi dengan kedalaman emosi dan kompleksitas linguistik yang menyaingi karya manusia.</p><p>Apakah ini pertanda era baru kolaborasi manusia-mesin dalam seni, ataukah ancaman bagi kreativitas otentik? Mari kita selami lebih dalam.</p>`,
+    contentHTML: `<p>Sebuah terobosan baru dalam kecerdasan buatan...</p>`,
   },
   "remote-work-2025": {
     id: "remote-work-2025",
@@ -51,7 +47,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 110,
     initialDislikes: 10,
-    contentHTML: `<p>Pandemi global telah mengakselerasi adopsi kerja jarak jauh. Artikel ini membahas prediksi dan tren utama untuk remote work di tahun 2025, termasuk teknologi pendukung, tantangan budaya, dan model kerja hibrida.</p>`,
+    contentHTML: `<p>Konten tentang masa depan kerja jarak jauh...</p>`,
   },
   "social-media-algo": {
     id: "social-media-algo",
@@ -63,7 +59,7 @@ export const allArticlesData = {
     imageUrl: robo2,
     initialLikes: 75,
     initialDislikes: 3,
-    contentHTML: `<p>Algoritma media sosial seringkali menjadi kotak hitam. Bagaimana sebenarnya cara kerjanya? Artikel ini mencoba membongkar beberapa mitos dan fakta seputar algoritma yang membentuk feed berita kita setiap hari.</p>`,
+    contentHTML: `<p>Mengungkap cara kerja algoritma...</p>`,
   },
   "future-of-office": {
     id: "future-of-office",
@@ -75,7 +71,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 130,
     initialDislikes: 7,
-    contentHTML: `<p>Dengan semakin populernya kerja jarak jauh, banyak yang mempertanyakan relevansi kantor fisik. Apakah kantor akan menjadi artefak masa lalu, ataukah ia akan berevolusi menjadi sesuatu yang baru?</p>`,
+    contentHTML: `<p>Diskusi tentang relevansi kantor fisik...</p>`,
   },
   "fitness-trends": {
     id: "fitness-trends",
@@ -87,7 +83,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 50,
     initialDislikes: 1,
-    contentHTML: `<p>Setiap tahun membawa tren kebugaran baru. Dari wearable tech canggih hingga latihan berbasis mindfulness, temukan apa yang akan populer di dunia fitness tahun ini dan bagaimana Anda bisa mengikutinya.</p>`,
+    contentHTML: `<p>Konten artikel tentang tren fitness...</p>`,
   },
   "gen-z-workplace": {
     id: "gen-z-workplace",
@@ -99,7 +95,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 65,
     initialDislikes: 4,
-    contentHTML: `<p>Generasi Z memasuki dunia kerja dengan ekspektasi dan nilai yang berbeda. Pelajari bagaimana kehadiran mereka membentuk kembali budaya perusahaan, penggunaan teknologi, dan keseimbangan kerja-hidup.</p>`,
+    contentHTML: `<p>Generasi Z memasuki dunia kerja...</p>`,
   },
   "esports-shakeup": {
     id: "esports-shakeup",
@@ -111,7 +107,7 @@ export const allArticlesData = {
     imageUrl: robo3,
     initialLikes: 88,
     initialDislikes: 6,
-    contentHTML: `<p>Industri esports terus tumbuh pesat dengan turnamen bernilai jutaan dolar dan basis penggemar global. Namun, tantangan baru juga muncul. Artikel ini menganalisis perubahan dan masa depan esports.</p>`,
+    contentHTML: `<p>Industri esports terus tumbuh...</p>`,
   },
   "smart-cities": {
     id: "smart-cities",
@@ -123,7 +119,7 @@ export const allArticlesData = {
     imageUrl: robo4,
     initialLikes: 200,
     initialDislikes: 15,
-    contentHTML: `<p>Kota pintar memanfaatkan teknologi untuk meningkatkan kualitas hidup warganya. Jelajahi beberapa kota paling inovatif di dunia dan solusi cerdas yang mereka terapkan dalam transportasi, energi, dan layanan publik.</p>`,
+    contentHTML: `<p>Kota pintar memanfaatkan teknologi...</p>`,
   },
   "streaming-entertainment": {
     id: "streaming-entertainment",
@@ -135,7 +131,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 105,
     initialDislikes: 9,
-    contentHTML: `<p>Layanan streaming telah merevolusi cara kita mengonsumsi film dan acara TV. Bagaimana dampaknya terhadap Hollywood, bioskop, dan kebiasaan menonton kita?</p>`,
+    contentHTML: `<p>Dampak layanan streaming...</p>`,
   },
   "sustainable-fashion": {
     id: "sustainable-fashion",
@@ -147,7 +143,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 92,
     initialDislikes: 3,
-    contentHTML: `<p>Kesadaran akan dampak lingkungan dari industri fashion mendorong munculnya gerakan fashion berkelanjutan. Apa artinya dan bagaimana konsumen bisa berpartisipasi?</p>`,
+    contentHTML: `<p>Tentang fashion berkelanjutan...</p>`,
   },
   "space-astronomy": {
     id: "space-astronomy",
@@ -159,7 +155,7 @@ export const allArticlesData = {
     imageUrl: robo1,
     initialLikes: 140,
     initialDislikes: 11,
-    contentHTML: `<p>Dengan teleskop baru dan misi ambisius, pemahaman kita tentang alam semesta siap untuk berubah. Temukan misi luar angkasa menarik yang akan datang dan penemuan yang mungkin mereka hasilkan.</p>`,
+    contentHTML: `<p>Misi luar angkasa baru...</p>`,
   },
   "electric-vehicles": {
     id: "electric-vehicles",
@@ -171,7 +167,7 @@ export const allArticlesData = {
     image: robo2,
     initialLikes: 190,
     initialDislikes: 4,
-    contentHTML: `<p>Kendaraan listrik (EV) bukan lagi hanya tren, melainkan masa depan transportasi...</p>`,
+    contentHTML: `<p>Alasan kendaraan listrik populer...</p>`,
   },
   "viral-trends": {
     id: "viral-trends",
@@ -183,7 +179,7 @@ export const allArticlesData = {
     image: robo3,
     initialLikes: 210,
     initialDislikes: 3,
-    contentHTML: `<p>Apa yang membuat sebuah konten menjadi viral di media sosial?...</p>`,
+    contentHTML: `<p>Rahasia tren viral...</p>`,
   },
   "esports-billion-dollar": {
     id: "esports-billion-dollar",
@@ -195,7 +191,7 @@ export const allArticlesData = {
     image: robo4,
     initialLikes: 160,
     initialDislikes: 7,
-    contentHTML: `<p>Esports telah berkembang dari hobi niche menjadi industri global...</p>`,
+    contentHTML: `<p>Esports menjadi industri miliaran dolar...</p>`,
   },
   "medical-tech": {
     id: "medical-tech",
@@ -207,7 +203,7 @@ export const allArticlesData = {
     image: robo1,
     initialLikes: 175,
     initialDislikes: 2,
-    contentHTML: `<p>Tahun ini menyaksikan berbagai terobosan menarik dalam teknologi medis...</p>`,
+    contentHTML: `<p>Terobosan teknologi medis...</p>`,
   },
   "remote-work-landscape": {
     id: "remote-work-landscape",
@@ -219,7 +215,7 @@ export const allArticlesData = {
     image: gambarTembok,
     initialLikes: 135,
     initialDislikes: 6,
-    contentHTML: `<p>Lanskap kerja jarak jauh terus berubah...</p>`,
+    contentHTML: `<p>Perubahan lanskap kerja...</p>`,
   },
   "gen-z-job-market": {
     id: "gen-z-job-market",
@@ -231,7 +227,7 @@ export const allArticlesData = {
     image: gambarTembok,
     initialLikes: 155,
     initialDislikes: 4,
-    contentHTML: `<p>Gen Z membawa perspektif unik ke pasar kerja...</p>`,
+    contentHTML: `<p>Gen Z membentuk pasar kerja...</p>`,
   },
   "dark-side-ai": {
     id: "dark-side-ai",
@@ -243,7 +239,7 @@ export const allArticlesData = {
     imageUrl: robo3,
     initialLikes: 150,
     initialDislikes: 25,
-    contentHTML: `<p>Di balik kemampuannya yang luar biasa, AI juga menyimpan potensi risiko...</p>`,
+    contentHTML: `<p>Sisi gelap AI...</p>`,
   },
   "minimalism-design": {
     id: "minimalism-design",
@@ -255,7 +251,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 100,
     initialDislikes: 5,
-    contentHTML: `<p>Minimalisme bukan hanya tren sesaat...</p>`,
+    contentHTML: `<p>Minimalisme dan desain interior...</p>`,
   },
   "hollywood-releases": {
     id: "hollywood-releases",
@@ -267,7 +263,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 220,
     initialDislikes: 10,
-    contentHTML: `<p>Tahun ini dipenuhi dengan rilis film besar dari Hollywood...</p>`,
+    contentHTML: `<p>Film terbesar Hollywood...</p>`,
   },
   "cloud-gaming-future": {
     id: "cloud-gaming-future",
@@ -279,7 +275,7 @@ export const allArticlesData = {
     imageUrl: robo2,
     initialLikes: 165,
     initialDislikes: 6,
-    contentHTML: `<p>Cloud gaming menawarkan kemampuan untuk bermain game AAA...</p>`,
+    contentHTML: `<p>Masa depan cloud gaming?..." </p>`,
   },
   "kpop-phenomenon": {
     id: "kpop-phenomenon",
@@ -291,7 +287,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 300,
     initialDislikes: 12,
-    contentHTML: `<p>K-Pop telah menjadi fenomena global yang tak terbantahkan...</p>`,
+    contentHTML: `<p>Kebangkitan K-Pop...</p>`,
   },
   "future-work-model": {
     id: "future-work-model",
@@ -303,7 +299,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 145,
     initialDislikes: 7,
-    contentHTML: `<p>Debat mengenai model kerja masa depan terus berlanjut...</p>`,
+    contentHTML: `<p>Masa depan kerja...</p>`,
   },
   "trump-panama": {
     id: "trump-panama",
@@ -316,7 +312,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 250,
     initialDislikes: 30,
-    contentHTML: `<p>Dalam sebuah pernyataan yang mengejutkan...</p>`,
+    contentHTML: `<p>Dalam sebuah pernyataan...</p>`,
   },
   "sa-land": {
     id: "sa-land",
@@ -329,7 +325,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 70,
     initialDislikes: 15,
-    contentHTML: `<p>Pemerintah Afrika Selatan membantah...</p>`,
+    contentHTML: `<p>Pemerintah Afrika Selatan...</p>`,
   },
   "mickey-bergman-book": {
     id: "mickey-bergman-book",
@@ -342,7 +338,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 60,
     initialDislikes: 2,
-    contentHTML: `<p>Buku baru Mickey Bergman mengungkap kisah nyata...</p>`,
+    contentHTML: `<p>Buku baru Mickey Bergman...</p>`,
   },
   "cerita-malam-minggu": {
     id: "cerita-malam-minggu",
@@ -354,7 +350,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 45,
     initialDislikes: 1,
-    contentHTML: `<p>Sebuah refleksi ringan mengenai berbagai aspek kehidupan...</p>`,
+    contentHTML: `<p>Sebuah refleksi ringan...</p>`,
   },
   "ai-gaming-change": {
     id: "ai-gaming-change",
@@ -362,11 +358,11 @@ export const allArticlesData = {
     author: "Jane Doe",
     date: "2025-01-13",
     category: "Gaming",
-    image: gambarTembok,
-    imageUrl: gambarTembok,
+    image: robo2,
+    imageUrl: robo2,
     initialLikes: 180,
     initialDislikes: 8,
-    contentHTML: `<p>Bagaimana Kecerdasan Buatan merevolusi industri game, dari NPC yang lebih pintar hingga pembuatan konten otomatis.</p>`,
+    contentHTML: `<p>Bagaimana Kecerdasan Buatan...</p>`,
   },
   "streaming-services-change": {
     id: "streaming-services-change",
@@ -378,7 +374,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 90,
     initialDislikes: 3,
-    contentHTML: `<p>Layanan streaming telah mengubah lanskap hiburan global.</p>`,
+    contentHTML: `<p>Bagaimana layanan streaming...</p>`,
   },
   "rise-sustainable-fashion": {
     id: "rise-sustainable-fashion",
@@ -390,7 +386,7 @@ export const allArticlesData = {
     imageUrl: gambarTembok,
     initialLikes: 85,
     initialDislikes: 5,
-    contentHTML: `<p>Dengan meningkatnya kesadaran akan isu lingkungan...</p>`,
+    contentHTML: `<p>Dengan meningkatnya kesadaran...</p>`,
   },
   "new-space-missions": {
     id: "new-space-missions",
@@ -402,12 +398,58 @@ export const allArticlesData = {
     imageUrl: robo2,
     initialLikes: 120,
     initialDislikes: 7,
-    contentHTML: `<p>Beberapa misi luar angkasa baru yang ambisius...</p>`,
+    contentHTML: `<p>Beberapa misi luar angkasa baru...</p>`,
   },
-  // Pastikan tidak ada koma setelah entri terakhir di dalam objek allArticlesData
 };
 
-// ID Komentar Statis untuk Konsistensi
+export const allUsersData = [
+  {
+    id: "user001",
+    name: "Ipsum Larisun",
+    email: "ipsum.larisun@example.com",
+    role: "user",
+    points: 85,
+    avatarUrl: "/placeholder-avatar.png",
+    joinDate: "2024-01-15",
+  },
+  {
+    id: "user002",
+    name: "John Doe",
+    email: "john.doe@example.com",
+    role: "user",
+    points: 120,
+    avatarUrl: "/placeholder-avatar-1.jpg",
+    joinDate: "2024-02-10",
+  },
+  {
+    id: "user003",
+    name: "Jane Admin",
+    email: "jane.admin@example.com",
+    role: "admin",
+    points: 500,
+    avatarUrl: "/placeholder-avatar-2.jpg",
+    joinDate: "2024-01-01",
+  },
+  {
+    id: "user004",
+    name: "Alex Johnson",
+    email: "alex.j@example.com",
+    role: "user",
+    points: 45,
+    avatarUrl: "/placeholder-avatar-3.jpg",
+    joinDate: "2024-03-20",
+  },
+  {
+    id: "user005",
+    name: "Penyair AI",
+    email: "poet@example.com",
+    role: "user",
+    points: 70,
+    avatarUrl: "/placeholder-avatar-4.jpg",
+    joinDate: "2024-04-01",
+  },
+];
+
 const commentIdGen = (prefix, num) => `${prefix}-c${num}`;
 const replyIdGen = (prefix, cNum, rNum) => `${prefix}-c${cNum}-r${rNum}`;
 
@@ -415,84 +457,72 @@ export const initialCommentsData = {
   "main-travel-story": [
     {
       id: commentIdGen("mts", 1),
-      author: "Traveler123",
+      articleId: "main-travel-story",
+      userId: "user002",
+      author: "John Doe",
       text: "Tempatnya keren banget! Pengen ke sana suatu hari nanti.",
       timestamp: getPseudoUniqueTimestamp(),
       avatarUrl: "/placeholder-avatar-1.jpg",
       likes: 15,
       dislikes: 1,
       replies: [],
+      status: "approved",
     },
     {
       id: commentIdGen("mts", 2),
-      author: "BackpackerJoe",
-      text: "Ada tips budgeting buat ke sana gak? Soalnya kelihatannya mahal banget dari foto-fotonya.",
+      articleId: "main-travel-story",
+      userId: "user001",
+      author: "Ipsum Larisun",
+      text: "Ini artikel jelek, tidak informatif sama sekali!",
       timestamp: getPseudoUniqueTimestamp(),
-      avatarUrl: "/placeholder-avatar-2.jpg",
-      likes: 8,
-      dislikes: 0,
-      replies: [
-        {
-          id: replyIdGen("mts", 2, 1),
-          parentId: commentIdGen("mts", 2),
-          author: "Traveler123",
-          text: "Coba cari tiket promo dan nginap di hostel, lumayan hemat! Banyak juga makanan lokal yang murah dan enak.",
-          timestamp: getPseudoUniqueTimestamp(),
-          avatarUrl: "/placeholder-avatar-1.jpg",
-          likes: 3,
-          dislikes: 0,
-          replies: [],
-        },
-      ],
+      avatarUrl: "/placeholder-avatar.png",
+      likes: 0,
+      dislikes: 5,
+      replies: [],
+      status: "pending_review",
     },
   ],
   "ai-poetry": [
     {
       id: commentIdGen("aip", 1),
+      articleId: "ai-poetry",
+      userId: "user005",
       author: "PenyairAI",
       text: "Wow, AI bisa sekreatif ini? Sebagai penyair, saya merasa tertantang sekaligus terinspirasi.",
       timestamp: getPseudoUniqueTimestamp(),
-      avatarUrl: "/placeholder-avatar-2.jpg",
+      avatarUrl: "/placeholder-avatar-4.jpg",
       likes: 22,
       dislikes: 2,
-      replies: [
-        {
-          id: replyIdGen("aip", 1, 1),
-          parentId: commentIdGen("aip", 1),
-          author: "TechEnthusiast",
-          text: "Setuju, ini kemajuan besar! Mungkin nanti ada kolaborasi penyair dan AI.",
-          timestamp: getPseudoUniqueTimestamp(),
-          avatarUrl: "/placeholder-avatar-3.jpg",
-          likes: 7,
-          dislikes: 0,
-          replies: [],
-        },
-      ],
+      replies: [],
+      status: "approved",
     },
     {
       id: commentIdGen("aip", 2),
-      author: "KritikusSastra",
-      text: "Apakah ini benar-benar 'kreativitas' atau hanya simulasi pola yang canggih? Pertanyaan filosofis yang menarik untuk didiskusikan lebih lanjut.",
+      articleId: "ai-poetry",
+      userId: "user004",
+      author: "Alex Johnson",
+      text: "Menurut saya ini biasa saja, bahkan cenderung buruk.",
       timestamp: getPseudoUniqueTimestamp(),
-      avatarUrl: "/placeholder-avatar-4.jpg",
-      likes: 12,
-      dislikes: 3,
+      avatarUrl: "/placeholder-avatar-3.jpg",
+      likes: 2,
+      dislikes: 8,
       replies: [],
+      status: "pending_review",
     },
-  ],
-  "trump-panama": [
     {
-      id: commentIdGen("tp", 1),
-      author: "PolitikusHandal",
-      text: "Ini pernyataan yang serius dan perlu ditanggapi dengan hati-hati oleh semua pihak terkait untuk menjaga stabilitas regional.",
+      id: commentIdGen("aip", 3),
+      articleId: "ai-poetry",
+      userId: "user001",
+      author: "Ipsum Larisun",
+      text: "Ini adalah spam! Beli produk saya!",
       timestamp: getPseudoUniqueTimestamp(),
-      avatarUrl: "/placeholder-avatar-1.jpg",
-      likes: 35,
-      dislikes: 5,
+      avatarUrl: "/placeholder-avatar.png",
+      likes: 0,
+      dislikes: 10,
       replies: [],
+      status: "rejected",
     },
   ],
-  // Entri array kosong untuk semua ID artikel lainnya
   "remote-work-2025": [],
   "social-media-algo": [],
   "future-of-office": [],
@@ -515,6 +545,7 @@ export const initialCommentsData = {
   "cloud-gaming-future": [],
   "kpop-phenomenon": [],
   "future-work-model": [],
+  "trump-panama": [],
   "sa-land": [],
   "mickey-bergman-book": [],
   "cerita-malam-minggu": [],
@@ -524,7 +555,6 @@ export const initialCommentsData = {
   "new-space-missions": [],
 };
 
-// Fungsi calculateTotalComments tetap sama
 export const calculateTotalComments = (commentsList) => {
   let count = 0;
   const countRecursively = (list) => {

@@ -227,6 +227,7 @@ const UserDashboardPage = () => {
                 </div>
                 <nav className="space-y-1.5">
                   {sidebarLinks.map((link) => {
+                    // This is the crucial part for determining active state
                     const isActive =
                       location.pathname === link.path ||
                       (link.path !== "/dashboard/user" &&
@@ -235,11 +236,12 @@ const UserDashboardPage = () => {
                       <Link
                         key={link.name}
                         to={link.path}
-                        className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out ${
-                          isActive
-                            ? "bg-blue-600 text-white shadow-sm"
-                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                        }`}
+                        className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out
+                  ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-sm" // Active classes
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900" // Inactive classes
+                  }`}
                       >
                         <link.icon
                           size={18}
