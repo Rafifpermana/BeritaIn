@@ -40,8 +40,8 @@ import SiteSettingsPage from "./pages/admin/SiteSettingsPage";
 
 // Layout Utama Aplikasi (Navbar & Footer)
 const MainLayout = () => {
-  const mobilePadding = "pt-24";
-  const desktopNavbarHeight = "lg:pt-[72px]";
+  const mobilePadding = "pt-2";
+  const desktopNavbarHeight = "lg:pt-[12px]";
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
@@ -70,7 +70,7 @@ function App() {
             <Route path="search" element={<SearchResultsPage />} />
           </Route>
 
-          <Route path="/dashboard/user" element={<UserDashboardPage />}>
+          <Route path="/user/dashboard" element={<UserDashboardPage />}>
             <Route index element={<DashboardOverview />} />
             <Route path="bookmarks" element={<UserBookmarksPage />} />
             <Route path="points" element={<UserPointsPage />} />

@@ -1,22 +1,29 @@
 // src/pages/dashboard/DashboardOverview.jsx
 import React, { useState, useRef, useEffect } from "react";
 import {
-  UserCircle,
+  UserCircle, // Mengganti User agar tidak bentrok dengan nama komponen
   KeyRound,
   ImageIcon,
   Save,
   ShieldCheck,
   Mail,
-  BellRing,
-  LockIcon as PrivacyIcon,
-} from "lucide-react"; // Tambahkan ikon yang relevan
-import { useOutletContext } from "react-router-dom"; // Impor useOutletContext
+  BellRing, // Menambahkan BellRing yang mungkin terlewat
+  LockIcon as PrivacyIcon, // Menggunakan alias
+} from "lucide-react";
+import { useOutletContext } from "react-router-dom";
 
-// --- Komponen Seksi Pengaturan (terpisah agar lebih rapi) ---
+// --- Data Pengguna Awal (Placeholder, sekarang akan diambil dari context Outlet) ---
+const initialUserData = {
+  username: "ipsum_Larisun",
+  email: "ipsum.larisun@example.com",
+  avatarUrl: "/placeholder-avatar.png",
+};
+
+// --- Komponen Seksi Pengaturan ---
 const ProfileSettingsSection = ({
-  currentUsernameProp,
+  currentUsernameProp, // Nama prop diganti agar lebih jelas
   onUsernameUpdate,
-  currentAvatarProp,
+  currentAvatarProp, // Nama prop diganti
   onAvatarUpdate,
   currentUserEmail,
 }) => {
@@ -25,6 +32,7 @@ const ProfileSettingsSection = ({
     useState(currentAvatarProp);
   const fileInputRef = useRef(null);
 
+  // Sinkronkan state lokal dengan props dari parent (UserDashboardPage)
   useEffect(() => {
     setUsernameInput(currentUsernameProp);
   }, [currentUsernameProp]);
@@ -35,19 +43,26 @@ const ProfileSettingsSection = ({
 
   const handleProfileInfoSubmit = (e) => {
     e.preventDefault();
-    onUsernameUpdate(usernameInput);
-    alert("Informasi profil berhasil diperbarui (simulasi).");
+    if (onUsernameUpdate) {
+      // Pastikan fungsi ada sebelum dipanggil
+      onUsernameUpdate(usernameInput); // Panggil fungsi dari parent untuk update global
+    }
+    alert("Informasi username berhasil diperbarui (simulasi).");
   };
 
   const handleImageChange = (event) => {
     if (event.target.files && event.target.files[0]) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfileImagePreview(e.target.result);
-        onAvatarUpdate(e.target.result);
+        const newImageDataUrl = e.target.result;
+        setProfileImagePreview(newImageDataUrl); // Update preview lokal
+        if (onAvatarUpdate) {
+          // Pastikan fungsi ada
+          onAvatarUpdate(newImageDataUrl); // Panggil fungsi dari parent untuk update global & upload
+        }
+        // alert dipindahkan ke UserDashboardPage jika proses upload sukses
       };
       reader.readAsDataURL(event.target.files[0]);
-      // alert("Foto profil telah dipilih (simulasi). Proses unggah belum diimplementasikan."); // Alert bisa dipindah setelah onAvatarUpdate
     }
   };
 
@@ -114,14 +129,17 @@ const ProfileSettingsSection = ({
               htmlFor="email"
               className="block text-sm font-medium text-gray-600 mb-1"
             >
-              Email
+              Email{" "}
+              <span className="text-xs text-gray-400">
+                (tidak dapat diubah)
+              </span>
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="email"
                 id="email"
-                value={currentUserEmail}
+                value={currentUserEmail} // Gunakan currentUserEmail dari props
                 readOnly
                 className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed text-gray-500"
               />
@@ -167,7 +185,6 @@ const SecuritySettingsSection = () => {
       });
       return;
     }
-    // TODO: Logika validasi password saat ini dan simpan password baru ke backend
     console.log("Permintaan ubah password:", { currentPassword, newPassword });
     setPasswordChangeMessage({
       type: "success",
@@ -220,7 +237,7 @@ const SecuritySettingsSection = () => {
               onChange={(e) => setNewPassword(e.target.value)}
               className={`w-full pl-10 pr-3 py-2 text-sm border rounded-md focus:ring-1 ${
                 passwordChangeMessage.type === "error" &&
-                (newPassword || confirmNewPassword)
+                (newPassword || confirmNewPassword) // Hanya beri border merah jika ada input
                   ? "border-red-500 focus:ring-red-500 focus:border-red-500"
                   : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
               }`}
@@ -301,18 +318,27 @@ const PrivacyPlaceholder = () => (
 );
 
 const DashboardOverview = () => {
-  const context = useOutletContext(); // Ambil semua context dari Outlet
-  if (!context) {
-    // Jika context belum tersedia (misalnya saat UserDashboardPage belum sepenuhnya render)
-    return <div className="p-6 text-center">Memuat pengaturan...</div>; // Atau tampilan loading lain
-  }
+  const context = useOutletContext();
+
+  // Berikan fallback jika context atau propertinya undefined untuk mencegah error saat render awal
   const {
-    currentUsername,
-    currentAvatar,
-    onUsernameUpdate,
-    onAvatarUpdate,
-    currentUserEmail,
-  } = context;
+    currentUsername = initialUserData.username, // Gunakan nilai awal jika context belum siap
+    currentAvatar = initialUserData.avatarUrl,
+    onUsernameUpdate = () => console.warn("onUsernameUpdate not provided"),
+    onAvatarUpdate = () => console.warn("onAvatarUpdate not provided"),
+    currentUserEmail = initialUserData.email,
+  } = context || {}; // Fallback ke objek kosong jika context adalah null/undefined
+
+  if (!context) {
+    // Anda bisa menampilkan UI loading yang lebih baik di sini
+    // atau menunggu UserDashboardPage menyediakan context dengan nilai default yang valid
+    console.log("DashboardOverview: Menunggu context dari Outlet...");
+    return (
+      <div className="p-6 text-center text-gray-500">
+        Memuat pengaturan profil...
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 md:space-y-8">

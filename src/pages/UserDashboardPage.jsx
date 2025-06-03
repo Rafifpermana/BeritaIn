@@ -9,19 +9,35 @@ import {
   Bell,
   Award,
   ListChecks,
-} from "lucide-react"; // CloseIcon tidak dipakai langsung di sini
-import { useArticleInteractions } from "../hooks/useArticleInteractions"; // <-- PERBAIKI IMPOR INI
+  X as CloseIcon,
+} from "lucide-react";
+import { useArticleInteractions } from "../hooks/useArticleInteractions";
+
+const initialUserDataForDashboard = {
+  username: "ipsum_Larisun",
+  email: "ipsum.larisun@example.com",
+  avatarUrl: "/placeholder-avatar.png",
+  points: 85,
+};
 
 const UserDashboardPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  // Ambil dari konteks yang benar
   const {
     notifications,
     unreadNotificationCount,
     markNotificationAsRead,
     markAllNotificationsAsRead,
   } = useArticleInteractions();
+
+  const [currentUsername, setCurrentUsername] = useState(
+    initialUserDataForDashboard.username
+  );
+  const [currentAvatar, setCurrentAvatar] = useState(
+    initialUserDataForDashboard.avatarUrl
+  );
+  // Mengambil poin langsung karena setCurrentUserPoints tidak digunakan di komponen ini
+  const currentUserPoints = initialUserDataForDashboard.points;
 
   const sidebarLinks = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard/user" },
@@ -43,11 +59,6 @@ const UserDashboardPage = () => {
     },
   ];
 
-  const userName = "ipsum_Larisun"; // Placeholder
-  const userAvatarPlaceholder = "/placeholder-avatar.png"; // Placeholder
-  // currentUserPoints sekarang akan diteruskan melalui Outlet context jika diperlukan oleh child
-  const currentUserPoints = 85; // Placeholder, idealnya dari konteks Auth atau UserProfileContext
-
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationButtonRef = useRef(null);
   const notificationPanelRef = useRef(null);
@@ -65,7 +76,6 @@ const UserDashboardPage = () => {
       markNotificationAsRead(notification.id);
     }
     setIsNotificationsOpen(false);
-    // Navigasi sudah ditangani oleh <Link>
   };
 
   useEffect(() => {
@@ -89,7 +99,7 @@ const UserDashboardPage = () => {
     navigate("/login");
   };
 
-  const recentNotificationsForDropdown = [...notifications] // Ambil dari konteks
+  const recentNotificationsForDropdown = [...notifications]
     .sort(
       (a, b) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -97,9 +107,20 @@ const UserDashboardPage = () => {
     .sort((a, b) => (a.read === b.read ? 0 : a.read ? 1 : -1))
     .slice(0, 5);
 
+  const handleUsernameUpdate = (newUsernameValue) => {
+    setCurrentUsername(newUsernameValue);
+    console.log("Username diupdate di UserDashboardPage:", newUsernameValue);
+    alert("Username berhasil diperbarui (simulasi).");
+  };
+
+  const handleAvatarUpdate = (newAvatarDataUrl) => {
+    setCurrentAvatar(newAvatarDataUrl);
+    console.log("Avatar diupdate di UserDashboardPage");
+    alert("Foto profil berhasil diperbarui (simulasi).");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Header Utama Dashboard (termasuk tombol notifikasi) */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -120,9 +141,7 @@ const UserDashboardPage = () => {
                 >
                   <Bell size={22} />
                   {unreadNotificationCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-2 w-2 p-0.5 transform -translate-y-0.5 translate-x-0.5 rounded-full bg-red-500 ring-1 ring-white text-[8px] flex items-center justify-center text-white">
-                      {/* {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount} */}
-                    </span>
+                    <span className="absolute top-0 right-0 block h-2 w-2 p-0.5 transform -translate-y-0.5 translate-x-0.5 rounded-full bg-red-500 ring-1 ring-white text-[8px] flex items-center justify-center text-white"></span>
                   )}
                 </button>
                 {isNotificationsOpen && (
@@ -197,11 +216,11 @@ const UserDashboardPage = () => {
               <div className="flex items-center space-x-2">
                 <img
                   className="h-8 w-8 rounded-full object-cover"
-                  src={userAvatarPlaceholder}
+                  src={currentAvatar}
                   alt="User Avatar"
                 />
                 <span className="text-sm font-medium text-gray-700 hidden sm:block">
-                  {userName}
+                  {currentUsername}
                 </span>
               </div>
             </div>
@@ -227,7 +246,6 @@ const UserDashboardPage = () => {
                 </div>
                 <nav className="space-y-1.5">
                   {sidebarLinks.map((link) => {
-                    // This is the crucial part for determining active state
                     const isActive =
                       location.pathname === link.path ||
                       (link.path !== "/dashboard/user" &&
@@ -236,12 +254,11 @@ const UserDashboardPage = () => {
                       <Link
                         key={link.name}
                         to={link.path}
-                        className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out
-                  ${
-                    isActive
-                      ? "bg-blue-600 text-white shadow-sm" // Active classes
-                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900" // Inactive classes
-                  }`}
+                        className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out ${
+                          isActive
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        }`}
                       >
                         <link.icon
                           size={18}
@@ -272,7 +289,16 @@ const UserDashboardPage = () => {
             </div>
           </aside>
           <main className="flex-1 min-w-0">
-            <Outlet context={{ currentUserPoints }} />
+            <Outlet
+              context={{
+                currentUsername,
+                currentAvatar,
+                onUsernameUpdate: handleUsernameUpdate,
+                onAvatarUpdate: handleAvatarUpdate,
+                currentUserEmail: initialUserDataForDashboard.email,
+                currentUserPoints,
+              }}
+            />
           </main>
         </div>
       </div>
