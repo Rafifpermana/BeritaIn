@@ -332,20 +332,23 @@ const CommentModerationPage = () => {
     });
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b">
-        <div className="flex items-center mb-3 sm:mb-0">
-          <MessageCircleWarning size={28} className="mr-3 text-orange-500" />
-          <h1 className="text-2xl font-semibold text-gray-800">
+    <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b">
+        <div className="flex items-center mb-2 sm:mb-0">
+          <MessageCircleWarning
+            size={24}
+            className="mr-2 sm:mr-3 text-orange-500"
+          />
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
             Moderasi Komentar
           </h1>
         </div>
-        <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <div className="relative flex-grow sm:flex-grow-0">
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+          <div className="relative w-full">
             <input
               type="text"
               placeholder="Cari komentar, user, artikel..."
-              className="px-3 py-2 pl-8 border border-gray-300 rounded-md text-sm w-full focus:ring-sky-500 focus:border-sky-500"
+              className="px-3 py-2 pl-8 border border-gray-300 rounded-md text-xs sm:text-sm w-full focus:ring-sky-500 focus:border-sky-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -354,11 +357,11 @@ const CommentModerationPage = () => {
               className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400"
             />
           </div>
-          <div className="relative flex-grow sm:flex-grow-0">
+          <div className="relative w-full sm:w-auto">
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="appearance-none w-full px-3 py-2 pl-8 border border-gray-300 rounded-md text-sm focus:ring-sky-500 focus:border-sky-500 bg-white"
+              className="appearance-none w-full px-3 py-2 pl-8 border border-gray-300 rounded-md text-xs sm:text-sm focus:ring-sky-500 focus:border-sky-500 bg-white"
             >
               <option value="needs_review">Perlu Review</option>
               <option value="all">Semua Status</option>
@@ -373,14 +376,12 @@ const CommentModerationPage = () => {
         </div>
       </div>
 
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
         Tinjau komentar yang menunggu moderasi atau yang terdeteksi mengandung
-        kata-kata tidak pantas. Filter "Perlu Review" menampilkan komentar
-        dengan status pending review dan komentar yang mengandung kata-kata
-        negatif.
+        kata-kata tidak pantas.
       </p>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {filteredAndSearchedComments.length > 0 ? (
           filteredAndSearchedComments.map((comment) => (
             <div

@@ -58,17 +58,17 @@ const UserManagementPage = () => {
   );
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-3 sm:mb-0">
+    <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b">
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">
           Manajemen Pengguna
         </h1>
-        <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <div className="relative flex-grow sm:flex-grow-0">
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+          <div className="relative w-full">
             <input
               type="text"
               placeholder="Cari nama, email, peran..."
-              className="px-3 py-2 pl-8 border border-gray-300 rounded-md text-sm w-full focus:ring-sky-500 focus:border-sky-500"
+              className="px-3 py-2 pl-8 border border-gray-300 rounded-md text-xs sm:text-sm w-full focus:ring-sky-500 focus:border-sky-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -78,35 +78,35 @@ const UserManagementPage = () => {
             />
           </div>
           <button
-            onClick={handleAddUser} // Tambahkan onClick handler
-            className="bg-sky-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-sky-700 flex items-center space-x-1.5"
+            onClick={handleAddUser}
+            className="bg-sky-600 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-medium hover:bg-sky-700 flex items-center space-x-1.5 w-full sm:w-auto"
           >
-            <UserPlus size={16} />
+            <UserPlus size={16} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>Tambah Pengguna</span>
           </button>
         </div>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
                 Nama
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
                 Email
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
                 Peran
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
                 Poin
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
                 Tgl Bergabung
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
                 Aksi
               </th>
             </tr>
@@ -114,45 +114,46 @@ const UserManagementPage = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredUsers.map((user) => (
               <tr key={user.id}>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                <td className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-gray-700">
                   <div className="flex items-center">
                     <img
                       src={user.avatarUrl || "/placeholder-avatar.png"}
                       alt={user.name}
-                      className="w-8 h-8 rounded-full mr-3 object-cover flex-shrink-0" // Tambah flex-shrink-0
+                      className="w-6 h-6 sm:w-8 sm:h-8 rounded-full mr-2 sm:mr-3 object-cover"
                     />
-                    <span className="truncate" title={user.name}>
+                    <span
+                      className="truncate max-w-[100px] sm:max-w-none"
+                      title={user.name}
+                    >
                       {user.name}
-                    </span>{" "}
-                    {/* Tambah truncate */}
+                    </span>
                   </div>
                 </td>
                 <td
-                  className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 truncate"
+                  className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-gray-500 truncate max-w-[120px] sm:max-w-none"
                   title={user.email}
                 >
                   {user.email}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                <td className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">
                   <select
                     value={user.role}
                     onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                    className={`p-1.5 rounded-md text-xs border focus:ring-2 focus:outline-none transition-colors
-                      ${
-                        user.role === "admin"
-                          ? "bg-sky-100 text-sky-700 border-sky-300 focus:ring-sky-500"
-                          : "bg-gray-100 text-gray-700 border-gray-300 focus:ring-blue-500"
-                      }`}
+                    className={`p-1 sm:p-1.5 rounded-md text-xs border focus:ring-2 focus:outline-none transition-colors
+                    ${
+                      user.role === "admin"
+                        ? "bg-sky-100 text-sky-700 border-sky-300 focus:ring-sky-500"
+                        : "bg-gray-100 text-gray-700 border-gray-300 focus:ring-blue-500"
+                    }`}
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                   </select>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-gray-500">
                   {user.points}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                  {/* Pastikan user.joinDate ada dan valid */}
+                <td className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-gray-500">
                   {user.joinDate
                     ? new Date(user.joinDate).toLocaleDateString("id-ID", {
                         year: "numeric",
@@ -161,12 +162,11 @@ const UserManagementPage = () => {
                       })
                     : "N/A"}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                  {/* Tombol Edit dihilangkan, hanya ada tombol Hapus */}
+                <td className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap font-medium">
                   <button
                     title="Hapus Pengguna"
                     onClick={() => handleDeleteUser(user.id)}
-                    className="text-red-600 hover:text-red-800 p-1.5 rounded-md hover:bg-red-100 transition-colors"
+                    className="text-red-600 hover:text-red-800 p-1 sm:p-1.5 rounded-md hover:bg-red-100 transition-colors"
                   >
                     <Trash2 size={16} />
                   </button>
