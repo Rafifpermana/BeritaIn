@@ -5,7 +5,7 @@ import {
   LayoutDashboard,
   Users,
   MessageCircleWarning,
-  Settings2,
+  Megaphone,
   LogOut,
   Bell,
   Shield,
@@ -27,9 +27,9 @@ const AdminDashboardPage = () => {
       path: "/admin/dashboard/comments",
     },
     {
-      name: "Pengaturan Situs",
-      icon: Settings2,
-      path: "/admin/dashboard/settings",
+      name: "Kirim Pengumuman",
+      icon: Megaphone,
+      path: "/admin/dashboard/broadcast",
     },
   ];
 

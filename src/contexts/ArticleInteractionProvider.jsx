@@ -140,10 +140,12 @@ export const ArticleInteractionProvider = ({ children }) => {
     return initialisedComments;
   });
 
+  // Updated notifications dengan tipe notifikasi
   const [notifications, setNotifications] = useState([
     {
       id: Date.now() + 1,
       message: "Selamat datang di sistem notifikasi baru!",
+      type: "info", // Tambahkan tipe notifikasi
       timestamp: new Date().toISOString(),
       read: false,
       link: "#",
@@ -151,6 +153,7 @@ export const ArticleInteractionProvider = ({ children }) => {
     {
       id: Date.now() + 2,
       message: "Ada update pada artikel 'AI Poetry'.",
+      type: "article_reply", // Tambahkan tipe notifikasi
       timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
       read: true,
       link: "/article/ai-poetry",
@@ -176,7 +179,8 @@ export const ArticleInteractionProvider = ({ children }) => {
       if (user) {
         addNotification(
           `Peringatan untuk ${user.name}: Poin Anda dikurangi ${amount} karena komentar yang tidak sesuai. Poin Anda sekarang: ${newPoints}.`,
-          `/dashboard/user/points`
+          `/dashboard/user/points`,
+          "points_deduction" // Tipe notifikasi khusus untuk pengurangan poin
         );
       }
       return { ...prevPoints, [userId]: newPoints };
@@ -184,16 +188,27 @@ export const ArticleInteractionProvider = ({ children }) => {
     console.log(`Poin untuk user ${userId} dikurangi ${amount}.`);
   };
 
-  const addNotification = (message, link = "#") => {
+  // Updated addNotification dengan parameter type
+  const addNotification = (message, link = "#", type = "info") => {
     const newNotification = {
       id: Date.now(),
       message,
+      type, // Jenis notifikasi: 'info', 'article_reply', 'admin_broadcast', 'points_deduction'
       timestamp: new Date().toISOString(),
       read: false,
       link,
     };
-    setNotifications((prev) => [newNotification, ...prev].slice(0, 20));
+    setNotifications((prev) => [newNotification, ...prev].slice(0, 20)); // Batasi jumlah notif
   };
+
+  // --- FUNGSI BARU UNTUK BROADCAST ADMIN ---
+  const broadcastAdminMessage = (title, messageBody) => {
+    const fullMessage = `${title}: ${messageBody}`;
+    addNotification(fullMessage, "/#", "admin_broadcast"); // Link ke homepage atau halaman pengumuman khusus
+    console.log("Admin Broadcast Sent:", fullMessage);
+    // Di aplikasi nyata, ini akan mengirim ke semua pengguna via backend/push service
+  };
+  // --- AKHIR FUNGSI BROADCAST ADMIN ---
 
   const markNotificationAsRead = (notificationId) => {
     setNotifications((prev) =>
@@ -316,7 +331,8 @@ export const ArticleInteractionProvider = ({ children }) => {
     if (initialStatus === "pending_review") {
       addNotification(
         `Komentar baru dari ${newComment.author} di artikel "${articleTitle}" menunggu moderasi oleh Admin.`,
-        `/admin/dashboard/comments`
+        `/admin/dashboard/comments`,
+        "info" // Tipe notifikasi untuk moderasi
       );
     }
     // Jika Anda ingin notifikasi ke pemilik artikel (jika bukan user saat ini), tambahkan logikanya di sini.
@@ -368,14 +384,16 @@ export const ArticleInteractionProvider = ({ children }) => {
     if (initialStatus === "pending_review") {
       addNotification(
         `Balasan baru dari ${newReply.author} di artikel "${articleTitle}" menunggu moderasi.`,
-        `/admin/dashboard/comments`
+        `/admin/dashboard/comments`,
+        "info"
       );
     } else {
       // Contoh notifikasi ke penulis komentar yang dibalas (jika penulisnya beda & kita tahu IDnya)
       // Ini memerlukan logika lebih untuk mencari userId dari parentCommentId
       addNotification(
         `Balasan baru dari ${newReply.author} untuk komentar di artikel "${articleTitle}".`,
-        `/article/${articleId}#comment-${newReply.id}` // Arahkan ke balasan baru
+        `/article/${articleId}#comment-${newReply.id}`, // Arahkan ke balasan baru
+        "article_reply"
       );
     }
   };
@@ -457,7 +475,8 @@ export const ArticleInteractionProvider = ({ children }) => {
         `Komentar Anda (${commentAuthor?.name || "Anda"}) pada artikel "${
           article?.title || "sebuah artikel"
         }" telah disetujui. Terima kasih!`,
-        `/article/${articleId}#comment-${commentId}`
+        `/article/${articleId}#comment-${commentId}`,
+        "info"
       );
     }
     console.log(
@@ -494,7 +513,8 @@ export const ArticleInteractionProvider = ({ children }) => {
       `Sebuah komentar pada artikel "${
         initialArticlesStaticData[articleId]?.title || "sebuah artikel"
       }" telah dihapus oleh admin.`,
-      `/article/${articleId}`
+      `/article/${articleId}`,
+      "info"
     );
     console.log(
       `Admin: Komentar ${commentId} di artikel ${articleId} dihapus.`
@@ -522,6 +542,7 @@ export const ArticleInteractionProvider = ({ children }) => {
     moderateComment,
     deleteCommentContext,
     deductUserPoints,
+    broadcastAdminMessage, // <-- Tambahkan fungsi baru ke context value
   };
 
   return (

@@ -36,7 +36,7 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminOverview from "./dashboard/admin/AdminOverview";
 import UserManagementPage from "./pages/admin/UserManagementPage";
 import CommentModerationPage from "./pages/admin/CommentModerationPage";
-import SiteSettingsPage from "./pages/admin/SiteSettingsPage";
+import BroadcastNotificationPage from "./pages/admin/BroadcastNotificationPage";
 
 // Layout Utama Aplikasi (Navbar & Footer)
 const MainLayout = () => {
@@ -85,7 +85,7 @@ function App() {
             <Route index element={<AdminOverview />} />
             <Route path="users" element={<UserManagementPage />} />
             <Route path="comments" element={<CommentModerationPage />} />
-            <Route path="settings" element={<SiteSettingsPage />} />
+            <Route path="broadcast" element={<BroadcastNotificationPage />} />
             {/* Tambahkan rute admin lainnya di sini */}
           </Route>
         </Routes>

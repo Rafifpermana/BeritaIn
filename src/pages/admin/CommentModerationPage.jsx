@@ -1,8 +1,8 @@
 // src/pages/admin/CommentModerationPage.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { initialCommentsData, allArticlesData } from "../../data/mockData"; // Pastikan path ini benar
-import { useArticleInteractions } from "../../hooks/useArticleInteractions"; // Pastikan path ini benar
+import { initialCommentsData, allArticlesData } from "../../data/mockData";
+import { useArticleInteractions } from "../../hooks/useArticleInteractions";
 import {
   MessageCircleWarning,
   CheckCircle,
@@ -10,9 +10,11 @@ import {
   Trash2,
   Search,
   Filter,
+  Send,
+  AlertTriangle,
 } from "lucide-react";
 
-// Fungsi ini bisa juga diimpor dari utils jika digunakan di banyak tempat
+// Fungsi containsBadWords
 const containsBadWords = (text) => {
   if (typeof text !== "string") return false;
   const badWords = [
@@ -32,16 +34,169 @@ const containsBadWords = (text) => {
   return badWords.some((word) => lowerText.includes(word));
 };
 
+// Komponen Modal untuk Aksi Admin
+const AdminActionModal = ({ isOpen, onClose, comment, onSubmitAction }) => {
+  const [customMessage, setCustomMessage] = useState(
+    `Peringatan: Komentar Anda "${comment?.text?.substring(
+      0,
+      30
+    )}..." dianggap melanggar panduan komunitas.`
+  );
+  const [pointsToDeduct, setPointsToDeduct] = useState(10); // Default pengurangan poin
+  const [actionType, setActionType] = useState("reject"); // 'reject' atau 'delete'
+
+  useEffect(() => {
+    // Reset saat komentar berubah atau modal dibuka
+    if (comment) {
+      setCustomMessage(
+        `Peringatan: Komentar Anda "${comment.text?.substring(
+          0,
+          30
+        )}..." dianggap melanggar panduan komunitas dan telah di${
+          actionType === "reject" ? "tolak" : "hapus"
+        }.`
+      );
+      setPointsToDeduct(actionType === "delete" ? 15 : 10); // Poin beda untuk hapus vs tolak
+    }
+  }, [comment, actionType]);
+
+  if (!isOpen || !comment) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmitAction(
+      comment,
+      actionType,
+      customMessage,
+      parseInt(pointsToDeduct, 10)
+    );
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-800">
+            Tindak Lanjut Komentar Negatif
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <XCircle size={20} />
+          </button>
+        </div>
+        <p className="text-xs text-gray-600 mb-1">
+          Pengguna:{" "}
+          <span className="font-medium">
+            {comment.author} ({comment.userId})
+          </span>
+        </p>
+        <p className="text-xs text-gray-600 mb-3">Komentar:</p>
+        <blockquote className="text-sm bg-gray-100 p-2 border-l-4 border-gray-300 italic mb-4 max-h-20 overflow-y-auto">
+          "{comment.text}"
+        </blockquote>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="actionType"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Aksi untuk Komentar:
+            </label>
+            <select
+              id="actionType"
+              value={actionType}
+              onChange={(e) => setActionType(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="reject">Tolak Komentar</option>
+              <option value="delete">Hapus Komentar (Pelanggaran Berat)</option>
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="adminMessage"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Pesan Peringatan untuk Pengguna:
+            </label>
+            <textarea
+              id="adminMessage"
+              rows="3"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+              value={customMessage}
+              onChange={(e) => setCustomMessage(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="pointsDeduct"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Poin yang Dikurangi:
+            </label>
+            <input
+              type="number"
+              id="pointsDeduct"
+              min="0"
+              max="100" // Batas maksimal pengurangan
+              value={pointsToDeduct}
+              onChange={(e) =>
+                setPointsToDeduct(parseInt(e.target.value, 10) || 0)
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            />
+          </div>
+          <div className="flex justify-end space-x-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md flex items-center space-x-1.5
+              ${
+                actionType === "reject"
+                  ? "bg-orange-500 hover:bg-orange-600"
+                  : "bg-red-600 hover:bg-red-700"
+              }`}
+            >
+              <Send size={16} />
+              <span>
+                {actionType === "reject"
+                  ? "Kirim Peringatan & Tolak"
+                  : "Kirim Peringatan & Hapus"}
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const CommentModerationPage = () => {
   const {
-    articleCommentsState, // Ini adalah state dari konteks: { articleId: [comments...] }
+    articleCommentsState, // State dari konteks: { articleId: [comments...] }
     moderateComment,
     deleteCommentContext,
   } = useArticleInteractions();
 
-  // Default filter ke 'pending_review' atau komentar yang mengandung kata buruk
-  const [filterStatus, setFilterStatus] = useState("pending_review");
+  // Default filter ke 'needs_review' yang menggabungkan pending_review dan bad words
+  const [filterStatus, setFilterStatus] = useState("needs_review");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // State untuk Modal Aksi Admin
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [selectedCommentForAction, setSelectedCommentForAction] =
+    useState(null);
 
   // Menggabungkan, mem-flatten, dan pra-filter komentar dari semua artikel
   const commentsToReview = useMemo(() => {
@@ -62,10 +217,6 @@ const CommentModerationPage = () => {
           if (!Array.isArray(commentList)) return;
           for (const comment of commentList) {
             if (!comment) continue;
-            // Logika untuk menentukan apakah komentar ini perlu review
-            // Selain status 'pending_review', kita juga bisa cek bad words di sini
-            // jika komentar 'approved' masih bisa di-flag oleh sistem/user lain nantinya.
-            // Untuk sekarang, kita fokus pada filter berdasarkan status yang sudah ada di data.
             flatComments.push({
               ...comment,
               articleTitle: currentArticleTitle,
@@ -96,49 +247,71 @@ const CommentModerationPage = () => {
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
     return flatComments;
-  }, [articleCommentsState]); // Bergantung pada articleCommentsState
+  }, [articleCommentsState]);
+
+  // Fungsi untuk membuka modal admin action
+  const openAdminActionModal = (comment, defaultAction = "reject") => {
+    setSelectedCommentForAction({ ...comment, defaultAction });
+    setIsActionModalOpen(true);
+  };
+
+  // Handler untuk submit action dari modal
+  const handleAdminSubmitAction = (
+    comment,
+    actionType,
+    customMessage,
+    pointsToDeduct
+  ) => {
+    if (!comment || !comment.articleId || !comment.id || !comment.userId) {
+      console.error("Data komentar tidak lengkap untuk aksi admin:", comment);
+      return;
+    }
+
+    if (actionType === "reject") {
+      // Fungsi moderateComment di konteks perlu dimodifikasi untuk menerima pesan & poin
+      moderateComment(
+        comment.articleId,
+        comment.id,
+        "rejected",
+        comment.userId,
+        customMessage,
+        pointsToDeduct
+      );
+    } else if (actionType === "delete") {
+      // Fungsi deleteCommentContext di konteks perlu dimodifikasi untuk menerima pesan & poin
+      deleteCommentContext(
+        comment.articleId,
+        comment.id,
+        comment.userId,
+        true /* isNegative */,
+        customMessage,
+        pointsToDeduct
+      );
+    }
+  };
 
   const handleApprove = (comment) => {
     if (!comment || !comment.articleId || !comment.id || !comment.userId) {
       console.error("Data komentar tidak lengkap untuk aksi approve:", comment);
       return;
     }
-    moderateComment(comment.articleId, comment.id, "approved", comment.userId);
-  };
-
-  const handleReject = (comment) => {
-    if (!comment || !comment.articleId || !comment.id || !comment.userId) {
-      console.error("Data komentar tidak lengkap untuk aksi reject:", comment);
-      return;
-    }
-    // Fungsi moderateComment di konteks akan menangani pengurangan poin dan notifikasi
-    moderateComment(comment.articleId, comment.id, "rejected", comment.userId);
-  };
-
-  const handleDelete = (comment) => {
-    if (!comment || !comment.articleId || !comment.id || !comment.userId) {
-      console.error("Data komentar tidak lengkap untuk aksi delete:", comment);
-      return;
-    }
-    // Tentukan apakah penghapusan ini karena konten negatif
-    // Bisa berdasarkan status 'rejected' atau cek bad words lagi
-    const isCommentNegative =
-      comment.status === "rejected" || containsBadWords(comment.text);
-    deleteCommentContext(
+    // moderateComment untuk approve mungkin tidak perlu customMessage & pointsDeduct
+    moderateComment(
       comment.articleId,
       comment.id,
+      "approved",
       comment.userId,
-      isCommentNegative // Jika true, konteks akan mengurangi poin
+      "Komentar Anda telah disetujui."
     );
   };
 
   // Terapkan filter dan search pada commentsToReview
-  const displayComments = commentsToReview
+  const filteredAndSearchedComments = commentsToReview
     .filter((comment) => {
       if (!comment) return false;
       if (filterStatus === "all") return true; // Jika admin ingin melihat semua
-      if (filterStatus === "needs_action") {
-        // Filter baru untuk yang perlu tindakan
+      if (filterStatus === "needs_review") {
+        // Filter gabungan untuk pending_review dan bad words
         return (
           comment.status === "pending_review" ||
           (comment.status !== "rejected" && containsBadWords(comment.text))
@@ -187,11 +360,7 @@ const CommentModerationPage = () => {
               onChange={(e) => setFilterStatus(e.target.value)}
               className="appearance-none w-full px-3 py-2 pl-8 border border-gray-300 rounded-md text-sm focus:ring-sky-500 focus:border-sky-500 bg-white"
             >
-              <option value="pending_review">Perlu Review</option>{" "}
-              {/* Default ke ini */}
-              <option value="needs_action">
-                Perlu Tindakan (Review & Bad Words)
-              </option>
+              <option value="needs_review">Perlu Review</option>
               <option value="all">Semua Status</option>
               <option value="approved">Disetujui</option>
               <option value="rejected">Ditolak</option>
@@ -206,13 +375,14 @@ const CommentModerationPage = () => {
 
       <p className="text-sm text-gray-600 mb-6">
         Tinjau komentar yang menunggu moderasi atau yang terdeteksi mengandung
-        kata-kata tidak pantas. Komentar yang bersih akan otomatis disetujui
-        saat dibuat.
+        kata-kata tidak pantas. Filter "Perlu Review" menampilkan komentar
+        dengan status pending review dan komentar yang mengandung kata-kata
+        negatif.
       </p>
 
       <div className="space-y-4">
-        {displayComments.length > 0 ? (
-          displayComments.map((comment) => (
+        {filteredAndSearchedComments.length > 0 ? (
+          filteredAndSearchedComments.map((comment) => (
             <div
               key={`${comment.articleId}-${comment.id}`}
               className={`p-4 rounded-lg border 
@@ -302,7 +472,7 @@ const CommentModerationPage = () => {
                 )}
                 {comment.status !== "rejected" && (
                   <button
-                    onClick={() => handleReject(comment)}
+                    onClick={() => openAdminActionModal(comment, "reject")}
                     className="px-3 py-1.5 text-xs bg-orange-500 text-white rounded-md hover:bg-orange-600 flex items-center space-x-1.5 disabled:opacity-60"
                     disabled={comment.status === "rejected"}
                     title="Tolak komentar ini (beri peringatan & kurangi poin)"
@@ -312,9 +482,9 @@ const CommentModerationPage = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => handleDelete(comment)}
+                  onClick={() => openAdminActionModal(comment, "delete")}
                   className="px-3 py-1.5 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center space-x-1.5"
-                  title="Hapus komentar ini secara permanen"
+                  title="Hapus komentar ini secara permanen (beri peringatan & kurangi poin)"
                 >
                   <Trash2 size={14} />
                   <span>Hapus</span>
@@ -329,7 +499,16 @@ const CommentModerationPage = () => {
           </p>
         )}
       </div>
+
+      {/* Render Modal */}
+      <AdminActionModal
+        isOpen={isActionModalOpen}
+        onClose={() => setIsActionModalOpen(false)}
+        comment={selectedCommentForAction}
+        onSubmitAction={handleAdminSubmitAction}
+      />
     </div>
   );
 };
+
 export default CommentModerationPage;
