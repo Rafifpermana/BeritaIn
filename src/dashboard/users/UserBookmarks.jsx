@@ -1,9 +1,9 @@
 // src/pages/UserBookmarksPage.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import { useArticleInteractions } from "../hooks/useArticleInteractions";
-import { allArticlesData } from "../data/mockData";
-import ArticleCardStats from "../utils/ArticleCardStats";
+import { useArticleInteractions } from "../../hooks/useArticleInteractions";
+import { allArticlesData } from "../../data/mockData";
+import ArticleCardStats from "../../utils/ArticleCardStats";
 import { Bookmark } from "lucide-react";
 
 const UserBookmarks = () => {

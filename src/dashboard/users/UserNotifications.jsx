@@ -1,7 +1,7 @@
 // src/pages/dashboard/UserNotificationsPage.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import { useArticleInteractions } from "../hooks/useArticleInteractions";
+import { useArticleInteractions } from "../../hooks/useArticleInteractions";
 import { Bell, CheckCheck, Trash2 } from "lucide-react";
 
 const UserNotificationsPage = () => {

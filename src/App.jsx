@@ -25,18 +25,18 @@ import RegisterPage from "./pages/RegisterPage";
 
 // Halaman Dashboard & Komponen Terkait
 import UserDashboardPage from "./pages/UserDashboardPage";
-import UserBookmarksPage from "./dashboard/UserBookmarks";
-import UserPointsPage from "./dashboard/UserPoints";
-import CommunityGuidelinesPage from "./dashboard/CommunityGuidelines";
-import DashboardOverview from "./dashboard/DashboardOverview";
-import UserNotificationsPage from "./dashboard/UserNotifications";
+import UserBookmarksPage from "./dashboard/users/UserBookmarks";
+import UserPointsPage from "./dashboard/users/UserPoints";
+import CommunityGuidelinesPage from "./dashboard/users/CommunityGuidelines";
+import DashboardOverview from "./dashboard/users/DashboardOverview";
+import UserNotificationsPage from "./dashboard/users/UserNotifications";
 
 //admin dasboard
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminOverview from "./dashboard/admin/AdminOverview";
-import UserManagementPage from "./pages/admin/UserManagementPage";
-import CommentModerationPage from "./pages/admin/CommentModerationPage";
-import BroadcastNotificationPage from "./pages/admin/BroadcastNotificationPage";
+import UserManagementPage from "./dashboard/admin/UserManagementPage";
+import CommentModerationPage from "./dashboard/admin/CommentModerationPage";
+import BroadcastNotificationPage from "./dashboard/admin/BroadcastNotificationPage";
 
 // Layout Utama Aplikasi (Navbar & Footer)
 const MainLayout = () => {
