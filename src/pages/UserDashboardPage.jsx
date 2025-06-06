@@ -133,7 +133,7 @@ const UserDashboardPage = () => {
                 {isNotificationsOpen && (
                   <div
                     ref={notificationPanelRef}
-                    className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50 max-h-[70vh] flex flex-col"
+                    className="absolute top-full right-0 mt-4 w-80 sm:w-96 max-w-[75vw] bg-white rounded-lg shadow-xl border z-50 max-h-[80vh] flex flex-col"
                   >
                     <div className="flex justify-between items-center p-3 border-b border-gray-200">
                       <h3 className="text-sm font-semibold text-gray-800">
