@@ -1,66 +1,42 @@
-// src/pages/dashboard/DashboardOverview.jsx
+// src/dashboard/users/DashboardOverview.jsx
 import React, { useState, useRef, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import {
-  UserCircle, // Mengganti User agar tidak bentrok dengan nama komponen
+  UserCircle,
   KeyRound,
   ImageIcon,
   Save,
-  ShieldCheck,
   Mail,
-  BellRing, // Menambahkan BellRing yang mungkin terlewat
-  LockIcon as PrivacyIcon, // Menggunakan alias
+  ShieldCheck,
 } from "lucide-react";
-import { useOutletContext } from "react-router-dom";
 
-// --- Data Pengguna Awal (Placeholder, sekarang akan diambil dari context Outlet) ---
-const initialUserData = {
-  username: "ipsum_Larisun",
-  email: "ipsum.larisun@example.com",
-  avatarUrl: "/placeholder-avatar.png",
-};
-
-// --- Komponen Seksi Pengaturan ---
-const ProfileSettingsSection = ({
-  currentUsernameProp, // Nama prop diganti agar lebih jelas
-  onUsernameUpdate,
-  currentAvatarProp, // Nama prop diganti
-  onAvatarUpdate,
-  currentUserEmail,
-}) => {
-  const [usernameInput, setUsernameInput] = useState(currentUsernameProp);
-  const [profileImagePreview, setProfileImagePreview] =
-    useState(currentAvatarProp);
+// Komponen untuk seksi pengaturan profil
+const ProfileSettingsSection = ({ currentUser, onUpdateProfile }) => {
+  const [usernameInput, setUsernameInput] = useState(currentUser.name || "");
+  const [avatarPreview, setAvatarPreview] = useState(
+    currentUser.avatarUrl || "/placeholder-avatar.png"
+  );
   const fileInputRef = useRef(null);
 
-  // Sinkronkan state lokal dengan props dari parent (UserDashboardPage)
   useEffect(() => {
-    setUsernameInput(currentUsernameProp);
-  }, [currentUsernameProp]);
+    setUsernameInput(currentUser.name || "");
+    setAvatarPreview(currentUser.avatarUrl || "/placeholder-avatar.png");
+  }, [currentUser]);
 
-  useEffect(() => {
-    setProfileImagePreview(currentAvatarProp);
-  }, [currentAvatarProp]);
-
-  const handleProfileInfoSubmit = (e) => {
+  const handleProfileSubmit = (e) => {
     e.preventDefault();
-    if (onUsernameUpdate) {
-      // Pastikan fungsi ada sebelum dipanggil
-      onUsernameUpdate(usernameInput); // Panggil fungsi dari parent untuk update global
-    }
-    alert("Informasi username berhasil diperbarui (simulasi).");
+    onUpdateProfile({ name: usernameInput });
+    alert("Username berhasil diperbarui!");
   };
 
   const handleImageChange = (event) => {
     if (event.target.files && event.target.files[0]) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const newImageDataUrl = e.target.result;
-        setProfileImagePreview(newImageDataUrl); // Update preview lokal
-        if (onAvatarUpdate) {
-          // Pastikan fungsi ada
-          onAvatarUpdate(newImageDataUrl); // Panggil fungsi dari parent untuk update global & upload
-        }
-        // alert dipindahkan ke UserDashboardPage jika proses upload sukses
+        const newAvatarDataUrl = e.target.result;
+        setAvatarPreview(newAvatarDataUrl);
+        onUpdateProfile({ avatarUrl: newAvatarDataUrl });
+        alert("Foto profil berhasil diperbarui!");
       };
       reader.readAsDataURL(event.target.files[0]);
     }
@@ -75,7 +51,7 @@ const ProfileSettingsSection = ({
         <h3 className="text-md font-medium text-gray-700 mb-3">Foto Profil</h3>
         <div className="flex items-center space-x-4">
           <img
-            src={profileImagePreview}
+            src={avatarPreview}
             alt="Foto Profil"
             className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-gray-300"
           />
@@ -86,11 +62,10 @@ const ProfileSettingsSection = ({
               onChange={handleImageChange}
               ref={fileInputRef}
               className="hidden"
-              id="profileImageUpload"
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              className="px-4 py-2 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center space-x-2"
             >
               <ImageIcon size={16} />
               <span>Unggah Foto</span>
@@ -105,7 +80,7 @@ const ProfileSettingsSection = ({
         <h3 className="text-md font-medium text-gray-700 mb-3">
           Informasi Dasar
         </h3>
-        <form onSubmit={handleProfileInfoSubmit} className="space-y-4">
+        <form onSubmit={handleProfileSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="username"
@@ -114,13 +89,13 @@ const ProfileSettingsSection = ({
               Username
             </label>
             <div className="relative">
-              <UserCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+              <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 id="username"
                 value={usernameInput}
                 onChange={(e) => setUsernameInput(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md"
               />
             </div>
           </div>
@@ -135,20 +110,20 @@ const ProfileSettingsSection = ({
               </span>
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="email"
                 id="email"
-                value={currentUserEmail} // Gunakan currentUserEmail dari props
+                value={currentUser.email}
                 readOnly
-                className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed text-gray-500"
+                className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
               />
             </div>
           </div>
           <div className="pt-2">
             <button
               type="submit"
-              className="flex items-center justify-center px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
+              className="flex items-center justify-center px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
             >
               <Save size={16} className="mr-2" /> Simpan Informasi
             </button>
@@ -159,36 +134,31 @@ const ProfileSettingsSection = ({
   );
 };
 
+// Komponen untuk seksi keamanan
 const SecuritySettingsSection = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [passwordChangeMessage, setPasswordChangeMessage] = useState({
-    type: "",
-    text: "",
-  });
+  const [message, setMessage] = useState({ type: "", text: "" });
 
-  const handlePasswordChangeSubmit = (e) => {
+  const handlePasswordChange = (e) => {
     e.preventDefault();
-    setPasswordChangeMessage({ type: "", text: "" });
+    setMessage({ type: "", text: "" });
     if (newPassword !== confirmNewPassword) {
-      setPasswordChangeMessage({
+      setMessage({
         type: "error",
         text: "Password baru dan konfirmasi tidak cocok!",
       });
       return;
     }
     if (newPassword.length < 8) {
-      setPasswordChangeMessage({
-        type: "error",
-        text: "Password baru minimal 8 karakter.",
-      });
+      setMessage({ type: "error", text: "Password baru minimal 8 karakter." });
       return;
     }
-    console.log("Permintaan ubah password:", { currentPassword, newPassword });
-    setPasswordChangeMessage({
+    console.log("Simulasi ubah password...");
+    setMessage({
       type: "success",
-      text: "Password berhasil diubah (simulasi)!",
+      text: "Password berhasil diubah (simulasi).",
     });
     setCurrentPassword("");
     setNewPassword("");
@@ -201,7 +171,7 @@ const SecuritySettingsSection = () => {
         <KeyRound size={24} className="mr-3 text-orange-500" /> Akun & Keamanan
       </h2>
       <h3 className="text-md font-medium text-gray-700 mb-3">Ubah Password</h3>
-      <form onSubmit={handlePasswordChangeSubmit} className="space-y-4">
+      <form onSubmit={handlePasswordChange} className="space-y-4">
         <div>
           <label
             htmlFor="currentPassword"
@@ -210,14 +180,13 @@ const SecuritySettingsSection = () => {
             Password Saat Ini
           </label>
           <div className="relative">
-            <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="password"
               id="currentPassword"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Masukkan password lama Anda"
+              className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md"
             />
           </div>
         </div>
@@ -229,19 +198,13 @@ const SecuritySettingsSection = () => {
             Password Baru
           </label>
           <div className="relative">
-            <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="password"
               id="newPassword"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className={`w-full pl-10 pr-3 py-2 text-sm border rounded-md focus:ring-1 ${
-                passwordChangeMessage.type === "error" &&
-                (newPassword || confirmNewPassword) // Hanya beri border merah jika ada input
-                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                  : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-              }`}
-              placeholder="Minimal 8 karakter"
+              className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md"
             />
           </div>
         </div>
@@ -253,36 +216,29 @@ const SecuritySettingsSection = () => {
             Konfirmasi Password Baru
           </label>
           <div className="relative">
-            <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="password"
               id="confirmNewPassword"
               value={confirmNewPassword}
               onChange={(e) => setConfirmNewPassword(e.target.value)}
-              className={`w-full pl-10 pr-3 py-2 text-sm border rounded-md focus:ring-1 ${
-                passwordChangeMessage.type === "error"
-                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                  : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-              }`}
-              placeholder="Ulangi password baru"
+              className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md"
             />
           </div>
         </div>
-        {passwordChangeMessage.text && (
+        {message.text && (
           <p
             className={`text-xs mt-1 ${
-              passwordChangeMessage.type === "error"
-                ? "text-red-600"
-                : "text-green-600"
+              message.type === "error" ? "text-red-600" : "text-green-600"
             }`}
           >
-            {passwordChangeMessage.text}
+            {message.text}
           </p>
         )}
         <div className="pt-2">
           <button
             type="submit"
-            className="flex items-center justify-center px-5 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 transition-colors"
+            className="flex items-center justify-center px-5 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700"
           >
             <ShieldCheck size={16} className="mr-2" /> Ubah Password
           </button>
@@ -292,75 +248,37 @@ const SecuritySettingsSection = () => {
   );
 };
 
-const PreferencesPlaceholder = () => (
-  <section className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-    <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <BellRing size={24} className="mr-3 text-purple-500" /> Preferensi
-      Notifikasi
-    </h2>
-    <p className="text-sm text-gray-600">
-      Pengaturan untuk preferensi notifikasi (email, push notification, dll.)
-      akan tersedia di sini di masa mendatang.
-    </p>
-  </section>
-);
-
-const PrivacyPlaceholder = () => (
-  <section className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-    <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <PrivacyIcon size={24} className="mr-3 text-gray-500" /> Privasi & Data
-    </h2>
-    <p className="text-sm text-gray-600">
-      Pengaturan terkait privasi akun, pengelolaan data pribadi Anda, dan opsi
-      ekspor atau penghapusan data akan tersedia di sini.
-    </p>
-  </section>
-);
-
+// Komponen utama
 const DashboardOverview = () => {
-  const context = useOutletContext();
+  const { currentUser, updateUserProfile } = useOutletContext();
 
-  // Berikan fallback jika context atau propertinya undefined untuk mencegah error saat render awal
-  const {
-    currentUsername = initialUserData.username, // Gunakan nilai awal jika context belum siap
-    currentAvatar = initialUserData.avatarUrl,
-    onUsernameUpdate = () => console.warn("onUsernameUpdate not provided"),
-    onAvatarUpdate = () => console.warn("onAvatarUpdate not provided"),
-    currentUserEmail = initialUserData.email,
-  } = context || {}; // Fallback ke objek kosong jika context adalah null/undefined
-
-  if (!context) {
-    // Anda bisa menampilkan UI loading yang lebih baik di sini
-    // atau menunggu UserDashboardPage menyediakan context dengan nilai default yang valid
-    console.log("DashboardOverview: Menunggu context dari Outlet...");
+  if (!currentUser) {
     return (
       <div className="p-6 text-center text-gray-500">
-        Memuat pengaturan profil...
+        Memuat data pengguna...
       </div>
     );
   }
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <div className="pb-4 mb-4 border-b border-gray-300">
+      <div className="pb-4 mb-4 border-b border-gray-200">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-          Pengaturan Akun Saya
+          Selamat datang di Dashboard, {currentUser.name}!
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          Kelola informasi profil, keamanan, dan preferensi akun Anda di sini.
+          Kelola informasi profil dan keamanan akun Anda di sini.
         </p>
       </div>
+
       <ProfileSettingsSection
-        currentUsernameProp={currentUsername}
-        onUsernameUpdate={onUsernameUpdate}
-        currentAvatarProp={currentAvatar}
-        onAvatarUpdate={onAvatarUpdate}
-        currentUserEmail={currentUserEmail}
+        currentUser={currentUser}
+        onUpdateProfile={updateUserProfile}
       />
+
       <SecuritySettingsSection />
-      <PreferencesPlaceholder />
-      <PrivacyPlaceholder />
     </div>
   );
 };
+
 export default DashboardOverview;

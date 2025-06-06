@@ -1,58 +1,49 @@
 // src/components/InteractionBar.jsx
 import React from "react";
 import { ThumbsUp, ThumbsDown, Share2, MessageSquare } from "lucide-react";
+import BookmarkButton from "./BookmarkButton"; // <-- Impor komponen bookmark
 
 const InteractionBar = ({
+  articleId, // <-- Prop ini sangat penting untuk fungsi bookmark
   articleTitle,
   articleUrl,
   likes = 0,
   dislikes = 0,
   userVote = null,
-  isBookmarked = false,
   onLikeToggle,
   onDislikeToggle,
   commentCount = 0,
   onCommentClick,
 }) => {
   const handleShare = async () => {
-    const shareData = {
-      title: articleTitle,
-      text: `Lihat artikel menarik ini: ${articleTitle}`,
-      url: articleUrl || window.location.href,
-    };
     try {
       if (navigator.share) {
-        await navigator.share(shareData);
+        await navigator.share({
+          title: articleTitle,
+          text: `Lihat artikel ini: ${articleTitle}`,
+          url: articleUrl || window.location.href,
+        });
       } else {
-        navigator.clipboard
-          .writeText(shareData.url)
-          .then(() => alert("URL artikel telah disalin ke clipboard!"))
-          .catch((err) =>
-            alert(
-              "Gagal menyalin URL. Anda bisa salin manual: " + shareData.url
-            )
-          );
+        await navigator.clipboard.writeText(articleUrl || window.location.href);
+        alert("URL artikel telah disalin ke clipboard!");
       }
     } catch (err) {
-      if (err.name !== "AbortError") {
-        console.error("Error saat berbagi:", err);
-        // alert('Gagal membagikan artikel.'); // Bisa di-uncomment jika ingin ada alert untuk semua error
-      }
+      console.error("Error saat berbagi:", err);
     }
   };
 
   return (
     <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row items-center justify-between py-4 px-2 sm:px-0 border-b border-t border-gray-200">
+      {/* Kolom Suka & Tidak Suka */}
       <div className="flex items-center space-x-2 sm:space-x-3">
         <button
           onClick={onLikeToggle}
           aria-pressed={userVote === "liked"}
-          className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ease-in-out
-                      ${
-                        userVote === "liked"
-                          ? "bg-blue-600 text-white shadow-md hover:bg-blue-700"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300"
-                      }`}
+          className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            userVote === "liked"
+              ? "bg-blue-600 text-white shadow-md"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
         >
           <ThumbsUp
             size={18}
@@ -63,12 +54,11 @@ const InteractionBar = ({
         <button
           onClick={onDislikeToggle}
           aria-pressed={userVote === "disliked"}
-          className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ease-in-out
-                      ${
-                        userVote === "disliked"
-                          ? "bg-red-500 text-white shadow-md hover:bg-red-600"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300"
-                      }`}
+          className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            userVote === "disliked"
+              ? "bg-red-500 text-white shadow-md"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
         >
           <ThumbsDown
             size={18}
@@ -77,11 +67,12 @@ const InteractionBar = ({
           <span>{dislikes > 0 ? dislikes : "Tidak Suka"}</span>
         </button>
       </div>
-      <div className="flex items-center space-x-2 sm:space-x-3">
+      {/* Kolom Aksi Lainnya */}
+      <div className="flex items-center space-x-1 sm:space-x-2">
         {onCommentClick && (
           <button
             onClick={onCommentClick}
-            className="flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300 transition-all duration-150 ease-in-out"
+            className="flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
           >
             <MessageSquare size={18} />
             <span>Komentar ({commentCount})</span>
@@ -89,13 +80,21 @@ const InteractionBar = ({
         )}
         <button
           onClick={handleShare}
-          className="flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300 transition-all duration-150 ease-in-out"
+          className="flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
         >
           <Share2 size={18} />
           <span>Bagikan</span>
         </button>
+
+        {/* Tombol Bookmark Baru Ditambahkan di Sini */}
+        {articleId && (
+          <div className="p-1 bg-gray-100 rounded-lg hover:bg-gray-200">
+            <BookmarkButton articleId={articleId} className="text-gray-700" />
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
 export default InteractionBar;

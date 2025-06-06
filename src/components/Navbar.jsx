@@ -1,11 +1,20 @@
 // src/components/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { ChevronDown, Search, Menu, X, ChevronLeft } from "lucide-react";
-// import logo2 from "../assets/logo2.png"; // Komentari atau hapus jika tidak lagi menggunakan gambar logo
-import ClientPortal from "../utils/Portal"; // Sesuaikan path jika Portal.jsx ada di utils
+import {
+  ChevronDown,
+  Search,
+  Menu,
+  X,
+  LogOut,
+  LayoutDashboard,
+  Bell,
+  User as UserIcon,
+} from "lucide-react";
+import ClientPortal from "../utils/Portal";
+import { useAuth } from "../contexts/AuthContext";
+import { useArticleInteractions } from "../hooks/useArticleInteractions";
 
-// Fungsi createSlug (konsisten dengan yang lain)
 const createSlug = (text) => {
   if (!text || typeof text !== "string") return "";
   return text
@@ -15,7 +24,6 @@ const createSlug = (text) => {
     .replace(/[^\w-]+/g, "");
 };
 
-// Daftar kategori (konsisten)
 const CATEGORIES_NAVBAR_LIST = [
   "Tech & Innovation",
   "Business & Economy",
@@ -37,92 +45,82 @@ const Navbar = () => {
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthSidebarOpen, setIsAuthSidebarOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
+    useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [searchQuery, setSearchQuery] = useState("");
   const [showNavbar, setShowNavbar] = useState(true);
-  const lastScrollYRef = useRef(0);
-  const navbarRef = useRef(null);
+
+  const refs = {
+    navbar: useRef(null),
+    searchDropdown: useRef(null),
+    profileDropdown: useRef(null),
+    notificationDropdown: useRef(null),
+    searchInput: useRef(null),
+    lastScrollY: useRef(0),
+  };
+
   const navigate = useNavigate();
   const location = useLocation();
-  const searchDropdownRef = useRef(null);
-  const searchInputRef = useRef(null);
+  const { currentUser, logout, isAdmin } = useAuth();
+  const {
+    notifications,
+    unreadNotificationCount,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+  } = useArticleInteractions();
 
-  // Sinkronisasi selectedCategory dengan URL
+  // Efek auto-hide navbar
   useEffect(() => {
-    const pathParts = location.pathname.split("/");
-    if (location.pathname === "/") {
-      const queryParams = new URLSearchParams(location.search);
-      const categorySlugFromQuery = queryParams.get("category");
-      if (categorySlugFromQuery) {
-        const foundCategory = CATEGORIES_NAVBAR_LIST.find(
-          (cat) => createSlug(cat) === categorySlugFromQuery
-        );
-        if (foundCategory) setSelectedCategory(foundCategory);
-        else setSelectedCategory("All Categories");
-      } else {
-        setSelectedCategory("All Categories");
-      }
-    } else if (pathParts.length === 3 && pathParts[1] === "category") {
-      const slugFromUrl = pathParts[2];
-      const foundCategory = CATEGORIES_NAVBAR_LIST.find(
-        (cat) => createSlug(cat) === slugFromUrl
-      );
-      if (foundCategory) setSelectedCategory(foundCategory);
-      else setSelectedCategory("All Categories");
-    }
-  }, [location.pathname, location.search]);
-
-  // useEffect untuk auto-hide navbar
-  useEffect(() => {
-    const HIDE_THRESHOLD_PX = 10;
-    lastScrollYRef.current = window.scrollY;
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const localLastScrollY = lastScrollYRef.current;
-      const navbarHeight = navbarRef.current
-        ? navbarRef.current.offsetHeight
-        : 0;
-      if (currentScrollY < HIDE_THRESHOLD_PX + 5) setShowNavbar(true);
-      else if (
-        currentScrollY > localLastScrollY &&
-        currentScrollY > (navbarHeight > 0 ? navbarHeight : HIDE_THRESHOLD_PX)
-      )
-        setShowNavbar(false);
-      else if (currentScrollY < localLastScrollY) setShowNavbar(true);
-      lastScrollYRef.current = currentScrollY < 0 ? 0 : currentScrollY;
+      setShowNavbar(
+        window.scrollY < refs.lastScrollY.current || window.scrollY < 50
+      );
+      refs.lastScrollY.current = window.scrollY;
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // useEffect untuk klik di luar dropdown kategori desktop
+  // Efek klik di luar dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        searchDropdownRef.current &&
-        !searchDropdownRef.current.contains(event.target)
+        refs.searchDropdown.current &&
+        !refs.searchDropdown.current.contains(event.target)
       )
         setIsSearchDropdownOpen(false);
+      if (
+        refs.profileDropdown.current &&
+        !refs.profileDropdown.current.contains(event.target)
+      )
+        setIsProfileDropdownOpen(false);
+      if (
+        refs.notificationDropdown.current &&
+        !refs.notificationDropdown.current.contains(event.target)
+      )
+        setIsNotificationDropdownOpen(false);
     };
-    if (isSearchDropdownOpen)
-      document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isSearchDropdownOpen]);
+  }, [refs]);
+
+  const handleLogout = () => {
+    logout();
+    setIsProfileDropdownOpen(false);
+    navigate("/");
+  };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const trimmedQuery = searchQuery.trim();
     if (trimmedQuery) {
-      const categorySlug =
-        selectedCategory === "All Categories" || !selectedCategory
-          ? ""
-          : createSlug(selectedCategory);
-      const queryParams = new URLSearchParams();
-      queryParams.append("q", trimmedQuery);
-      if (categorySlug) queryParams.append("category", categorySlug);
-      navigate(`/search?${queryParams.toString()}`);
-      // Biarkan searchQuery agar pengguna lihat apa yang mereka cari,
-      // atau setSearchQuery("") jika ingin dikosongkan setelah submit.
+      const params = new URLSearchParams({ q: trimmedQuery });
+      if (selectedCategory !== "All Categories") {
+        params.append("category", createSlug(selectedCategory));
+      }
+      navigate(`/search?${params.toString()}`);
     }
   };
 
@@ -130,247 +128,304 @@ const Navbar = () => {
     setSelectedCategory(category);
     setIsSearchDropdownOpen(false);
     setIsMobileMenuOpen(false);
-    setSearchQuery(""); // Reset search query ketika kategori diubah
-    if (category === "All Categories") {
-      navigate("/");
-    } else {
-      navigate(`/category/${createSlug(category)}`);
-    }
+    navigate(
+      category === "All Categories" ? "/" : `/category/${createSlug(category)}`
+    );
   };
 
-  const clearSearchQuery = () => {
-    setSearchQuery("");
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  };
-
-  const searchPlaceholder =
-    selectedCategory === "All Categories" || !selectedCategory
-      ? "Cari artikel, berita, dan topik..."
-      : `Cari di ${selectedCategory}...`;
+  const searchPlaceholder = `Cari di ${selectedCategory}...`;
+  const recentNotifications = notifications.slice(0, 5);
 
   return (
     <div
-      ref={navbarRef}
-      className={`w-full bg-white shadow-sm sticky top-0 z-50 transition-transform duration-300 ease-out ${
+      ref={refs.navbar}
+      className={`w-full bg-white shadow-sm sticky top-0 z-50 transition-transform duration-300 ${
         showNavbar ? "translate-y-0" : "-translate-y-full"
       }`}
     >
-      <nav className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-gray-200">
-        {/* Mobile Layout */}
-        <div className="flex items-center justify-between w-full lg:hidden">
+      {/* Top Navbar */}
+      <nav className="flex items-center justify-between px-4 sm:px-6 py-3 border-b">
+        {/* Mobile Left */}
+        <div className="lg:hidden">
           <button
-            className="text-gray-600 p-2 rounded-md hover:bg-gray-100"
             onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 -ml-2"
           >
-            <Menu className="w-6 h-6" />
-          </button>
-          <Link to="/" className="flex items-center">
-            <span className="text-orange-500 font-bold text-xl">
-              {" "}
-              {/* Ukuran font disesuaikan */}
-              Berita<span className="text-blue-600">In</span>
-            </span>
-          </Link>
-          <button
-            className="text-gray-600 p-2 rounded-md hover:bg-gray-100"
-            onClick={() => setIsAuthSidebarOpen(true)}
-          >
-            <ChevronLeft className="w-5 h-5" />
+            <Menu />
           </button>
         </div>
-
-        {/* Desktop Layout */}
-        <div className="hidden lg:flex items-center justify-between w-full">
-          <Link to="/" className="flex items-center flex-shrink-0">
-            <span className="text-orange-500 font-bold text-2xl">
-              Berita<span className="text-blue-600">In</span>
-            </span>
-          </Link>
-          <div className="flex-1 max-w-3xl mx-auto px-4">
-            <div className="flex items-center space-x-2">
-              <div className="relative" ref={searchDropdownRef}>
+        {/* Logo */}
+        <Link
+          to="/"
+          className="text-orange-500 font-bold text-2xl lg:flex-shrink-0"
+        >
+          Berita<span className="text-blue-600">In</span>
+        </Link>
+        {/* Desktop Search */}
+        <div className="hidden lg:flex flex-1 max-w-3xl mx-auto px-4">
+          <div className="relative" ref={refs.searchDropdown}>
+            <button
+              onClick={() => setIsSearchDropdownOpen((p) => !p)}
+              className="flex items-center px-3 py-2 bg-gray-100 rounded-l-md hover:bg-gray-200 text-sm"
+            >
+              <span className="font-medium truncate max-w-[150px]">
+                {selectedCategory}
+              </span>
+              <ChevronDown className="ml-1.5 w-4 h-4" />
+            </button>
+            {isSearchDropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 w-64 bg-white border rounded-lg shadow-lg z-[51] max-h-72 overflow-y-auto">
+                {["All Categories", ...CATEGORIES_NAVBAR_LIST].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => handleCategorySelect(cat)}
+                    className={`block w-full text-left px-3 py-2 text-sm ${
+                      selectedCategory === cat
+                        ? "bg-blue-50 text-blue-700 font-medium"
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <form onSubmit={handleSearchSubmit} className="flex-1 relative">
+            <input
+              ref={refs.searchInput}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={searchPlaceholder}
+              className="w-full px-4 py-2 border-y border-r border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+            <button
+              type="submit"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-600"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+          </form>
+        </div>
+        {/* Auth / Profile Section */}
+        <div className="flex items-center space-x-2 lg:flex-shrink-0">
+          {currentUser ? (
+            <>
+              <div className="relative" ref={refs.notificationDropdown}>
                 <button
-                  onClick={() => setIsSearchDropdownOpen(!isSearchDropdownOpen)}
-                  className="flex items-center px-3 py-2 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap text-sm"
+                  onClick={() => setIsNotificationDropdownOpen((p) => !p)}
+                  className="p-2 rounded-full hover:bg-gray-100 relative"
                 >
-                  <span className="font-medium truncate max-w-[150px]">
-                    {selectedCategory}
-                  </span>
-                  <ChevronDown className="ml-1.5 w-4 h-4 flex-shrink-0" />
+                  <Bell size={22} />
+                  {unreadNotificationCount > 0 && (
+                    <span className="absolute top-1.5 right-1.5 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+                  )}
                 </button>
-                {isSearchDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-64 sm:w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[51]">
-                    <div className="p-2 space-y-1 max-h-72 overflow-y-auto">
-                      {["All Categories", ...CATEGORIES_NAVBAR_LIST].map(
-                        (cat, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => handleCategorySelect(cat)}
-                            className={`block w-full px-3 py-2 text-sm text-left rounded-md transition-colors ${
-                              selectedCategory === cat
-                                ? "bg-blue-50 text-blue-700 font-medium"
-                                : "text-gray-700 hover:bg-gray-100"
+                {isNotificationDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50 max-h-[80vh] flex flex-col">
+                    <div className="flex justify-between items-center p-3 border-b">
+                      <h3 className="text-sm font-semibold">Notifikasi</h3>
+                      {unreadNotificationCount > 0 && (
+                        <button
+                          onClick={markAllNotificationsAsRead}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          Tandai semua dibaca
+                        </button>
+                      )}
+                    </div>
+                    <div className="overflow-y-auto">
+                      {recentNotifications.length > 0 ? (
+                        recentNotifications.map((n) => (
+                          <Link
+                            key={n.id}
+                            to={n.link || "#"}
+                            onClick={() => {
+                              markNotificationAsRead(n.id);
+                              setIsNotificationDropdownOpen(false);
+                            }}
+                            className={`block p-3 hover:bg-gray-50 border-b last:border-b-0 ${
+                              !n.read ? "bg-blue-50" : ""
                             }`}
                           >
-                            {cat}
-                          </button>
-                        )
+                            <p
+                              className={`text-xs ${
+                                !n.read
+                                  ? "font-semibold text-gray-900"
+                                  : "text-gray-700"
+                              }`}
+                            >
+                              {n.message}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {new Date(n.timestamp).toLocaleString("id-ID")}
+                            </p>
+                          </Link>
+                        ))
+                      ) : (
+                        <p className="p-4 text-xs text-center text-gray-500">
+                          Tidak ada notifikasi baru.
+                        </p>
                       )}
+                    </div>
+                    <div className="p-2 border-t text-center">
+                      <Link
+                        to="/user/dashboard/all-notifications"
+                        onClick={() => setIsNotificationDropdownOpen(false)}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        Lihat Semua Notifikasi
+                      </Link>
                     </div>
                   </div>
                 )}
               </div>
-              <form onSubmit={handleSearchSubmit} className="flex-1 relative">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={searchPlaceholder}
-                  className={`w-full px-4 py-2 ${
-                    searchQuery ? "pr-10" : "pr-10"
-                  } border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm`}
-                />
-                {searchQuery ? (
-                  <button
-                    type="button"
-                    onClick={clearSearchQuery}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                    aria-label="Clear search query"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600 transition-colors"
-                    aria-label="Search"
-                  >
-                    <Search className="w-5 h-5" />
-                  </button>
+              <div className="relative" ref={refs.profileDropdown}>
+                <button
+                  onClick={() => setIsProfileDropdownOpen((p) => !p)}
+                  className="flex items-center space-x-2 p-1 rounded-md hover:bg-gray-100"
+                >
+                  <img
+                    src={currentUser.avatarUrl || "/placeholder-avatar.png"}
+                    alt="Avatar"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <span className="text-sm font-medium hidden sm:inline">
+                    {currentUser.name}
+                  </span>
+                  <ChevronDown size={16} className="text-gray-600" />
+                </button>
+                {isProfileDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-xl border z-50 py-1">
+                    <Link
+                      to={isAdmin() ? "/admin/dashboard" : "/user/dashboard"}
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <LayoutDashboard size={16} className="mr-2" />
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut size={16} className="mr-2" />
+                      Logout
+                    </button>
+                  </div>
                 )}
-              </form>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2 flex-shrink-0">
-            <Link
-              to="/login"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors text-sm font-medium"
-            >
-              Sign Up
-            </Link>
-          </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="lg:hidden">
+                <button
+                  onClick={() => setIsAuthSidebarOpen(true)}
+                  className="p-2 -mr-2"
+                >
+                  <UserIcon />
+                </button>
+              </div>
+              <div className="hidden lg:flex items-center space-x-2">
+                <Link
+                  to="/login"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm font-medium"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </nav>
-
       {/* Mobile Search Bar */}
-      <div className="lg:hidden px-4 sm:px-6 py-2.5 bg-gray-50 border-b border-gray-200">
+      <div className="lg:hidden px-4 sm:px-6 py-2.5 bg-gray-50 border-b">
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
-            ref={searchInputRef} // Bisa juga gunakan ref yang sama jika hanya satu yang visible pada satu waktu
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari di BeritaIn..."
-            className={`w-full px-4 py-2.5 ${
-              searchQuery ? "pr-10" : "pr-10"
-            } border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm`}
+            placeholder="Cari artikel, berita, dan topik..."
+            className="w-full px-4 py-2.5 pr-10 border rounded-lg text-sm"
           />
-          {searchQuery ? (
-            <button
-              type="button"
-              onClick={clearSearchQuery}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-              aria-label="Clear search query"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          ) : (
-            <button
-              type="submit"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600 transition-colors"
-              aria-label="Search"
-            >
-              <Search className="w-5 h-5" />
-            </button>
-          )}
+          <button
+            type="submit"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+          >
+            <Search className="w-5 h-5" />
+          </button>
         </form>
       </div>
 
-      {/* Mobile Category Menu (Menggunakan Portal) */}
+      {/* --- PORTALS UNTUK MOBILE MENU --- */}
       {isMobileMenuOpen && (
         <ClientPortal selector="mobile-menu-portal">
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-[55] lg:hidden"
+            className="fixed inset-0 bg-black/50 z-[55] lg:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
           <div
-            className={`fixed inset-x-0 top-0 z-[60] p-3 lg:hidden transform transition-transform duration-300 ease-out ${
-              isMobileMenuOpen ? "translate-y-0" : "-translate-y-full"
-            }`}
+            className="fixed inset-x-0 top-0 z-[60] p-3 lg:hidden transform transition-transform duration-300"
+            style={{
+              transform: isMobileMenuOpen
+                ? "translateY(0)"
+                : "translateY(-100%)",
+            }}
           >
             <div className="bg-white rounded-xl shadow-xl max-h-[85vh] flex flex-col">
-              <div className="flex justify-between items-center p-4 border-b border-gray-200">
-                <h2 className="text-md font-semibold text-gray-900">
-                  Kategori
-                </h2>
+              <div className="flex justify-between items-center p-4 border-b">
+                <h2 className="text-md font-semibold">Kategori</h2>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-gray-500 hover:text-gray-700 p-1 rounded-md hover:bg-gray-100"
+                  className="p-1"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="p-3 overflow-y-auto">
-                <div className="space-y-1.5">
-                  {["All Categories", ...CATEGORIES_NAVBAR_LIST].map(
-                    (cat, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleCategorySelect(cat)}
-                        className={`w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors ${
-                          selectedCategory === cat
-                            ? "bg-blue-50 text-blue-700 font-medium"
-                            : "hover:bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    )
-                  )}
-                </div>
+                {["All Categories", ...CATEGORIES_NAVBAR_LIST].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => handleCategorySelect(cat)}
+                    className={`w-full text-left px-3 py-2.5 text-sm rounded-lg ${
+                      selectedCategory === cat
+                        ? "bg-blue-50 text-blue-700 font-medium"
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         </ClientPortal>
       )}
 
-      {/* Auth Sidebar (Menggunakan Portal) */}
       {isAuthSidebarOpen && (
         <ClientPortal selector="auth-sidebar-portal">
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-[55] lg:hidden"
+            className="fixed inset-0 bg-black/50 z-[55] lg:hidden"
             onClick={() => setIsAuthSidebarOpen(false)}
           ></div>
           <div
-            className={`fixed inset-y-0 right-0 z-[60] w-72 max-w-[80vw] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:hidden ${
+            className={`fixed inset-y-0 right-0 z-[60] w-72 max-w-[80vw] bg-white shadow-2xl transform transition-transform duration-300 lg:hidden ${
               isAuthSidebarOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
             <div className="p-5 h-full flex flex-col">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">Akun</h2>
+                <h2 className="text-lg font-semibold">Akun</h2>
                 <button
                   onClick={() => setIsAuthSidebarOpen(false)}
-                  className="text-gray-500 hover:text-gray-700 p-1 rounded-md hover:bg-gray-100"
+                  className="p-1"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -379,39 +434,21 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   onClick={() => setIsAuthSidebarOpen(false)}
-                  className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium text-center"
+                  className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium text-center"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setIsAuthSidebarOpen(false)}
-                  className="w-full bg-gray-600 text-white px-4 py-2.5 rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium text-center"
+                  className="w-full bg-gray-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium text-center"
                 >
                   Sign Up
                 </Link>
               </div>
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <div className="space-y-1.5">
-                  <button className="w-full text-left px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                    Bantuan & Dukungan
-                  </button>
-                  <button className="w-full text-left px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                    Pengaturan
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </ClientPortal>
-      )}
-
-      {/* Click Outside untuk Desktop Category Dropdown */}
-      {isSearchDropdownOpen && !isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-[49]"
-          onClick={() => setIsSearchDropdownOpen(false)}
-        />
       )}
     </div>
   );

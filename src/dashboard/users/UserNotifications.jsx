@@ -1,12 +1,17 @@
-// src/pages/dashboard/UserNotificationsPage.jsx
+// src/dashboard/users/UserNotifications.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 import { useArticleInteractions } from "../../hooks/useArticleInteractions";
-import { Bell, CheckCheck, Trash2 } from "lucide-react";
+import { Bell, CheckCheck, Trash2 } from "lucide-react"; // <-- Impor ikon Trash2
 
 const UserNotificationsPage = () => {
-  const { notifications, markNotificationAsRead, markAllNotificationsAsRead } =
-    useArticleInteractions();
+  // Ambil fungsi deleteNotification dari context
+  const {
+    notifications,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    deleteNotification,
+  } = useArticleInteractions();
 
   // Urutkan notifikasi: yang belum dibaca di atas, lalu berdasarkan waktu terbaru
   const sortedNotifications = [...notifications].sort((a, b) => {
@@ -25,7 +30,7 @@ const UserNotificationsPage = () => {
             Semua Notifikasi
           </h1>
         </div>
-        {notifications.some((n) => !n.read) && ( // Tampilkan hanya jika ada notif belum dibaca
+        {notifications.some((n) => !n.read) && (
           <button
             onClick={markAllNotificationsAsRead}
             className="flex items-center text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline px-3 py-1.5 rounded-md bg-blue-50 hover:bg-blue-100 transition-colors"
@@ -70,17 +75,18 @@ const UserNotificationsPage = () => {
                     })}
                   </p>
                 </Link>
-                {!notif.read && (
-                  <button
-                    onClick={() => markNotificationAsRead(notif.id)}
-                    title="Tandai sudah dibaca"
-                    className="ml-2 p-1 text-gray-400 hover:text-green-600 rounded-full hover:bg-green-100 flex-shrink-0"
-                  >
-                    <CheckCheck size={16} />
-                  </button>
-                )}
-                {/* Tombol hapus notifikasi (opsional) */}
-                {/* <button title="Hapus notifikasi" className="ml-1 p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-100 flex-shrink-0"><Trash2 size={14}/></button> */}
+
+                {/* --- Tombol Hapus Ditambahkan di Sini --- */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault(); // Mencegah pindah halaman jika notif adalah link
+                    deleteNotification(notif.id);
+                  }}
+                  title="Hapus notifikasi"
+                  className="ml-2 p-1.5 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-100 flex-shrink-0"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
           ))}

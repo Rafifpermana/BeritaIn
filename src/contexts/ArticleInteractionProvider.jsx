@@ -1,112 +1,66 @@
 // src/contexts/ArticleInteractionProvider.jsx
-import React, { useState } from "react";
-// Impor ArticleInteractionContext dari file definisinya
+import React, { useState, useCallback } from "react";
 import { ArticleInteractionContext } from "./ArticleInteractionContextDefinition";
 import {
   allArticlesData as initialArticlesStaticData,
-  initialCommentsData as rawInitialCommentsData, // Diberi alias agar bisa diproses
+  initialCommentsData as rawInitialCommentsData,
   calculateTotalComments,
-  allUsersData, // Pastikan ini diimpor jika digunakan untuk ambil avatar/poin user
 } from "../data/mockData";
 
-// --- Fungsi Helper ---
-const updateCommentVoteRecursive = (commentList, targetCommentId, voteType) => {
-  if (!Array.isArray(commentList)) return [];
-  return commentList.map((comment) => {
-    let newCommentData = {
-      ...comment,
-      likes: comment.likes || 0,
-      dislikes: comment.dislikes || 0,
-      userVoteOnComment: comment.userVoteOnComment || null,
-      replies: comment.replies || [],
-    };
+const addReplyRecursive = (comments, parentId, newReply) => {
+  return comments.map((comment) => {
+    if (comment.id === parentId) {
+      return { ...comment, replies: [newReply, ...(comment.replies || [])] };
+    }
+    if (comment.replies && comment.replies.length > 0) {
+      return {
+        ...comment,
+        replies: addReplyRecursive(comment.replies, parentId, newReply),
+      };
+    }
+    return comment;
+  });
+};
 
-    if (comment.id === targetCommentId) {
+const updateCommentVoteRecursive = (list, id, voteType) => {
+  return list.map((comment) => {
+    if (comment.id === id) {
+      const newComment = { ...comment };
+      const isLiked = newComment.userVoteOnComment === "liked";
+      const isDisliked = newComment.userVoteOnComment === "disliked";
+
       if (voteType === "like") {
-        if (newCommentData.userVoteOnComment === "liked") {
-          newCommentData.likes = Math.max(0, newCommentData.likes - 1);
-          newCommentData.userVoteOnComment = null;
-        } else {
-          newCommentData.likes = newCommentData.likes + 1;
-          if (newCommentData.userVoteOnComment === "disliked") {
-            newCommentData.dislikes = Math.max(0, newCommentData.dislikes - 1);
-          }
-          newCommentData.userVoteOnComment = "liked";
-        }
-      } else if (voteType === "dislike") {
-        if (newCommentData.userVoteOnComment === "disliked") {
-          newCommentData.dislikes = Math.max(0, newCommentData.dislikes - 1);
-          newCommentData.userVoteOnComment = null;
-        } else {
-          newCommentData.dislikes = newCommentData.dislikes + 1;
-          if (newCommentData.userVoteOnComment === "liked") {
-            newCommentData.likes = Math.max(0, newCommentData.likes - 1);
-          }
-          newCommentData.userVoteOnComment = "disliked";
-        }
+        newComment.likes = isLiked
+          ? (newComment.likes || 1) - 1
+          : (newComment.likes || 0) + 1;
+        if (isDisliked) newComment.dislikes = (newComment.dislikes || 1) - 1;
+        newComment.userVoteOnComment = isLiked ? null : "liked";
+      } else {
+        // 'dislike'
+        newComment.dislikes = isDisliked
+          ? (newComment.dislikes || 1) - 1
+          : (newComment.dislikes || 0) + 1;
+        if (isLiked) newComment.likes = (newComment.likes || 1) - 1;
+        newComment.userVoteOnComment = isDisliked ? null : "disliked";
       }
-    } else if (newCommentData.replies && newCommentData.replies.length > 0) {
-      const updatedReplies = updateCommentVoteRecursive(
-        newCommentData.replies,
-        targetCommentId,
-        voteType
-      );
-      if (updatedReplies !== newCommentData.replies) {
-        newCommentData.replies = updatedReplies;
-      }
+      return newComment;
     }
-    return newCommentData;
+    if (comment.replies?.length > 0) {
+      return {
+        ...comment,
+        replies: updateCommentVoteRecursive(comment.replies, id, voteType),
+      };
+    }
+    return comment;
   });
 };
-
-const addReplyRecursive = (commentList, targetParentId, replyToAdd) => {
-  if (!Array.isArray(commentList)) return [];
-  return commentList.map((comment) => {
-    let newCommentData = { ...comment, replies: comment.replies || [] };
-    if (comment.id === targetParentId) {
-      newCommentData.replies = [replyToAdd, ...newCommentData.replies];
-    } else if (newCommentData.replies.length > 0) {
-      const updatedChildReplies = addReplyRecursive(
-        newCommentData.replies,
-        targetParentId,
-        replyToAdd
-      );
-      if (updatedChildReplies !== newCommentData.replies) {
-        newCommentData.replies = updatedChildReplies;
-      }
-    }
-    return newCommentData;
-  });
-};
-
-// Fungsi untuk filter kata kunci sederhana
-const containsBadWords = (text) => {
-  if (typeof text !== "string") return false;
-  // Sesuaikan daftar kata kunci ini dengan kebutuhan Anda
-  const badWords = [
-    "jelek",
-    "buruk",
-    "bodoh",
-    "spam",
-    "kasar",
-    "anjing",
-    "bangsat",
-    "kontol",
-    "memek",
-    "asu",
-    "goblok",
-  ];
-  const lowerText = text.toLowerCase();
-  return badWords.some((word) => lowerText.includes(word));
-};
-// --- Akhir Fungsi Helper ---
 
 export const ArticleInteractionProvider = ({ children }) => {
   const [articleInteractions, setArticleInteractions] = useState(() => {
     const interactions = {};
-    Object.keys(initialArticlesStaticData).forEach((articleId) => {
-      const article = initialArticlesStaticData[articleId];
-      interactions[articleId] = {
+    Object.keys(initialArticlesStaticData).forEach((id) => {
+      const article = initialArticlesStaticData[id];
+      interactions[id] = {
         likes: article.initialLikes || 0,
         dislikes: article.initialDislikes || 0,
         userVote: null,
@@ -116,141 +70,75 @@ export const ArticleInteractionProvider = ({ children }) => {
     return interactions;
   });
 
-  const [articleCommentsState, setArticleCommentsState] = useState(() => {
-    const initialisedComments = {};
-    Object.keys(rawInitialCommentsData).forEach((articleId) => {
-      const addInitialFieldsRecursive = (commentsArray) => {
-        if (!Array.isArray(commentsArray)) return [];
-        return commentsArray.map((c) => ({
-          ...c,
-          userId: c.userId || "guest_user", // Pastikan userId ada
-          status:
-            c.status ||
-            (containsBadWords(c.text) ? "pending_review" : "approved"), // Set status awal berdasarkan konten
-          userVoteOnComment: c.userVoteOnComment || null,
-          likes: c.likes || 0,
-          dislikes: c.dislikes || 0,
-          replies: addInitialFieldsRecursive(c.replies || []),
-        }));
-      };
-      initialisedComments[articleId] = addInitialFieldsRecursive(
-        rawInitialCommentsData[articleId] || []
-      );
-    });
-    return initialisedComments;
-  });
+  const [articleCommentsState, setArticleCommentsState] = useState(
+    rawInitialCommentsData
+  );
 
-  // Updated notifications dengan tipe notifikasi
   const [notifications, setNotifications] = useState([
     {
-      id: Date.now() + 1,
-      message: "Selamat datang di sistem notifikasi baru!",
-      type: "info", // Tambahkan tipe notifikasi
+      id: 1,
+      message: "Selamat datang di BeritaIn!",
+      type: "info",
       timestamp: new Date().toISOString(),
-      read: false,
+      read: true,
       link: "#",
     },
-    {
-      id: Date.now() + 2,
-      message: "Ada update pada artikel 'AI Poetry'.",
-      type: "article_reply", // Tambahkan tipe notifikasi
-      timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-      read: true,
-      link: "/article/ai-poetry",
-    },
   ]);
-
   const unreadNotificationCount = notifications.filter((n) => !n.read).length;
 
-  const [userPointsMap, setUserPointsMap] = useState(() => {
-    const points = {};
-    allUsersData.forEach((user) => {
-      // Pastikan allUsersData diimpor
-      points[user.id] = user.points;
-    });
-    return points;
-  });
-
-  const deductUserPoints = (userId, amount) => {
-    setUserPointsMap((prevPoints) => {
-      const currentPoints = prevPoints[userId] || 0;
-      const newPoints = Math.max(0, currentPoints - amount);
-      const user = allUsersData.find((u) => u.id === userId); // Cari nama user untuk notifikasi
-      if (user) {
-        addNotification(
-          `Peringatan untuk ${user.name}: Poin Anda dikurangi ${amount} karena komentar yang tidak sesuai. Poin Anda sekarang: ${newPoints}.`,
-          `/dashboard/user/points`,
-          "points_deduction" // Tipe notifikasi khusus untuk pengurangan poin
-        );
-      }
-      return { ...prevPoints, [userId]: newPoints };
-    });
-    console.log(`Poin untuk user ${userId} dikurangi ${amount}.`);
-  };
-
-  // Updated addNotification dengan parameter type
-  const addNotification = (message, link = "#", type = "info") => {
+  const addNotification = useCallback((message, link = "#", type = "info") => {
     const newNotification = {
-      id: Date.now(),
+      id: Date.now() + Math.random(),
       message,
-      type, // Jenis notifikasi: 'info', 'article_reply', 'admin_broadcast', 'points_deduction'
+      type,
       timestamp: new Date().toISOString(),
       read: false,
       link,
     };
-    setNotifications((prev) => [newNotification, ...prev].slice(0, 20)); // Batasi jumlah notif
-  };
+    setNotifications((prev) => [newNotification, ...prev].slice(0, 20));
+  }, []);
 
-  // --- FUNGSI BARU UNTUK BROADCAST ADMIN ---
-  const broadcastAdminMessage = (title, messageBody) => {
-    const fullMessage = `${title}: ${messageBody}`;
-    addNotification(fullMessage, "/#", "admin_broadcast"); // Link ke homepage atau halaman pengumuman khusus
-    console.log("Admin Broadcast Sent:", fullMessage);
-    // Di aplikasi nyata, ini akan mengirim ke semua pengguna via backend/push service
-  };
-  // --- AKHIR FUNGSI BROADCAST ADMIN ---
-
-  const markNotificationAsRead = (notificationId) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+  const deleteNotification = (notificationId) => {
+    setNotifications((prevNotifications) =>
+      prevNotifications.filter(
+        (notification) => notification.id !== notificationId
+      )
     );
   };
 
-  const markAllNotificationsAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const toggleBookmark = (articleId) => {
+    const isCurrentlyBookmarked = articleInteractions[articleId]?.isBookmarked;
+    setArticleInteractions((prev) => ({
+      ...prev,
+      [articleId]: { ...prev[articleId], isBookmarked: !isCurrentlyBookmarked },
+    }));
+    if (!isCurrentlyBookmarked) {
+      addNotification(
+        `Artikel "${initialArticlesStaticData[articleId]?.title}" ditambahkan ke bookmark.`,
+        "/user/dashboard/bookmarks"
+      );
+    } else {
+      addNotification(
+        `Artikel "${initialArticlesStaticData[articleId]?.title}" dihapus dari bookmark.`,
+        "/user/dashboard/bookmarks"
+      );
+    }
   };
 
   const toggleLikeArticle = (articleId) => {
     setArticleInteractions((prev) => {
-      const current = prev[articleId] || {
-        likes: 0,
-        dislikes: 0,
-        userVote: null,
-        isBookmarked: false,
-      };
-      let newLikes = current.likes;
-      let newDislikes = current.dislikes;
-      let newUserVote = current.userVote;
-      let newIsBookmarked = current.isBookmarked;
-      if (newUserVote === "liked") {
-        newLikes = Math.max(0, newLikes - 1);
-        newUserVote = null;
-        newIsBookmarked = false;
-      } else {
-        newLikes++;
-        if (newUserVote === "disliked")
-          newDislikes = Math.max(0, newDislikes - 1);
-        newUserVote = "liked";
-        newIsBookmarked = true;
-      }
+      const current = prev[articleId];
+      const isLiked = current.userVote === "liked";
       return {
         ...prev,
         [articleId]: {
           ...current,
-          likes: newLikes,
-          dislikes: newDislikes,
-          userVote: newUserVote,
-          isBookmarked: newIsBookmarked,
+          likes: isLiked ? current.likes - 1 : current.likes + 1,
+          dislikes:
+            current.userVote === "disliked"
+              ? current.dislikes - 1
+              : current.dislikes,
+          userVote: isLiked ? null : "liked",
         },
       };
     });
@@ -258,147 +146,78 @@ export const ArticleInteractionProvider = ({ children }) => {
 
   const toggleDislikeArticle = (articleId) => {
     setArticleInteractions((prev) => {
-      const current = prev[articleId] || {
-        likes: 0,
-        dislikes: 0,
-        userVote: null,
-        isBookmarked: false,
-      };
-      let newLikes = current.likes;
-      let newDislikes = current.dislikes;
-      let newUserVote = current.userVote;
-      let newIsBookmarked = current.isBookmarked;
-      if (newUserVote === "disliked") {
-        newDislikes = Math.max(0, newDislikes - 1);
-        newUserVote = null;
-      } else {
-        newDislikes++;
-        if (newUserVote === "liked") {
-          newLikes = Math.max(0, newLikes - 1);
-          newIsBookmarked = false;
-        }
-        newUserVote = "disliked";
-      }
+      const current = prev[articleId];
+      const isDisliked = current.userVote === "disliked";
       return {
         ...prev,
         [articleId]: {
           ...current,
-          likes: newLikes,
-          dislikes: newDislikes,
-          userVote: newUserVote,
-          isBookmarked: newIsBookmarked,
+          dislikes: isDisliked ? current.dislikes - 1 : current.dislikes + 1,
+          likes:
+            current.userVote === "liked" ? current.likes - 1 : current.likes,
+          userVote: isDisliked ? null : "disliked",
         },
       };
     });
   };
 
-  const addCommentToArticle = (
-    articleId,
-    author,
-    text,
-    userId = "user001" /* Ganti dengan ID user yg login */
-  ) => {
-    const articleTitle =
-      initialArticlesStaticData[articleId]?.title || "sebuah artikel";
-    // Fungsi yang Anda inginkan: status otomatis berdasarkan konten
-    const initialStatus = containsBadWords(text)
-      ? "pending_review"
-      : "approved";
-    const userMakingComment = allUsersData.find((u) => u.id === userId);
-
+  const addCommentToArticle = (articleId, authorName, text, currentUser) => {
     const newComment = {
       id: Date.now(),
       articleId,
-      userId,
-      author:
-        author.trim() === ""
-          ? userMakingComment?.name || "Pengguna Anonim"
-          : author,
+      userId: currentUser.id,
+      author: authorName,
       text,
       timestamp: Date.now(),
-      avatarUrl: userMakingComment?.avatarUrl || "/placeholder-avatar.png",
+      avatarUrl: currentUser.avatarUrl,
       likes: 0,
       dislikes: 0,
       userVoteOnComment: null,
       replies: [],
-      status: initialStatus,
+      status: "approved",
     };
     setArticleCommentsState((prev) => ({
       ...prev,
       [articleId]: [newComment, ...(prev[articleId] || [])],
     }));
-
-    if (initialStatus === "pending_review") {
-      addNotification(
-        `Komentar baru dari ${newComment.author} di artikel "${articleTitle}" menunggu moderasi oleh Admin.`,
-        `/admin/dashboard/comments`,
-        "info" // Tipe notifikasi untuk moderasi
-      );
-    }
-    // Jika Anda ingin notifikasi ke pemilik artikel (jika bukan user saat ini), tambahkan logikanya di sini.
+    addNotification(
+      `${authorName} mengomentari: "${initialArticlesStaticData[articleId]?.title}"`,
+      `/article/${articleId}#comment-section`
+    );
   };
 
-  const addReplyToCommentContext = (
+  const addReplyToComment = (
     articleId,
-    parentCommentId,
-    replyAuthor,
-    replyText,
-    userId = "user001"
+    parentId,
+    authorName,
+    text,
+    currentUser
   ) => {
-    const articleTitle =
-      initialArticlesStaticData[articleId]?.title || "sebuah artikel";
-    // Fungsi yang Anda inginkan: status otomatis berdasarkan konten
-    const initialStatus = containsBadWords(replyText)
-      ? "pending_review"
-      : "approved";
-    const userMakingReply = allUsersData.find((u) => u.id === userId);
-
     const newReply = {
       id: Date.now(),
-      parentId: parentCommentId,
+      parentId,
       articleId,
-      userId,
-      author:
-        replyAuthor.trim() === ""
-          ? userMakingReply?.name || "Pengguna Anonim"
-          : replyAuthor,
-      text: replyText,
+      userId: currentUser.id,
+      author: authorName,
+      text,
       timestamp: Date.now(),
-      avatarUrl: userMakingReply?.avatarUrl || "/placeholder-avatar.png",
+      avatarUrl: currentUser.avatarUrl,
       likes: 0,
       dislikes: 0,
       userVoteOnComment: null,
       replies: [],
-      status: initialStatus,
     };
     setArticleCommentsState((prev) => ({
       ...prev,
-      [articleId]: addReplyRecursive(
-        prev[articleId] || [],
-        parentCommentId,
-        newReply
-      ),
+      [articleId]: addReplyRecursive(prev[articleId] || [], parentId, newReply),
     }));
-
-    // Notifikasi ke admin jika perlu moderasi, atau notifikasi ke pengguna lain jika relevan
-    if (initialStatus === "pending_review") {
-      addNotification(
-        `Balasan baru dari ${newReply.author} di artikel "${articleTitle}" menunggu moderasi.`,
-        `/admin/dashboard/comments`,
-        "info"
-      );
-    } else {
-      // Contoh notifikasi ke penulis komentar yang dibalas (jika penulisnya beda & kita tahu IDnya)
-      // Ini memerlukan logika lebih untuk mencari userId dari parentCommentId
-      addNotification(
-        `Balasan baru dari ${newReply.author} untuk komentar di artikel "${articleTitle}".`,
-        `/article/${articleId}#comment-${newReply.id}`, // Arahkan ke balasan baru
-        "article_reply"
-      );
-    }
+    addNotification(
+      `${authorName} membalas komentar Anda.`,
+      `/article/${articleId}#comment-${newReply.id}`
+    );
   };
 
-  const toggleCommentLike = (articleId, commentId) => {
+  const toggleCommentLike = (articleId, commentId) =>
     setArticleCommentsState((prev) => ({
       ...prev,
       [articleId]: updateCommentVoteRecursive(
@@ -407,9 +226,7 @@ export const ArticleInteractionProvider = ({ children }) => {
         "like"
       ),
     }));
-  };
-
-  const toggleCommentDislike = (articleId, commentId) => {
+  const toggleCommentDislike = (articleId, commentId) =>
     setArticleCommentsState((prev) => ({
       ...prev,
       [articleId]: updateCommentVoteRecursive(
@@ -418,131 +235,35 @@ export const ArticleInteractionProvider = ({ children }) => {
         "dislike"
       ),
     }));
-  };
-
-  const getCommentCountForArticleContext = (articleId) => {
-    return calculateTotalComments(articleCommentsState[articleId] || []);
-  };
-
-  // Fungsi untuk moderasi oleh Admin
-  const moderateComment = (
-    articleId,
-    commentId,
-    newStatus,
-    commentAuthorUserId
-  ) => {
-    const updateStatusOnlyRecursive = (commentList, targetId, statusToSet) => {
-      if (!Array.isArray(commentList)) return []; // Tambahkan guard
-      return commentList.map((c) => {
-        let newC = { ...c };
-        if (c.id === targetId) {
-          newC.status = statusToSet;
-        }
-        if (c.replies && c.replies.length > 0) {
-          newC.replies = updateStatusOnlyRecursive(
-            c.replies,
-            targetId,
-            statusToSet
-          );
-        }
-        return newC;
-      });
-    };
-    setArticleCommentsState((prev) => ({
-      ...prev,
-      [articleId]: updateStatusOnlyRecursive(
-        prev[articleId] || [],
-        commentId,
-        newStatus
-      ),
-    }));
-
-    const commentAuthor = allUsersData.find(
-      (u) => u.id === commentAuthorUserId
+  const getCommentCountForArticleContext = useCallback(
+    (articleId) =>
+      calculateTotalComments(articleCommentsState[articleId] || []),
+    [articleCommentsState]
+  );
+  const markNotificationAsRead = (id) =>
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
-    const article = initialArticlesStaticData[articleId];
-
-    if (newStatus === "rejected" && commentAuthorUserId) {
-      const pointsToDeduct = 10;
-      deductUserPoints(commentAuthorUserId, pointsToDeduct); // Fungsi ini sudah memanggil addNotification internal
-      // Notifikasi spesifik penolakan bisa ditambahkan jika deductUserPoints tidak cukup deskriptif
-      // addNotification(
-      //     `Komentar Anda pada artikel "${article?.title || 'sebuah artikel'}" ditolak karena melanggar panduan. Poin Anda dikurangi.`,
-      //     `/dashboard/user/guidelines`
-      // );
-    } else if (newStatus === "approved" && commentAuthorUserId) {
-      addNotification(
-        `Komentar Anda (${commentAuthor?.name || "Anda"}) pada artikel "${
-          article?.title || "sebuah artikel"
-        }" telah disetujui. Terima kasih!`,
-        `/article/${articleId}#comment-${commentId}`,
-        "info"
-      );
-    }
-    console.log(
-      `Admin: Komentar ${commentId} di artikel ${articleId} statusnya diubah menjadi ${newStatus}`
-    );
-  };
-
-  const deleteCommentContext = (
-    articleId,
-    commentId,
-    commentAuthorUserId,
-    isNegative = false
-  ) => {
-    const deleteRecursive = (commentList, targetId) => {
-      if (!Array.isArray(commentList)) return [];
-      const filtered = commentList.filter((c) => c.id !== targetId);
-      return filtered.map((c) => {
-        if (c.replies && c.replies.length > 0) {
-          return { ...c, replies: deleteRecursive(c.replies, targetId) };
-        }
-        return c;
-      });
-    };
-    setArticleCommentsState((prev) => ({
-      ...prev,
-      [articleId]: deleteRecursive(prev[articleId] || [], commentId),
-    }));
-
-    if (isNegative && commentAuthorUserId) {
-      const pointsToDeduct = 15;
-      deductUserPoints(commentAuthorUserId, pointsToDeduct);
-    }
-    addNotification(
-      `Sebuah komentar pada artikel "${
-        initialArticlesStaticData[articleId]?.title || "sebuah artikel"
-      }" telah dihapus oleh admin.`,
-      `/article/${articleId}`,
-      "info"
-    );
-    console.log(
-      `Admin: Komentar ${commentId} di artikel ${articleId} dihapus.`
-    );
-  };
+  const markAllNotificationsAsRead = () =>
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
 
   const value = {
     articleInteractions,
     articleCommentsState,
     notifications,
     unreadNotificationCount,
-    userPointsMap,
     toggleLikeArticle,
     toggleDislikeArticle,
+    toggleBookmark,
     addCommentToArticle,
-    addReplyToComment: addReplyToCommentContext,
+    addReplyToComment,
     toggleCommentLike,
     toggleCommentDislike,
-    addNotification,
+    getCommentCountForArticleContext,
     markNotificationAsRead,
     markAllNotificationsAsRead,
-    getCommentCountForArticleContext,
-    isArticleBookmarked: (articleId) =>
-      !!articleInteractions[articleId]?.isBookmarked,
-    moderateComment,
-    deleteCommentContext,
-    deductUserPoints,
-    broadcastAdminMessage, // <-- Tambahkan fungsi baru ke context value
+    addNotification,
+    deleteNotification,
   };
 
   return (

@@ -8,9 +8,8 @@ import {
   calculateTotalComments,
 } from "../data/mockData";
 import { MessageSquare } from "lucide-react";
+import BookmarkButton from "../components/BookmarkButton"; // <-- Impor komponen bookmark baru
 
-// Fungsi createSlug (jika belum diimpor dari utils, bisa didefinisikan di sini atau di atas HomePage)
-// Idealnya, ini ada di file utils terpisah dan diimpor
 const createSlug = (text) => {
   if (!text || typeof text !== "string") return "";
   return text
@@ -27,18 +26,25 @@ const SectionTitle = ({ title }) => (
   </div>
 );
 
-const SmallStoryItem = ({ image, title, author, date, link }) => (
+// SmallStoryItem sekarang menerima 'id' untuk BookmarkButton
+const SmallStoryItem = ({ image, title, author, date, link, id }) => (
   <div className="group flex gap-3 items-start">
-    <Link
-      to={link}
-      className="block w-1/3 sm:w-1/4 flex-shrink-0 rounded-md overflow-hidden"
-    >
-      <img
-        src={image || "/placeholder-image.jpg"}
-        alt={title}
-        className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
-      />
-    </Link>
+    <div className="relative w-1/3 sm:w-1/4 flex-shrink-0">
+      <Link to={link} className="block rounded-md overflow-hidden">
+        <img
+          src={image || "/placeholder-image.jpg"}
+          alt={title}
+          className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
+        />
+      </Link>
+      {/* Tombol Bookmark ditambahkan di sini */}
+      <div className="absolute top-1 right-1 z-10">
+        <BookmarkButton
+          articleId={id}
+          className="bg-black/30 backdrop-blur-sm"
+        />
+      </div>
+    </div>
     <div>
       <h4 className="text-sm font-semibold group-hover:text-blue-600 transition-colors line-clamp-2 sm:line-clamp-none">
         <Link to={link}>{title}</Link>
@@ -109,7 +115,6 @@ const HomePage = () => {
   const getArticle = (id) => allArticlesData[id];
   const getCommentCountForArticle = (id) =>
     calculateTotalComments(initialCommentsData[id] || []);
-
   const tagsCategoryData = [
     "Tech & Innovation",
     "Business & Economy",
@@ -136,7 +141,7 @@ const HomePage = () => {
         <div className="lg:col-span-2 space-y-3 sm:space-y-4">
           {mainTravelArticle && (
             <>
-              <div className="relative rounded-lg overflow-hidden shadow-lg">
+              <div className="relative rounded-lg overflow-hidden shadow-lg group">
                 <Link to={`/article/${mainTravelArticle.id}`} className="block">
                   <img
                     src={mainTravelArticle.image || "/placeholder-laptop.jpg"}
@@ -153,6 +158,13 @@ const HomePage = () => {
                     className="w-full h-auto object-cover md:hidden aspect-[4/3] sm:aspect-video"
                   />
                 </Link>
+                {/* Tombol Bookmark ditambahkan di sini */}
+                <div className="absolute top-2 right-2 z-10">
+                  <BookmarkButton
+                    articleId={mainTravelArticle.id}
+                    className="bg-black/30 backdrop-blur-sm"
+                  />
+                </div>
               </div>
               <div className="text-left">
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold hover:text-blue-600 transition-colors leading-tight">
@@ -181,10 +193,10 @@ const HomePage = () => {
           )}
         </div>
         <div className="space-y-3 sm:space-y-4 lg:space-y-3">
-          {popularPostIds
-            .map((id) => getArticle(id))
-            .filter(Boolean)
-            .map((post) => (
+          {popularPostIds.map((id) => {
+            const post = getArticle(id);
+            if (!post) return null;
+            return (
               <div
                 key={post.id}
                 className="grid grid-cols-3 gap-2.5 sm:gap-3 items-start group"
@@ -197,6 +209,13 @@ const HomePage = () => {
                       className="w-full h-full object-cover aspect-[4/3] group-hover:opacity-80 transition-opacity"
                     />
                   </Link>
+                  {/* Tombol Bookmark ditambahkan di sini */}
+                  <div className="absolute top-1 right-1 z-10">
+                    <BookmarkButton
+                      articleId={post.id}
+                      className="bg-black/30 backdrop-blur-sm"
+                    />
+                  </div>
                 </div>
                 <div className="col-span-2">
                   <h3 className="text-sm font-semibold group-hover:text-blue-600 transition-colors line-clamp-2 sm:line-clamp-3">
@@ -222,7 +241,8 @@ const HomePage = () => {
                   />
                 </div>
               </div>
-            ))}
+            );
+          })}
         </div>
       </div>
 
@@ -230,10 +250,10 @@ const HomePage = () => {
       <section className="mb-8 sm:mb-10 md:mb-12">
         <SectionTitle title="Recommendation News" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {recommendationNewsIds
-            .map((id) => getArticle(id))
-            .filter(Boolean)
-            .map((item) => (
+          {recommendationNewsIds.map((id) => {
+            const item = getArticle(id);
+            if (!item) return null;
+            return (
               <div key={item.id} className="group">
                 <h3 className="text-base sm:text-lg font-semibold mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">
                   <Link to={`/article/${item.id}`}>{item.title}</Link>
@@ -249,15 +269,23 @@ const HomePage = () => {
                     })}
                   </span>
                 </div>
-                <ArticleCardStats
-                  likes={item.initialLikes}
-                  dislikes={item.initialDislikes}
-                  commentCount={getCommentCountForArticle(item.id)}
-                  articleId={item.id}
-                  small
-                />
+                {/* Bookmark ditambahkan di sini, sejajar dengan stats */}
+                <div className="flex items-center space-x-4">
+                  <ArticleCardStats
+                    likes={item.initialLikes}
+                    dislikes={item.initialDislikes}
+                    commentCount={getCommentCountForArticle(item.id)}
+                    articleId={item.id}
+                    small
+                  />
+                  <BookmarkButton
+                    articleId={item.id}
+                    className="text-gray-500 hover:text-yellow-500 -ml-2"
+                  />
+                </div>
               </div>
-            ))}
+            );
+          })}
         </div>
       </section>
 
@@ -266,10 +294,10 @@ const HomePage = () => {
         <section className="lg:col-span-2">
           <SectionTitle title="Trending Now" />
           <div className="space-y-5 md:space-y-6">
-            {trendingNowIds
-              .map((id) => getArticle(id))
-              .filter(Boolean)
-              .map((item) => (
+            {trendingNowIds.map((id) => {
+              const item = getArticle(id);
+              if (!item) return null;
+              return (
                 <div
                   key={item.id}
                   className={`group flex flex-col ${
@@ -298,6 +326,13 @@ const HomePage = () => {
                             : "aspect-[4/3] sm:aspect-video"
                         }`}
                       />
+                      {/* Tombol Bookmark ditambahkan di sini */}
+                      <div className="absolute top-2 right-2 z-10">
+                        <BookmarkButton
+                          articleId={item.id}
+                          className="bg-black/30 backdrop-blur-sm"
+                        />
+                      </div>
                     </Link>
                   )}
                   <div
@@ -340,29 +375,41 @@ const HomePage = () => {
                     />
                   </div>
                 </div>
-              ))}
+              );
+            })}
           </div>
         </section>
         <section>
           <SectionTitle title="Latest Updates" />
           <div className="space-y-2.5 sm:space-y-3">
-            {latestUpdatesIds
-              .map((id) => getArticle(id))
-              .filter(Boolean)
-              .map((item) => (
-                <div key={item.id} className="group">
-                  <Link
-                    to={`/article/${item.id}`}
-                    className="block text-sm font-medium text-gray-700 hover:text-blue-600 hover:underline transition-colors line-clamp-2"
-                  >
-                    {item.title}
-                  </Link>
-                  <div className="flex items-center space-x-1 mt-0.5 text-xs text-gray-500">
-                    <MessageSquare size={12} className="text-gray-400" />
-                    <span>{getCommentCountForArticle(item.id)}</span>
+            {latestUpdatesIds.map((id) => {
+              const item = getArticle(id);
+              if (!item) return null;
+              return (
+                <div
+                  key={item.id}
+                  className="group flex justify-between items-start gap-2"
+                >
+                  <div>
+                    <Link
+                      to={`/article/${item.id}`}
+                      className="block text-sm font-medium text-gray-700 hover:text-blue-600 hover:underline transition-colors line-clamp-2"
+                    >
+                      {item.title}
+                    </Link>
+                    <div className="flex items-center space-x-1 mt-0.5 text-xs text-gray-500">
+                      <MessageSquare size={12} className="text-gray-400" />
+                      <span>{getCommentCountForArticle(item.id)}</span>
+                    </div>
                   </div>
+                  {/* Tombol Bookmark ditambahkan di sini */}
+                  <BookmarkButton
+                    articleId={item.id}
+                    className="text-gray-400 hover:text-yellow-500 flex-shrink-0"
+                  />
                 </div>
-              ))}
+              );
+            })}
           </div>
         </section>
       </div>
@@ -372,24 +419,33 @@ const HomePage = () => {
         <section className="lg:col-span-2">
           <SectionTitle title="Breaking News" />
           <div className="space-y-4 md:space-y-5">
-            {breakingNewsIds
-              .map((id) => getArticle(id))
-              .filter(Boolean)
-              .map((item) => (
+            {breakingNewsIds.map((id) => {
+              const item = getArticle(id);
+              if (!item) return null;
+              return (
                 <div
                   key={item.id}
                   className="group flex gap-3 sm:gap-4 items-start"
                 >
-                  <Link
-                    to={`/article/${item.id}`}
-                    className="block w-1/3 sm:w-1/4 flex-shrink-0 rounded-md overflow-hidden"
-                  >
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full object-cover aspect-video group-hover:opacity-80 transition-opacity"
-                    />
-                  </Link>
+                  <div className="relative w-1/3 sm:w-1/4 flex-shrink-0">
+                    <Link
+                      to={`/article/${item.id}`}
+                      className="block rounded-md overflow-hidden"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full object-cover aspect-video group-hover:opacity-80 transition-opacity"
+                      />
+                    </Link>
+                    {/* Tombol Bookmark ditambahkan di sini */}
+                    <div className="absolute top-1 right-1 z-10">
+                      <BookmarkButton
+                        articleId={item.id}
+                        className="bg-black/30 backdrop-blur-sm"
+                      />
+                    </div>
+                  </div>
                   <div>
                     <h3 className="text-sm sm:text-base font-semibold group-hover:text-blue-600 transition-colors line-clamp-2 sm:line-clamp-none">
                       <Link to={`/article/${item.id}`}>{item.title}</Link>
@@ -414,7 +470,8 @@ const HomePage = () => {
                     />
                   </div>
                 </div>
-              ))}
+              );
+            })}
           </div>
         </section>
         <section>
@@ -447,19 +504,22 @@ const HomePage = () => {
           <div>
             {getArticle(mustReadProminentStoryLeftId) && (
               <div className="mb-6 md:mb-8 group">
-                <Link
-                  to={`/article/${mustReadProminentStoryLeftId}`}
-                  className="block mb-2 sm:mb-3 rounded-lg overflow-hidden shadow-md"
-                >
-                  <img
-                    src={
-                      getArticle(mustReadProminentStoryLeftId).imageLarge ||
-                      getArticle(mustReadProminentStoryLeftId).image
-                    }
-                    alt={getArticle(mustReadProminentStoryLeftId).title}
-                    className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
-                  />
-                </Link>
+                <div className="relative block mb-2 sm:mb-3 rounded-lg overflow-hidden shadow-md">
+                  <Link to={`/article/${mustReadProminentStoryLeftId}`}>
+                    <img
+                      src={getArticle(mustReadProminentStoryLeftId).image}
+                      alt={getArticle(mustReadProminentStoryLeftId).title}
+                      className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
+                    />
+                  </Link>
+                  {/* Tombol Bookmark ditambahkan di sini */}
+                  <div className="absolute top-2 right-2 z-10">
+                    <BookmarkButton
+                      articleId={mustReadProminentStoryLeftId}
+                      className="bg-black/30 backdrop-blur-sm"
+                    />
+                  </div>
+                </div>
                 <h3 className="text-lg sm:text-xl md:text-2xl font-bold group-hover:text-blue-600 transition-colors leading-tight line-clamp-3">
                   <Link to={`/article/${mustReadProminentStoryLeftId}`}>
                     {getArticle(mustReadProminentStoryLeftId).title}
@@ -493,14 +553,14 @@ const HomePage = () => {
               </div>
             )}
             <div className="space-y-1 md:space-y-2">
-              {mustReadSmallerStoriesLeftIds
-                .map((id) => getArticle(id))
-                .filter(Boolean)
-                .map((story) => (
+              {mustReadSmallerStoriesLeftIds.map((id) => {
+                const story = getArticle(id);
+                if (!story) return null;
+                return (
                   <div key={story.id} className="py-2">
                     <SmallStoryItem
                       {...story}
-                      image={story.image || story.imageUrl}
+                      id={id}
                       link={`/article/${story.id}`}
                     />
                     <div className="pl-[calc(33.33%+0.5rem)] sm:pl-[calc(25%+0.5rem)]">
@@ -513,26 +573,30 @@ const HomePage = () => {
                       />
                     </div>
                   </div>
-                ))}
+                );
+              })}
             </div>
           </div>
           {/* Kolom Kanan */}
           <div className="mt-6 lg:mt-0">
             {getArticle(mustReadProminentStoryRightId) && (
               <div className="mb-6 md:mb-8 group">
-                <Link
-                  to={`/article/${mustReadProminentStoryRightId}`}
-                  className="block mb-2 sm:mb-3 rounded-lg overflow-hidden shadow-md"
-                >
-                  <img
-                    src={
-                      getArticle(mustReadProminentStoryRightId).imageLarge ||
-                      getArticle(mustReadProminentStoryRightId).image
-                    }
-                    alt={getArticle(mustReadProminentStoryRightId).title}
-                    className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
-                  />
-                </Link>
+                <div className="relative block mb-2 sm:mb-3 rounded-lg overflow-hidden shadow-md">
+                  <Link to={`/article/${mustReadProminentStoryRightId}`}>
+                    <img
+                      src={getArticle(mustReadProminentStoryRightId).image}
+                      alt={getArticle(mustReadProminentStoryRightId).title}
+                      className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
+                    />
+                  </Link>
+                  {/* Tombol Bookmark ditambahkan di sini */}
+                  <div className="absolute top-2 right-2 z-10">
+                    <BookmarkButton
+                      articleId={mustReadProminentStoryRightId}
+                      className="bg-black/30 backdrop-blur-sm"
+                    />
+                  </div>
+                </div>
                 <h3 className="text-lg sm:text-xl md:text-2xl font-bold group-hover:text-blue-600 transition-colors leading-tight line-clamp-3">
                   <Link to={`/article/${mustReadProminentStoryRightId}`}>
                     {getArticle(mustReadProminentStoryRightId).title}
@@ -566,14 +630,14 @@ const HomePage = () => {
               </div>
             )}
             <div className="space-y-1 md:space-y-2">
-              {mustReadSmallerStoriesRightIds
-                .map((id) => getArticle(id))
-                .filter(Boolean)
-                .map((story) => (
+              {mustReadSmallerStoriesRightIds.map((id) => {
+                const story = getArticle(id);
+                if (!story) return null;
+                return (
                   <div key={story.id} className="py-2">
                     <SmallStoryItem
                       {...story}
-                      image={story.image || story.imageUrl}
+                      id={id}
                       link={`/article/${story.id}`}
                     />
                     <div className="pl-[calc(33.33%+0.5rem)] sm:pl-[calc(25%+0.5rem)]">
@@ -586,7 +650,8 @@ const HomePage = () => {
                       />
                     </div>
                   </div>
-                ))}
+                );
+              })}
             </div>
           </div>
         </div>

@@ -9,55 +9,21 @@ import {
   Bell,
   Award,
   ListChecks,
-  X as CloseIcon,
 } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 import { useArticleInteractions } from "../hooks/useArticleInteractions";
-
-const initialUserDataForDashboard = {
-  username: "ipsum_Larisun",
-  email: "ipsum.larisun@example.com",
-  avatarUrl: "/placeholder-avatar.png",
-  points: 85,
-};
 
 const UserDashboardPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { currentUser, logout, loading, updateUserProfile } = useAuth();
+
   const {
     notifications,
     unreadNotificationCount,
     markNotificationAsRead,
     markAllNotificationsAsRead,
   } = useArticleInteractions();
-
-  const [currentUsername, setCurrentUsername] = useState(
-    initialUserDataForDashboard.username
-  );
-  const [currentAvatar, setCurrentAvatar] = useState(
-    initialUserDataForDashboard.avatarUrl
-  );
-  // Mengambil poin langsung karena setCurrentUserPoints tidak digunakan di komponen ini
-  const currentUserPoints = initialUserDataForDashboard.points;
-
-  const sidebarLinks = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard/user" },
-    {
-      name: "Bookmark",
-      icon: BookmarkIconLucide,
-      path: "/dashboard/user/bookmarks",
-    },
-    { name: "Poin Saya", icon: Award, path: "/dashboard/user/points" },
-    {
-      name: "Panduan Komunitas",
-      icon: Info,
-      path: "/dashboard/user/guidelines",
-    },
-    {
-      name: "Semua Notifikasi",
-      icon: ListChecks,
-      path: "/dashboard/user/all-notifications",
-    },
-  ];
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationButtonRef = useRef(null);
@@ -89,15 +55,11 @@ const UserDashboardPage = () => {
         setIsNotificationsOpen(false);
       }
     };
-    if (isNotificationsOpen)
+    if (isNotificationsOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+    }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isNotificationsOpen]);
-
-  const handleLogout = () => {
-    console.log("Pengguna logout...");
-    navigate("/login");
-  };
 
   const recentNotificationsForDropdown = [...notifications]
     .sort(
@@ -107,16 +69,41 @@ const UserDashboardPage = () => {
     .sort((a, b) => (a.read === b.read ? 0 : a.read ? 1 : -1))
     .slice(0, 5);
 
-  const handleUsernameUpdate = (newUsernameValue) => {
-    setCurrentUsername(newUsernameValue);
-    console.log("Username diupdate di UserDashboardPage:", newUsernameValue);
-    alert("Username berhasil diperbarui (simulasi).");
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
-  const handleAvatarUpdate = (newAvatarDataUrl) => {
-    setCurrentAvatar(newAvatarDataUrl);
-    console.log("Avatar diupdate di UserDashboardPage");
-    alert("Foto profil berhasil diperbarui (simulasi).");
+  if (!currentUser) {
+    return <p>Pengguna tidak ditemukan. Silakan login kembali.</p>;
+  }
+
+  const sidebarLinks = [
+    { name: "Pengaturan Akun", icon: LayoutDashboard, path: "/user/dashboard" },
+    {
+      name: "Artikel Disimpan",
+      icon: BookmarkIconLucide,
+      path: "/user/dashboard/bookmarks",
+    },
+    { name: "Informasi Poin", icon: Award, path: "/user/dashboard/points" },
+    {
+      name: "Panduan Komunitas",
+      icon: Info,
+      path: "/user/dashboard/guidelines",
+    },
+    {
+      name: "Semua Notifikasi",
+      icon: ListChecks,
+      path: "/user/dashboard/all-notifications",
+    },
+  ];
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   return (
@@ -124,13 +111,12 @@ const UserDashboardPage = () => {
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link to="/" className="flex-shrink-0">
-                <span className="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  Logo Utama
-                </span>
-              </Link>
-            </div>
+            <Link
+              to="/"
+              className="text-sm font-medium text-gray-700 hover:bg-gray-50 px-3 py-1.5 border border-gray-300 rounded-md"
+            >
+              Logo Utama
+            </Link>
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <button
@@ -141,7 +127,7 @@ const UserDashboardPage = () => {
                 >
                   <Bell size={22} />
                   {unreadNotificationCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-2 w-2 p-0.5 transform -translate-y-0.5 translate-x-0.5 rounded-full bg-red-500 ring-1 ring-white text-[8px] flex items-center justify-center text-white"></span>
+                    <span className="absolute top-0 right-0 block h-2 w-2 p-0.5 transform -translate-y-0.5 translate-x-0.5 rounded-full bg-red-500 ring-1 ring-white"></span>
                   )}
                 </button>
                 {isNotificationsOpen && (
@@ -185,7 +171,7 @@ const UserDashboardPage = () => {
                               {notif.message}
                             </p>
                             <p className="text-xs text-gray-400">
-                              {new Date(notif.timestamp).toLocaleTimeString(
+                              {new Date(notif.timestamp).toLocaleString(
                                 "id-ID",
                                 {
                                   day: "numeric",
@@ -202,7 +188,7 @@ const UserDashboardPage = () => {
                     {notifications.length > 0 && (
                       <div className="p-2 border-t border-gray-200 text-center">
                         <Link
-                          to="/dashboard/user/all-notifications"
+                          to="/user/dashboard/all-notifications"
                           onClick={() => setIsNotificationsOpen(false)}
                           className="text-xs text-blue-600 hover:underline"
                         >
@@ -216,27 +202,29 @@ const UserDashboardPage = () => {
               <div className="flex items-center space-x-2">
                 <img
                   className="h-8 w-8 rounded-full object-cover"
-                  src={currentAvatar}
+                  src={currentUser.avatarUrl || "/placeholder-avatar.png"}
                   alt="User Avatar"
                 />
                 <span className="text-sm font-medium text-gray-700 hidden sm:block">
-                  {currentUsername}
+                  {currentUser.name}
                 </span>
               </div>
             </div>
           </div>
         </div>
       </header>
+
       <div className="bg-gray-100 pt-4 pb-2">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-lg font-semibold text-gray-600 uppercase tracking-wider">
-            Dashboard User
+            DASHBOARD USER
           </h1>
         </div>
       </div>
+
       <div className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="lg:flex lg:items-start lg:space-x-6">
-          <aside className="w-full lg:w-60 xl:w-64 flex-shrink-0 mb-6 lg:mb-0">
+          <aside className="w-full lg:w-60 xl:w-64 flex-shrink-0 mb-6 lg:mb-0 lg:sticky lg:top-20">
             <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md h-full flex flex-col justify-between">
               <div>
                 <div className="flex items-center space-x-2 mb-6 pb-3 border-b border-gray-200">
@@ -246,18 +234,15 @@ const UserDashboardPage = () => {
                 </div>
                 <nav className="space-y-1.5">
                   {sidebarLinks.map((link) => {
-                    const isActive =
-                      location.pathname === link.path ||
-                      (link.path !== "/dashboard/user" &&
-                        location.pathname.startsWith(link.path));
+                    const isActive = location.pathname === link.path;
                     return (
                       <Link
                         key={link.name}
                         to={link.path}
-                        className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out ${
+                        className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                           isActive
                             ? "bg-blue-600 text-white shadow-sm"
-                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                            : "text-gray-700 hover:bg-gray-100"
                         }`}
                       >
                         <link.icon
@@ -277,7 +262,7 @@ const UserDashboardPage = () => {
               <div className="mt-auto pt-4 border-t border-gray-200">
                 <button
                   onClick={handleLogout}
-                  className="group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-150 ease-in-out"
+                  className="group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600"
                 >
                   <LogOut
                     size={18}
@@ -289,20 +274,12 @@ const UserDashboardPage = () => {
             </div>
           </aside>
           <main className="flex-1 min-w-0">
-            <Outlet
-              context={{
-                currentUsername,
-                currentAvatar,
-                onUsernameUpdate: handleUsernameUpdate,
-                onAvatarUpdate: handleAvatarUpdate,
-                currentUserEmail: initialUserDataForDashboard.email,
-                currentUserPoints,
-              }}
-            />
+            <Outlet context={{ currentUser, updateUserProfile }} />
           </main>
         </div>
       </div>
     </div>
   );
 };
+
 export default UserDashboardPage;

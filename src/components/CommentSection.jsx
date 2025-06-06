@@ -6,27 +6,22 @@ import { MessageSquare } from "lucide-react";
 import { calculateTotalComments } from "../data/mockData";
 
 const CommentSection = ({
-  articleId,
   comments = [],
   onAddComment,
   onAddReply,
   onToggleLikeComment,
   onToggleDislikeComment,
-  currentUserPoints, // <-- TERIMA PROP BARU
 }) => {
-  const totalCommentsForSectionTitle = calculateTotalComments(comments);
+  const totalComments = calculateTotalComments(comments);
 
   return (
     <div className="mt-8 pt-8 border-t border-gray-200">
       <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 flex items-center space-x-2">
         <MessageSquare size={24} className="text-blue-600" />
-        <span>Komentar ({totalCommentsForSectionTitle})</span>
+        <span>Komentar ({totalComments})</span>
       </h3>
 
-      <CommentForm
-        onSubmitComment={onAddComment}
-        currentUserPoints={currentUserPoints} // <-- TERUSKAN KE COMMENTFORM
-      />
+      <CommentForm onSubmitComment={onAddComment} />
 
       <div className="mt-6 space-y-0 divide-y divide-gray-200">
         {comments.length > 0 ? (
@@ -34,12 +29,9 @@ const CommentSection = ({
             <CommentItem
               key={comment.id}
               comment={comment}
-              onAddReply={onAddReply} // Pastikan onAddReply juga mempertimbangkan poin jika perlu
+              onAddReply={onAddReply}
               onToggleLikeComment={onToggleLikeComment}
               onToggleDislikeComment={onToggleDislikeComment}
-              // Untuk balasan, kita juga bisa meneruskan currentUserPoints ke CommentItem -> ReplyForm
-              // Jika logika poin berlaku juga untuk membalas
-              currentUserPointsForReply={currentUserPoints}
             />
           ))
         ) : (
@@ -51,4 +43,5 @@ const CommentSection = ({
     </div>
   );
 };
+
 export default CommentSection;
