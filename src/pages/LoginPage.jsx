@@ -1,17 +1,17 @@
 // src/pages/LoginPage.jsx
 import React, { useState } from "react";
-import { User, Lock, AlertCircle, LogIn } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { User, Lock, AlertCircle, LogIn } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { allUsersData } from "../data/mockData"; // <-- Impor data user untuk cek role
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, error, loading, isAdmin } = useAuth();
+  const { login, error, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Arahkan pengguna kembali ke halaman yang mereka coba akses sebelum login
   const from = location.state?.from?.pathname || null;
 
   const handleSubmit = async (e) => {
@@ -19,13 +19,21 @@ const LoginPage = () => {
     const loginSuccess = await login(email, password);
 
     if (loginSuccess) {
-      // Jika ada halaman tujuan sebelumnya, arahkan ke sana
+      // --- LOGIKA PERBAIKAN ---
+      // Setelah login berhasil, kita periksa role user secara manual dari data
+      // untuk menentukan tujuan redirect.
+      const user = allUsersData.find(
+        (u) => u.email.toLowerCase() === email.toLowerCase()
+      );
+
+      // Jika ada halaman tujuan sebelumnya (misal: mencoba akses halaman terproteksi), kembali ke sana
       if (from) {
         navigate(from, { replace: true });
         return;
       }
+
       // Jika tidak, arahkan berdasarkan peran
-      if (isAdmin()) {
+      if (user && user.role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
         navigate("/user/dashboard", { replace: true });
@@ -35,7 +43,6 @@ const LoginPage = () => {
 
   return (
     <div className="relative min-h-screen bg-blue-700 flex flex-col items-center justify-center p-4 overflow-hidden">
-      {/* Background SVG */}
       <div className="absolute inset-0 pointer-events-none opacity-80 sm:opacity-100">
         <svg
           width="100%"
@@ -66,7 +73,6 @@ const LoginPage = () => {
           />
         </svg>
       </div>
-
       <div className="relative z-10 w-full max-w-xs sm:max-w-sm">
         <div className="text-center mb-6">
           <Link to="/" className="text-3xl font-bold text-white">

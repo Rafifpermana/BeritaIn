@@ -1,4 +1,4 @@
-// src/pages/admin/AdminDashboardPage.jsx
+// src/pages/AdminDashboardPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
@@ -13,14 +13,13 @@ import {
   Menu,
   X as CloseIcon,
 } from "lucide-react";
-import ClientPortal from "../utils/Portal"; // Pastikan path ini benar
+import ClientPortal from "../utils/Portal";
+import { useAuth } from "../contexts/AuthContext"; // <-- Impor useAuth untuk data dinamis
 
 const AdminDashboardPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const adminName = "Admin Utama";
-  const adminAvatarPlaceholder = "/placeholder-avatar-admin.png"; // Ganti dengan path avatar admin Anda
+  const { currentUser, logout } = useAuth(); // <-- Gunakan data dari AuthContext
 
   const sidebarLinks = [
     { name: "Overview", icon: LayoutDashboard, path: "/admin/dashboard" },
@@ -35,11 +34,6 @@ const AdminDashboardPage = () => {
       icon: Megaphone,
       path: "/admin/dashboard/broadcast",
     },
-    {
-      name: "Pengaturan Situs",
-      icon: Settings2,
-      path: "/admin/dashboard/settings",
-    },
   ];
 
   const [isAdminNotificationsOpen, setIsAdminNotificationsOpen] =
@@ -47,10 +41,11 @@ const AdminDashboardPage = () => {
   const adminNotificationButtonRef = useRef(null);
   const adminNotificationPanelRef = useRef(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const mobileSidebarRef = useRef(null); // Ref untuk panel sidebar mobile
+  const mobileSidebarRef = useRef(null);
 
+  // Fungsi logout sekarang memanggil fungsi dari context
   const handleLogout = () => {
-    console.log("Admin logout...");
+    logout();
     navigate("/login");
   };
 
@@ -58,7 +53,6 @@ const AdminDashboardPage = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen);
   const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
 
-  // Efek untuk menutup dropdown/sidebar saat klik di luar
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -70,15 +64,13 @@ const AdminDashboardPage = () => {
       ) {
         setIsAdminNotificationsOpen(false);
       }
-      // Untuk mobile sidebar, overlay yang akan handle close, atau link di dalamnya
       if (
         isMobileSidebarOpen &&
         mobileSidebarRef.current &&
         !mobileSidebarRef.current.contains(event.target) &&
         event.target.closest('[data-testid="mobile-burger-button"]') === null
       ) {
-        // Cek agar tidak tertutup jika klik tombol burger lagi
-        // setIsMobileSidebarOpen(false); // Overlay lebih baik untuk ini
+        closeMobileSidebar();
       }
     };
     if (isAdminNotificationsOpen || isMobileSidebarOpen) {
@@ -87,24 +79,28 @@ const AdminDashboardPage = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isAdminNotificationsOpen, isMobileSidebarOpen]);
 
-  // Tutup mobile sidebar saat path berubah
   useEffect(() => {
     closeMobileSidebar();
   }, [location.pathname]);
+
+  // Pengaman jika data admin belum ada
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
       <header className="bg-slate-800 text-white shadow-md sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6">
-          {" "}
-          {/* Padding konsisten */}
           <div className="flex items-center justify-between h-14 sm:h-16">
-            {" "}
-            {/* Tinggi header sedikit disesuaikan */}
             <div className="flex items-center">
               <button
                 data-testid="mobile-burger-button"
-                className="lg:hidden mr-2 text-slate-300 hover:text-white p-1.5 -ml-1.5" // Padding & margin disesuaikan
+                className="lg:hidden mr-2 text-slate-300 hover:text-white p-1.5 -ml-1.5"
                 onClick={toggleMobileSidebar}
                 aria-label="Buka menu navigasi"
               >
@@ -118,17 +114,8 @@ const AdminDashboardPage = () => {
                 to="/admin/dashboard"
                 className="flex items-center space-x-2 text-lg sm:text-xl font-semibold"
               >
-                {" "}
-                {/* Ukuran font disesuaikan */}
-                <Shield
-                  size={24}
-                  sm={28}
-                  className="text-sky-400 flex-shrink-0"
-                />
-                <span className="hidden xxs:inline xs:inline sm:inline">
-                  Admin Panel
-                </span>{" "}
-                {/* Tampil di layar sangat kecil juga */}
+                <Shield size={24} className="text-sky-400 flex-shrink-0" />
+                <span className="hidden xxs:inline sm:inline">Admin Panel</span>
               </Link>
             </div>
             <div className="flex items-center space-x-2.5 sm:space-x-4">
@@ -138,27 +125,26 @@ const AdminDashboardPage = () => {
                   onClick={() => setIsAdminNotificationsOpen((p) => !p)}
                   className="p-1.5 rounded-full hover:bg-slate-700 focus:outline-none relative"
                 >
-                  <Bell size={20} sm={22} />
-                  {/* Indikator notifikasi (jika ada unread) */}
+                  <Bell size={20} />
                 </button>
                 {isAdminNotificationsOpen && (
                   <div
                     ref={adminNotificationPanelRef}
                     className="absolute top-12 sm:top-14 right-0 mt-2 w-72 sm:w-80 bg-white rounded-md shadow-lg border text-gray-800 z-50"
                   >
-                    {" "}
-                    /* ... */{" "}
+                    <div className="p-4 text-center">Notifikasi Admin</div>
                   </div>
                 )}
               </div>
               <div className="flex items-center space-x-1.5 sm:space-x-2">
+                {/* --- Data Admin Dinamis --- */}
                 <img
                   className="h-7 w-7 sm:h-8 sm:w-8 rounded-full object-cover border-2 border-sky-400"
-                  src={adminAvatarPlaceholder}
+                  src={currentUser.avatarUrl}
                   alt="Admin Avatar"
                 />
                 <span className="text-xs sm:text-sm font-medium hidden sm:block">
-                  {adminName}
+                  {currentUser.name}
                 </span>
               </div>
             </div>
@@ -175,12 +161,9 @@ const AdminDashboardPage = () => {
           ></div>
           <div
             ref={mobileSidebarRef}
-            className={`fixed top-0 left-0 h-full w-60 bg-slate-800 text-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out lg:hidden 
-                          ${
-                            isMobileSidebarOpen
-                              ? "translate-x-0"
-                              : "-translate-x-full"
-                          }`}
+            className={`fixed top-0 left-0 h-full w-60 bg-slate-800 text-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out lg:hidden ${
+              isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
           >
             <div className="p-4 flex flex-col h-full">
               <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-700">
@@ -204,24 +187,19 @@ const AdminDashboardPage = () => {
                   const isActive =
                     location.pathname === link.path ||
                     (link.path !== "/admin/dashboard" &&
-                      location.pathname.startsWith(link.path + "/"));
+                      location.pathname.startsWith(link.path));
                   return (
                     <Link
                       key={link.name}
                       to={link.path}
                       onClick={closeMobileSidebar}
-                      className={`group flex items-center w-full px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors 
-                                  ${
-                                    isActive
-                                      ? "bg-sky-600 text-white"
-                                      : "text-slate-300 hover:bg-slate-700 hover:text-white"
-                                  }`}
+                      className={`group flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                        isActive
+                          ? "bg-sky-600 text-white"
+                          : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                      }`}
                     >
-                      <link.icon
-                        size={16}
-                        sm={18}
-                        className="mr-2.5 sm:mr-3 flex-shrink-0"
-                      />
+                      <link.icon size={18} className="mr-3 flex-shrink-0" />
                       {link.name}
                     </Link>
                   );
@@ -229,13 +207,10 @@ const AdminDashboardPage = () => {
               </nav>
               <div className="mt-auto pt-4 border-t border-slate-700">
                 <button
-                  onClick={() => {
-                    handleLogout();
-                    closeMobileSidebar();
-                  }}
-                  className="group flex items-center w-full px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-300 hover:bg-red-700 hover:text-white transition-colors"
+                  onClick={handleLogout}
+                  className="group flex items-center w-full px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-red-700 hover:text-white transition-colors"
                 >
-                  <LogOut size={16} sm={18} className="mr-2.5 sm:mr-3" />
+                  <LogOut size={18} className="mr-3" />
                   Logout
                 </button>
               </div>
@@ -244,41 +219,35 @@ const AdminDashboardPage = () => {
         </ClientPortal>
       )}
 
-      {/* Konten Utama */}
-      <div className="flex-grow container mx-auto px-2 xxs:px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      {/* Layout Konten Utama */}
+      <div className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="lg:flex lg:items-start lg:space-x-6">
-          {/* Sidebar Desktop */}
           <aside className="hidden lg:block w-60 xl:w-64 flex-shrink-0">
-            <div className="bg-white p-3 sm:p-4 rounded-xl shadow-lg h-full flex flex-col justify-between border border-gray-200 sticky top-[calc(theme(space.16)_+_1.5rem)]">
-              {" "}
-              {/* Sesuaikan top dengan tinggi header + jarak */}
+            <div className="bg-white p-4 rounded-xl shadow-lg h-full flex flex-col justify-between border border-gray-200 sticky top-20">
               <nav className="space-y-1.5">
-                <div className="flex items-center justify-center space-x-2 mb-4 pb-3 border-b border-gray-200 pt-1">
-                  <div className="px-3 py-1.5 text-xs sm:text-sm font-medium text-gray-700">
+                <div className="flex items-center justify-center mb-4 pb-3 border-b border-gray-200 pt-1">
+                  <div className="px-3 py-1.5 text-sm font-medium text-gray-700">
                     Logo Dash
-                  </div>{" "}
-                  {/* Font disesuaikan */}
+                  </div>
                 </div>
                 {sidebarLinks.map((link) => {
                   const isActive =
                     location.pathname === link.path ||
                     (link.path !== "/admin/dashboard" &&
-                      location.pathname.startsWith(link.path + "/"));
+                      location.pathname.startsWith(link.path));
                   return (
                     <Link
                       key={link.name}
                       to={link.path}
-                      className={`group flex items-center w-full px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors 
-                                  ${
-                                    isActive
-                                      ? "bg-sky-600 text-white shadow-sm"
-                                      : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-                                  }`}
+                      className={`group flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        isActive
+                          ? "bg-sky-600 text-white shadow-sm"
+                          : "text-slate-700 hover:bg-slate-100"
+                      }`}
                     >
                       <link.icon
-                        size={16}
-                        sm={18}
-                        className={`mr-2.5 sm:mr-3 flex-shrink-0 ${
+                        size={18}
+                        className={`mr-3 flex-shrink-0 ${
                           isActive
                             ? "text-white"
                             : "text-slate-400 group-hover:text-slate-500"
@@ -292,20 +261,18 @@ const AdminDashboardPage = () => {
               <div className="mt-6 pt-4 border-t border-gray-200">
                 <button
                   onClick={handleLogout}
-                  className="group flex items-center w-full px-3 py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-700 hover:bg-red-100 hover:text-red-700 transition-colors"
+                  className="group flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:bg-red-100 hover:text-red-700"
                 >
                   <LogOut
-                    size={16}
-                    sm={18}
-                    className="mr-2.5 sm:mr-3 text-slate-400 group-hover:text-red-600"
+                    size={18}
+                    className="mr-3 text-slate-400 group-hover:text-red-600"
                   />
                   Logout
                 </button>
               </div>
             </div>
           </aside>
-
-          <main className="flex-1 min-w-0">
+          <main className="flex-1 min-w-0 mt-6 lg:mt-0">
             <Outlet />
           </main>
         </div>

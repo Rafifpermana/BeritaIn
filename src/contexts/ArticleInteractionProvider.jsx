@@ -5,14 +5,16 @@ import {
   allArticlesData as initialArticlesStaticData,
   initialCommentsData as rawInitialCommentsData,
   calculateTotalComments,
+  allUsersData,
 } from "../data/mockData";
 
+// --- Fungsi Helper (tidak diubah) ---
 const addReplyRecursive = (comments, parentId, newReply) => {
   return comments.map((comment) => {
     if (comment.id === parentId) {
       return { ...comment, replies: [newReply, ...(comment.replies || [])] };
     }
-    if (comment.replies && comment.replies.length > 0) {
+    if (comment.replies?.length > 0) {
       return {
         ...comment,
         replies: addReplyRecursive(comment.replies, parentId, newReply),
@@ -28,7 +30,6 @@ const updateCommentVoteRecursive = (list, id, voteType) => {
       const newComment = { ...comment };
       const isLiked = newComment.userVoteOnComment === "liked";
       const isDisliked = newComment.userVoteOnComment === "disliked";
-
       if (voteType === "like") {
         newComment.likes = isLiked
           ? (newComment.likes || 1) - 1
@@ -36,7 +37,6 @@ const updateCommentVoteRecursive = (list, id, voteType) => {
         if (isDisliked) newComment.dislikes = (newComment.dislikes || 1) - 1;
         newComment.userVoteOnComment = isLiked ? null : "liked";
       } else {
-        // 'dislike'
         newComment.dislikes = isDisliked
           ? (newComment.dislikes || 1) - 1
           : (newComment.dislikes || 0) + 1;
@@ -59,10 +59,9 @@ export const ArticleInteractionProvider = ({ children }) => {
   const [articleInteractions, setArticleInteractions] = useState(() => {
     const interactions = {};
     Object.keys(initialArticlesStaticData).forEach((id) => {
-      const article = initialArticlesStaticData[id];
       interactions[id] = {
-        likes: article.initialLikes || 0,
-        dislikes: article.initialDislikes || 0,
+        likes: initialArticlesStaticData[id].initialLikes || 0,
+        dislikes: initialArticlesStaticData[id].initialDislikes || 0,
         userVote: null,
         isBookmarked: false,
       };
@@ -73,17 +72,15 @@ export const ArticleInteractionProvider = ({ children }) => {
   const [articleCommentsState, setArticleCommentsState] = useState(
     rawInitialCommentsData
   );
+  const [notifications, setNotifications] = useState([]);
+  const [userPointsMap, setUserPointsMap] = useState(() => {
+    const points = {};
+    allUsersData.forEach((user) => {
+      points[user.id] = user.points;
+    });
+    return points;
+  });
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      message: "Selamat datang di BeritaIn!",
-      type: "info",
-      timestamp: new Date().toISOString(),
-      read: true,
-      link: "#",
-    },
-  ]);
   const unreadNotificationCount = notifications.filter((n) => !n.read).length;
 
   const addNotification = useCallback((message, link = "#", type = "info") => {
@@ -98,13 +95,88 @@ export const ArticleInteractionProvider = ({ children }) => {
     setNotifications((prev) => [newNotification, ...prev].slice(0, 20));
   }, []);
 
-  const deleteNotification = (notificationId) => {
-    setNotifications((prevNotifications) =>
-      prevNotifications.filter(
-        (notification) => notification.id !== notificationId
-      )
+  const deductUserPoints = (userId, amount) => {
+    setUserPointsMap((prev) => {
+      const currentPoints = prev[userId] || 0;
+      const newPoints = Math.max(0, currentPoints - amount);
+      const user = allUsersData.find((u) => u.id === userId);
+      if (user) {
+        addNotification(
+          `Poin untuk ${user.name} dikurangi ${amount} karena pelanggaran. Poin sekarang: ${newPoints}.`,
+          `/admin/dashboard/users`,
+          "points_deduction"
+        );
+      }
+      return { ...prev, [userId]: newPoints };
+    });
+  };
+
+  const moderateComment = (
+    articleId,
+    commentId,
+    newStatus,
+    userId,
+    pointsToDeduct = 10
+  ) => {
+    const updateStatusRecursive = (comments, targetId, status) =>
+      comments.map((c) => ({
+        ...c,
+        status: c.id === targetId ? status : c.status,
+        replies:
+          c.replies?.length > 0
+            ? updateStatusRecursive(c.replies, targetId, status)
+            : [],
+      }));
+
+    setArticleCommentsState((prev) => ({
+      ...prev,
+      [articleId]: updateStatusRecursive(prev[articleId], commentId, newStatus),
+    }));
+
+    if (newStatus === "rejected" && userId) {
+      deductUserPoints(userId, pointsToDeduct);
+    }
+  };
+
+  const deleteCommentContext = (
+    articleId,
+    commentId,
+    userId,
+    pointsToDeduct = 15
+  ) => {
+    const deleteRecursive = (comments, targetId) =>
+      comments
+        .filter((c) => c.id !== targetId)
+        .map((c) => ({
+          ...c,
+          replies:
+            c.replies?.length > 0 ? deleteRecursive(c.replies, targetId) : [],
+        }));
+
+    setArticleCommentsState((prev) => ({
+      ...prev,
+      [articleId]: deleteRecursive(prev[articleId] || [], commentId),
+    }));
+
+    if (userId) {
+      deductUserPoints(userId, pointsToDeduct);
+    }
+    addNotification(
+      `Komentar pada artikel "${initialArticlesStaticData[articleId]?.title}" telah dihapus oleh admin.`,
+      `/article/${articleId}`
     );
   };
+
+  const broadcastAdminMessage = (title, messageBody) => {
+    addNotification(
+      `PENGUMUMAN: ${title} - ${messageBody}`,
+      "/#",
+      "admin_broadcast"
+    );
+  };
+
+  const deleteNotification = (id) =>
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
 
   const toggleBookmark = (articleId) => {
     const isCurrentlyBookmarked = articleInteractions[articleId]?.isBookmarked;
@@ -264,6 +336,12 @@ export const ArticleInteractionProvider = ({ children }) => {
     markAllNotificationsAsRead,
     addNotification,
     deleteNotification,
+    // --- Admin Functions ---
+    userPointsMap,
+    moderateComment,
+    deleteCommentContext,
+    broadcastAdminMessage,
+    deductUserPoints,
   };
 
   return (
