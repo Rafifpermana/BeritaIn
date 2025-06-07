@@ -38,7 +38,7 @@ const SmallStoryItem = ({ image, title, author, date, link, id }) => (
         />
       </Link>
       {/* Tombol Bookmark ditambahkan di sini */}
-      <div className="absolute top-1 right-1 z-10">
+      <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         <BookmarkButton
           articleId={id}
           className="bg-black/30 backdrop-blur-sm"
@@ -159,7 +159,7 @@ const HomePage = () => {
                   />
                 </Link>
                 {/* Tombol Bookmark ditambahkan di sini */}
-                <div className="absolute top-2 right-2 z-10">
+                <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                   <BookmarkButton
                     articleId={mainTravelArticle.id}
                     className="bg-black/30 backdrop-blur-sm"
@@ -210,7 +210,7 @@ const HomePage = () => {
                     />
                   </Link>
                   {/* Tombol Bookmark ditambahkan di sini */}
-                  <div className="absolute top-1 right-1 z-10">
+                  <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                     <BookmarkButton
                       articleId={post.id}
                       className="bg-black/30 backdrop-blur-sm"
@@ -280,7 +280,7 @@ const HomePage = () => {
                   />
                   <BookmarkButton
                     articleId={item.id}
-                    className="text-gray-500 hover:text-yellow-500 -ml-2"
+                    className="text-gray-500 hover:text-yellow-500 -ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
                   />
                 </div>
               </div>
@@ -327,7 +327,7 @@ const HomePage = () => {
                         }`}
                       />
                       {/* Tombol Bookmark ditambahkan di sini */}
-                      <div className="absolute top-2 right-2 z-10">
+                      <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                         <BookmarkButton
                           articleId={item.id}
                           className="bg-black/30 backdrop-blur-sm"
@@ -405,7 +405,7 @@ const HomePage = () => {
                   {/* Tombol Bookmark ditambahkan di sini */}
                   <BookmarkButton
                     articleId={item.id}
-                    className="text-gray-400 hover:text-yellow-500 flex-shrink-0"
+                    className="text-gray-400 hover:text-yellow-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   />
                 </div>
               );
@@ -439,7 +439,7 @@ const HomePage = () => {
                       />
                     </Link>
                     {/* Tombol Bookmark ditambahkan di sini */}
-                    <div className="absolute top-1 right-1 z-10">
+                    <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                       <BookmarkButton
                         articleId={item.id}
                         className="bg-black/30 backdrop-blur-sm"
@@ -513,9 +513,9 @@ const HomePage = () => {
                     />
                   </Link>
                   {/* Tombol Bookmark ditambahkan di sini */}
-                  <div className="absolute top-2 right-2 z-10">
+                  <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                     <BookmarkButton
-                      articleId={mustReadProminentStoryLeftId}
+                      articleId={mustReadProminentStoryLeftId} // atau mustReadProminentStoryRightId
                       className="bg-black/30 backdrop-blur-sm"
                     />
                   </div>
@@ -590,7 +590,7 @@ const HomePage = () => {
                     />
                   </Link>
                   {/* Tombol Bookmark ditambahkan di sini */}
-                  <div className="absolute top-2 right-2 z-10">
+                  <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                     <BookmarkButton
                       articleId={mustReadProminentStoryRightId}
                       className="bg-black/30 backdrop-blur-sm"

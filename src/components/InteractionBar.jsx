@@ -89,7 +89,10 @@ const InteractionBar = ({
         {/* Tombol Bookmark Baru Ditambahkan di Sini */}
         {articleId && (
           <div className="p-1 bg-gray-100 rounded-lg hover:bg-gray-200">
-            <BookmarkButton articleId={articleId} className="text-gray-700" />
+            <BookmarkButton
+              articleId={articleId}
+              className="text-black hover:text-gray-700 [&>svg]:text-black [&>svg]:hover:text-gray-700"
+            />
           </div>
         )}
       </div>

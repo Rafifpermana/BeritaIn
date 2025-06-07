@@ -133,7 +133,7 @@ const DetailPage = () => {
               isBookmarked={currentInteractions.isBookmarked}
               onLikeToggle={() => toggleLikeArticle(articleId)}
               onDislikeToggle={() => toggleDislikeArticle(articleId)}
-              // onBookmarkToggle tidak perlu karena tombol akan handle sendiri
+              onBookmarkToggle={() => toggleBookmark(articleId)}
               commentCount={totalCommentCount}
               onCommentClick={scrollToComments}
             />

@@ -41,19 +41,19 @@ const CATEGORIES_NAVBAR_LIST = [
 ];
 
 const ProfileDropdown = ({ onLogout, isAdmin }) => (
-  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-xl border z-50 py-1">
+  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border z-50 py-1 animate-in slide-in-from-top-2 duration-200">
     <Link
       to={isAdmin() ? "/admin/dashboard" : "/user/dashboard"}
-      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+      className="flex items-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
     >
-      <LayoutDashboard size={16} className="mr-2" />
+      <LayoutDashboard size={16} className="mr-3" />
       Dashboard
     </Link>
     <button
       onClick={onLogout}
-      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+      className="flex items-center w-full px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
     >
-      <LogOut size={16} className="mr-2" />
+      <LogOut size={16} className="mr-3" />
       Logout
     </button>
   </div>
@@ -68,6 +68,7 @@ const Navbar = () => {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [searchQuery, setSearchQuery] = useState("");
   const [showNavbar, setShowNavbar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const refs = {
     navbar: useRef(null),
@@ -76,7 +77,6 @@ const Navbar = () => {
     notificationDropdown: useRef(null),
     searchInput: useRef(null),
     mobileSearchInput: useRef(null),
-    lastScrollY: useRef(0),
   };
 
   const navigate = useNavigate();
@@ -88,16 +88,25 @@ const Navbar = () => {
     markAllNotificationsAsRead,
   } = useArticleInteractions();
 
+  // Enhanced scroll handler with smooth transitions
   useEffect(() => {
     const handleScroll = () => {
-      setShowNavbar(
-        window.scrollY < refs.lastScrollY.current || window.scrollY < 50
-      );
-      refs.lastScrollY.current = window.scrollY;
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < 50) {
+        setShowNavbar(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setShowNavbar(false);
+      } else if (currentScrollY < lastScrollY) {
+        setShowNavbar(true);
+      }
+
+      setLastScrollY(currentScrollY);
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [refs]);
+  }, [lastScrollY]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -154,11 +163,22 @@ const Navbar = () => {
     refs.mobileSearchInput.current?.focus();
   };
 
-  const recentNotifications = notifications.slice(0, 5);
+  const recentNotifications = [...notifications]
+    .sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )
+    .sort((a, b) => (a.read === b.read ? 0 : a.read ? 1 : -1))
+    .slice(0, 5);
 
   return (
-    <div className="w-full bg-white shadow-sm sticky top-0 z-40">
-      <nav className="flex items-center justify-between px-4 sm:px-6 py-2">
+    <div
+      ref={refs.navbar}
+      className={`w-full bg-white shadow-sm sticky top-0 z-40 transition-transform duration-300 ease-in-out ${
+        showNavbar ? "translate-y-0" : "-translate-y-full"
+      }`}
+    >
+      <nav className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
         {/* Logo */}
         <div className="flex items-center">
           <Link
@@ -180,7 +200,7 @@ const Navbar = () => {
                 <button
                   type="button"
                   onClick={() => setIsSearchDropdownOpen((p) => !p)}
-                  className="flex items-center pl-4 pr-2 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-200/60 rounded-l-full"
+                  className="flex items-center pl-4 pr-2 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-200/60 rounded-l-full transition-colors"
                 >
                   <span className="truncate max-w-[120px]">
                     {selectedCategory}
@@ -192,14 +212,14 @@ const Navbar = () => {
                   />
                 </button>
                 {isSearchDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-60 bg-white border rounded-lg shadow-lg z-10 max-h-72 overflow-y-auto">
+                  <div className="absolute top-full left-0 mt-2 w-60 bg-white border rounded-lg shadow-xl z-10 max-h-72 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
                     {["All Categories", ...CATEGORIES_NAVBAR_LIST].map(
                       (cat) => (
                         <button
                           key={cat}
                           type="button"
                           onClick={() => handleCategorySelect(cat)}
-                          className={`block w-full text-left px-3 py-2 text-sm ${
+                          className={`block w-full text-left px-3 py-2.5 text-sm font-medium transition-colors ${
                             selectedCategory === cat
                               ? "bg-blue-50 text-blue-700"
                               : "text-gray-700 hover:bg-gray-100"
@@ -230,7 +250,7 @@ const Navbar = () => {
                     <button
                       type="button"
                       onClick={clearSearchQuery}
-                      className="p-1 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-200"
+                      className="p-1 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-200 transition-colors"
                       aria-label="Hapus pencarian"
                     >
                       <X className="w-4 h-4" />
@@ -243,76 +263,92 @@ const Navbar = () => {
         </div>
 
         {/* Right Side - User Actions */}
-        <div className="flex items-center justify-end space-x-2">
+        <div className="flex items-center justify-end space-x-4">
           {currentUser ? (
             <>
               {/* Notifications */}
               <div className="relative" ref={refs.notificationDropdown}>
                 <button
                   onClick={() => setIsNotificationDropdownOpen((p) => !p)}
-                  className="p-2 rounded-full hover:bg-gray-100 relative"
+                  className="p-1.5 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none relative transition-colors"
+                  aria-label="Notifikasi"
                 >
-                  <Bell size={20} className="sm:w-5 sm:h-5" />
+                  <Bell size={22} />
                   {unreadNotificationCount > 0 && (
-                    <span className="absolute top-1.5 right-1.5 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+                    <span className="absolute top-0 right-0 block h-2 w-2 p-0.5 transform -translate-y-0.5 translate-x-0.5 rounded-full bg-red-500 ring-1 ring-white animate-pulse"></span>
                   )}
                 </button>
                 {isNotificationDropdownOpen && (
-                  <div className="absolute top-full right-0 mt-4 w-80 sm:w-96 max-w-[75vw] bg-white rounded-lg shadow-xl border z-50 max-h-[80vh] flex flex-col">
-                    <div className="flex justify-between items-center p-3 border-b">
-                      <h3 className="text-sm font-semibold">Notifikasi</h3>
+                  <div className="absolute top-full right-0 mt-4 w-80 sm:w-96 max-w-[75vw] bg-white rounded-lg shadow-xl border z-50 max-h-[80vh] flex flex-col animate-in slide-in-from-top-2 duration-200">
+                    <div className="flex justify-between items-center p-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
+                      <h3 className="text-sm font-semibold text-gray-800">
+                        Notifikasi Terbaru
+                      </h3>
                       {unreadNotificationCount > 0 && (
                         <button
-                          onClick={markAllNotificationsAsRead}
-                          className="text-xs text-blue-600 hover:underline"
+                          onClick={() => {
+                            markAllNotificationsAsRead();
+                            setIsNotificationDropdownOpen(false);
+                          }}
+                          className="text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
                         >
                           Tandai semua dibaca
                         </button>
                       )}
                     </div>
-                    <div className="overflow-y-auto">
+                    <div className="overflow-y-auto flex-grow">
                       {recentNotifications.length > 0 ? (
-                        recentNotifications.map((n) => (
+                        recentNotifications.map((notif) => (
                           <Link
-                            key={n.id}
-                            to={n.link || "#"}
+                            key={notif.id}
+                            to={notif.link || "#"}
                             onClick={() => {
-                              markNotificationAsRead(n.id);
+                              if (!notif.read) {
+                                markNotificationAsRead(notif.id);
+                              }
                               setIsNotificationDropdownOpen(false);
                             }}
-                            className={`block p-3 hover:bg-gray-50 border-b last:border-b-0 ${
-                              !n.read ? "bg-blue-50" : ""
+                            className={`block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors ${
+                              !notif.read ? "bg-blue-50 border-blue-100" : ""
                             }`}
                           >
                             <p
-                              className={`text-xs ${
-                                !n.read
-                                  ? "font-semibold text-gray-900"
-                                  : "text-gray-700"
+                              className={`text-xs text-gray-800 mb-0.5 ${
+                                !notif.read ? "font-bold" : "font-normal"
                               }`}
                             >
-                              {n.message}
+                              {notif.message}
                             </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              {new Date(n.timestamp).toLocaleString("id-ID")}
+                            <p className="text-xs text-gray-400">
+                              {new Date(notif.timestamp).toLocaleString(
+                                "id-ID",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
                             </p>
                           </Link>
                         ))
                       ) : (
-                        <p className="p-4 text-xs text-center text-gray-500">
-                          Tidak ada notifikasi baru.
+                        <p className="text-sm text-gray-500 p-4 text-center">
+                          Tidak ada notifikasi.
                         </p>
                       )}
                     </div>
-                    <div className="p-2 border-t text-center">
-                      <Link
-                        to="/user/dashboard/all-notifications"
-                        onClick={() => setIsNotificationDropdownOpen(false)}
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        Lihat Semua Notifikasi
-                      </Link>
-                    </div>
+                    {notifications.length > 0 && (
+                      <div className="p-2 border-t border-gray-200 text-center bg-gray-50 rounded-b-lg">
+                        <Link
+                          to="/user/dashboard/all-notifications"
+                          onClick={() => setIsNotificationDropdownOpen(false)}
+                          className="text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                        >
+                          Lihat Semua Notifikasi
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -321,14 +357,14 @@ const Navbar = () => {
               <div className="relative" ref={refs.profileDropdown}>
                 <button
                   onClick={() => setIsProfileDropdownOpen((p) => !p)}
-                  className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100"
+                  className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
                 >
                   <img
                     src={currentUser.avatarUrl || "/placeholder-avatar.png"}
-                    alt="Avatar"
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
+                    alt="User Avatar"
+                    className="h-8 w-8 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-200 transition-all duration-200"
                   />
-                  <span className="text-sm font-medium hidden sm:inline">
+                  <span className="text-sm font-medium text-gray-700 hidden sm:inline">
                     {currentUser.name}
                   </span>
                   <ChevronDown
@@ -347,19 +383,19 @@ const Navbar = () => {
             <div className="flex items-center space-x-2">
               <Link
                 to="/login"
-                className="hidden sm:flex bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium"
+                className="hidden sm:flex bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
               >
                 Login
               </Link>
               <Link
                 to="/register"
-                className="hidden sm:flex bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm font-medium"
+                className="hidden sm:flex bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 text-sm font-medium transition-colors"
               >
                 Sign Up
               </Link>
               <button
                 onClick={() => setIsAuthSidebarOpen(true)}
-                className="sm:hidden p-2 rounded-full hover:bg-gray-100"
+                className="sm:hidden p-2 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <UserIcon size={20} />
               </button>
@@ -369,7 +405,7 @@ const Navbar = () => {
       </nav>
 
       {/* Mobile Search Bar */}
-      <div className="lg:hidden px-4 py-3 border-t bg-gray-50">
+      <div className="lg:hidden px-4 sm:px-6 py-3 border-t bg-gray-50">
         <form
           onSubmit={handleSearchSubmit}
           className="group flex items-center w-full bg-white rounded-full border border-gray-200 focus-within:ring-2 focus-within:ring-blue-400 focus-within:border-transparent transition-all duration-200 shadow-sm"
@@ -378,7 +414,7 @@ const Navbar = () => {
             <button
               type="button"
               onClick={() => setIsSearchDropdownOpen((p) => !p)}
-              className="flex items-center pl-4 pr-2 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-50 rounded-l-full min-w-0"
+              className="flex items-center pl-4 pr-2 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-50 rounded-l-full min-w-0 transition-colors"
             >
               <span className="truncate max-w-[70px] sm:max-w-[90px]">
                 {selectedCategory}
@@ -390,15 +426,15 @@ const Navbar = () => {
               />
             </button>
             {isSearchDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-xl z-10 max-h-64 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
                 {["All Categories", ...CATEGORIES_NAVBAR_LIST].map((cat) => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => handleCategorySelect(cat)}
-                    className={`block w-full text-left px-3 py-2.5 text-sm ${
+                    className={`block w-full text-left px-3 py-2.5 text-sm font-medium transition-colors ${
                       selectedCategory === cat
-                        ? "bg-blue-50 text-blue-700 font-medium"
+                        ? "bg-blue-50 text-blue-700"
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
@@ -426,7 +462,7 @@ const Navbar = () => {
                 <button
                   type="button"
                   onClick={clearSearchQuery}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-200"
+                  className="p-1 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
                   aria-label="Hapus pencarian"
                 >
                   <X className="w-4 h-4" />
@@ -441,36 +477,36 @@ const Navbar = () => {
       {isAuthSidebarOpen && (
         <ClientPortal selector="auth-sidebar-portal">
           <div
-            className="fixed inset-0 bg-black/50 z-[55]"
+            className="fixed inset-0 bg-black/50 z-[55] transition-opacity duration-300"
             onClick={() => setIsAuthSidebarOpen(false)}
           ></div>
           <div
-            className={`fixed inset-y-0 right-0 z-[60] w-72 max-w-[80vw] bg-white shadow-2xl transform transition-transform duration-300 ${
+            className={`fixed inset-y-0 right-0 z-[60] w-80 max-w-[85vw] bg-white shadow-2xl transform transition-transform duration-300 ease-out ${
               isAuthSidebarOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
-            <div className="p-5 h-full flex flex-col">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold">Akun</h2>
+            <div className="p-4 h-full flex flex-col">
+              <div className="flex justify-between items-center mb-6 pb-3 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-800">Akun</h2>
                 <button
                   onClick={() => setIsAuthSidebarOpen(false)}
-                  className="p-1"
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
               <div className="space-y-3 flex flex-col">
                 <Link
                   to="/login"
                   onClick={() => setIsAuthSidebarOpen(false)}
-                  className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium text-center"
+                  className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium text-center hover:bg-blue-700 transition-colors"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setIsAuthSidebarOpen(false)}
-                  className="w-full bg-gray-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium text-center"
+                  className="w-full bg-gray-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium text-center hover:bg-gray-700 transition-colors"
                 >
                   Sign Up
                 </Link>
