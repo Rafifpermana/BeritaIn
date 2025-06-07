@@ -141,7 +141,7 @@ const UserDashboardPage = () => {
     return date.toLocaleTimeString("id-ID", {
       hour: "2-digit",
       minute: "2-digit",
-      hour12: false,
+      second: "2-digit",
     });
   };
 
@@ -246,10 +246,12 @@ const UserDashboardPage = () => {
               <Clock size={16} />
               <span className="text-sm font-medium">Waktu Saat Ini</span>
             </div>
-            <p className="text-lg font-bold text-blue-800">
-              {formatTime(currentTime)}
-            </p>
-            <p className="text-xs text-blue-600">{formatDate(currentTime)}</p>
+            <div className="text-center">
+              <p className="text-xl font-bold text-blue-800 mb-1">
+                {formatTime(currentTime)}
+              </p>
+              <p className="text-xs text-blue-600">{formatDate(currentTime)}</p>
+            </div>
           </div>
         )}
 

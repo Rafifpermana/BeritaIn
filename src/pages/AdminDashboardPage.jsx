@@ -11,6 +11,7 @@ import {
   Shield,
   Megaphone,
   Menu,
+  Clock,
   X as CloseIcon,
 } from "lucide-react";
 import ClientPortal from "../utils/Portal";
@@ -42,6 +43,33 @@ const AdminDashboardPage = () => {
   const adminNotificationPanelRef = useRef(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const mobileSidebarRef = useRef(null);
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString("id-ID", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   // Fungsi logout sekarang memanggil fungsi dari context
   const handleLogout = () => {
@@ -115,7 +143,10 @@ const AdminDashboardPage = () => {
                 className="flex items-center space-x-2 text-lg sm:text-xl font-semibold"
               >
                 <Shield size={24} className="text-sky-400 flex-shrink-0" />
-                <span className="hidden xxs:inline sm:inline">Admin Panel</span>
+                <span className="hidden xxs:inline sm:inline font-bold ">
+                  Admin <span className="text-orange-500">Berita</span>
+                  <span className="text-blue-600">In</span>
+                </span>
               </Link>
             </div>
             <div className="flex items-center space-x-2.5 sm:space-x-4">
@@ -139,7 +170,7 @@ const AdminDashboardPage = () => {
               <div className="flex items-center space-x-1.5 sm:space-x-2">
                 {/* --- Data Admin Dinamis --- */}
                 <img
-                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-full object-cover border-2 border-sky-400"
+                  className="hidden sm:block h-7 w-7 sm:h-8 sm:w-8 rounded-full object-cover border-2 border-sky-400"
                   src={currentUser.avatarUrl}
                   alt="Admin Avatar"
                 />
@@ -155,65 +186,108 @@ const AdminDashboardPage = () => {
       {/* Mobile Sidebar Menu (Off-canvas) */}
       {isMobileSidebarOpen && (
         <ClientPortal selector="mobile-admin-sidebar-portal">
+          {/* Overlay */}
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
             onClick={closeMobileSidebar}
-          ></div>
+          />
+
+          {/* Sidebar */}
           <div
             ref={mobileSidebarRef}
-            className={`fixed top-0 left-0 h-full w-60 bg-slate-800 text-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out lg:hidden ${
+            className={`fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white shadow-2xl transform transition-transform duration-300 ease-out z-50 flex flex-col ${
               isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
-            <div className="p-4 flex flex-col h-full">
-              <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-700">
-                <Link
-                  to="/admin/dashboard"
-                  className="flex items-center space-x-2 text-md font-semibold text-sky-400"
-                  onClick={closeMobileSidebar}
-                >
-                  <Shield size={22} />
-                  <span>Admin Menu</span>
-                </Link>
-                <button
-                  onClick={closeMobileSidebar}
-                  className="text-slate-300 hover:text-white p-1"
-                >
-                  <CloseIcon size={20} />
-                </button>
+            {/* Header (avatar + nama + email + close) */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center space-x-3">
+                <img
+                  className="h-10 w-10 rounded-full object-cover ring-2 ring-blue-200"
+                  src={currentUser.avatarUrl}
+                  alt="Admin Avatar"
+                />
+                <div className="flex flex-col leading-tight">
+                  <span className="text-sm font-semibold text-gray-800">
+                    {currentUser.name}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {currentUser.email}
+                  </span>
+                </div>
               </div>
-              <nav className="space-y-2 flex-grow">
-                {sidebarLinks.map((link) => {
-                  const isActive =
-                    location.pathname === link.path ||
-                    (link.path !== "/admin/dashboard" &&
-                      location.pathname.startsWith(link.path));
-                  return (
-                    <Link
-                      key={link.name}
-                      to={link.path}
-                      onClick={closeMobileSidebar}
-                      className={`group flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              <button
+                onClick={closeMobileSidebar}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close menu"
+              >
+                <CloseIcon size={20} className="text-gray-500" />
+              </button>
+            </div>
+
+            {/* Time Widget */}
+            <div className="mb-6 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 mx-4 mt-4">
+              <div className="flex items-center space-x-2 text-blue-700 mb-2">
+                <Clock size={16} />
+                <span className="text-sm font-medium">Waktu Saat Ini</span>
+              </div>
+              <div className="text-center">
+                <p className="text-xl font-bold text-blue-800 mb-1">
+                  {formatTime(currentTime)}
+                </p>
+                <p className="text-xs text-blue-600">
+                  {formatDate(currentTime)}
+                </p>
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 overflow-y-auto px-4 space-y-1.5">
+              {sidebarLinks.map((link) => {
+                const isActive =
+                  location.pathname === link.path ||
+                  (link.path !== "/admin/dashboard" &&
+                    location.pathname.startsWith(link.path));
+                return (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    onClick={closeMobileSidebar}
+                    className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg scale-[1.02]"
+                        : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:scale-[1.01]"
+                    }`}
+                  >
+                    <link.icon
+                      size={18}
+                      className={`mr-3 flex-shrink-0 transition-colors ${
                         isActive
-                          ? "bg-sky-600 text-white"
-                          : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                          ? "text-white"
+                          : "text-gray-400 group-hover:text-gray-600"
                       }`}
-                    >
-                      <link.icon size={18} className="mr-3 flex-shrink-0" />
-                      {link.name}
-                    </Link>
-                  );
-                })}
-              </nav>
-              <div className="mt-auto pt-4 border-t border-slate-700">
-                <button
-                  onClick={handleLogout}
-                  className="group flex items-center w-full px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-red-700 hover:text-white transition-colors"
-                >
-                  <LogOut size={18} className="mr-3" />
-                  Logout
-                </button>
-              </div>
+                    />
+                    {link.name}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Logout at bottom */}
+            <div className="mt-auto p-4 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  handleLogout();
+                  closeMobileSidebar();
+                }}
+                className="group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600 transition-all duration-200 hover:scale-[1.01]"
+              >
+                <LogOut
+                  size={18}
+                  className="mr-3 text-gray-400 group-hover:text-red-500"
+                />
+                Logout
+              </button>
             </div>
           </div>
         </ClientPortal>
