@@ -145,6 +145,14 @@ const UserDashboardPage = () => {
     });
   };
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const formatDate = (date) => {
     return date.toLocaleDateString("id-ID", {
       weekday: "long",
