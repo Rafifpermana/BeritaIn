@@ -297,13 +297,8 @@ const AdminDashboardPage = () => {
       <div className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="lg:flex lg:items-start lg:space-x-6">
           <aside className="hidden lg:block w-60 xl:w-64 flex-shrink-0">
-            <div className="bg-white p-4 rounded-xl shadow-lg h-full flex flex-col justify-between border border-gray-200 sticky top-20">
+            <div className="bg-white p-4 rounded-xl shadow-lg h-fit flex flex-col justify-between border border-gray-200 fixed top-20 left-4 w-60 xl:w-64">
               <nav className="space-y-1.5">
-                <div className="flex items-center justify-center mb-4 pb-3 border-b border-gray-200 pt-1">
-                  <div className="px-3 py-1.5 text-sm font-medium text-gray-700">
-                    Logo Dash
-                  </div>
-                </div>
                 {sidebarLinks.map((link) => {
                   const isActive =
                     location.pathname === link.path ||
@@ -346,7 +341,7 @@ const AdminDashboardPage = () => {
               </div>
             </div>
           </aside>
-          <main className="flex-1 min-w-0 mt-6 lg:mt-0">
+          <main className="flex-1 min-w-0 mt-6 lg:mt-0 lg:ml-[17rem] xl:ml-[18rem]">
             <Outlet />
           </main>
         </div>

@@ -1,5 +1,5 @@
 // src/pages/admin/AdminOverview.jsx
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import StatCard from "../../dashboard/users/StatCard";
 import { useArticleInteractions } from "../../hooks/useArticleInteractions";
 import {
