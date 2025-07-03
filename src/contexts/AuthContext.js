@@ -73,8 +73,6 @@ export const AuthProvider = ({ children }) => {
   const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   // Initialize auth state on app load
   useEffect(() => {
@@ -350,24 +348,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const fetchNotifications = async () => {
-    if (!localStorage.getItem("authToken")) return; // Jangan fetch jika tidak login
-    try {
-      const data = await apiCall("/user/notifications?limit=10"); // Ambil 10 terbaru
-      setNotifications(data.data || []);
-      setUnreadCount((data.data || []).filter((n) => !n.read_at).length);
-    } catch (error) {
-      console.error("Gagal mengambil notifikasi:", error);
-    }
-  };
-
-  // Ambil notifikasi saat user pertama kali login atau saat halaman direfresh
-  useEffect(() => {
-    if (currentUser) {
-      fetchNotifications();
-    }
-  }, [currentUser]);
-
   // Refresh current user data
   const refreshUser = async () => {
     if (!currentUser) return;
@@ -441,9 +421,6 @@ export const AuthProvider = ({ children }) => {
     allUsers,
     loading,
     error,
-    notifications,
-    unreadCount,
-    fetchNotifications,
 
     // Auth functions
     login,
