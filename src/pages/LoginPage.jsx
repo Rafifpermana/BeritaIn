@@ -3,12 +3,12 @@ import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { User, Lock, AlertCircle, LogIn } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { allUsersData } from "../data/mockData"; // <-- Impor data user untuk cek role
+// import { allUsersData } from "../data/mockData"; // <-- Impor data user untuk cek role
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, error, loading } = useAuth();
+  const { login, error, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -16,24 +16,10 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const loginSuccess = await login(email, password);
+    const user = await login(email, password); // Panggil fungsi login dari context
 
-    if (loginSuccess) {
-      // --- LOGIKA PERBAIKAN ---
-      // Setelah login berhasil, kita periksa role user secara manual dari data
-      // untuk menentukan tujuan redirect.
-      const user = allUsersData.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase()
-      );
-
-      // Jika ada halaman tujuan sebelumnya (misal: mencoba akses halaman terproteksi), kembali ke sana
-      if (from) {
-        navigate(from, { replace: true });
-        return;
-      }
-
-      // Jika tidak, arahkan berdasarkan peran
-      if (user && user.role === "admin") {
+    if (user) {
+      if (user.role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
         navigate("/user/dashboard", { replace: true });

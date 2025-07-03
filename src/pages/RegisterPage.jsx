@@ -14,13 +14,9 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const registerSuccess = await register(
-      email,
-      username,
-      password,
-      confirmPassword
-    );
-    if (registerSuccess) {
+    // Panggil fungsi register dari context
+    const user = await register(username, email, password, confirmPassword);
+    if (user) {
       navigate("/user/dashboard", { replace: true });
     }
   };

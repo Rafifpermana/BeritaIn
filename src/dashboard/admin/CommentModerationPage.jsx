@@ -1,8 +1,6 @@
-// src/dashboard/admin/CommentModerationPage.jsx
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { useArticleInteractions } from "../../hooks/useArticleInteractions";
-import { allArticlesData } from "../../data/mockData";
+import { useAuth } from "../../contexts/AuthContext";
 import {
   MessageCircleWarning,
   CheckCircle,
@@ -13,15 +11,14 @@ import {
   Send,
 } from "lucide-react";
 
-// Modal Aksi dengan input poin
+// Komponen ActionModal tidak perlu diubah karena logikanya hanya untuk UI.
 const ActionModal = ({ isOpen, onClose, onSubmit, comment }) => {
   const [action, setAction] = useState("reject");
   const [points, setPoints] = useState(10);
 
   useEffect(() => {
-    // Set poin default berdasarkan aksi yang dipilih
     if (comment) {
-      const defaultPoints = action === "delete" ? 15 : 10;
+      const defaultPoints = action === "delete" ? 25 : 15;
       setPoints(defaultPoints);
     }
   }, [action, comment]);
@@ -44,9 +41,8 @@ const ActionModal = ({ isOpen, onClose, onSubmit, comment }) => {
           Tindak Lanjut Komentar
         </h2>
         <blockquote className="text-sm bg-gray-100 p-3 border-l-4 border-gray-300 italic mb-4 max-h-24 overflow-y-auto">
-          "{comment.text}"
+          "{comment.content}"
         </blockquote>
-
         <div className="space-y-4">
           <div>
             <label
@@ -59,7 +55,7 @@ const ActionModal = ({ isOpen, onClose, onSubmit, comment }) => {
               id="actionType"
               value={action}
               onChange={(e) => setAction(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
               <option value="reject">Tolak Komentar</option>
               <option value="delete">Hapus Komentar (Pelanggaran Berat)</option>
@@ -78,16 +74,15 @@ const ActionModal = ({ isOpen, onClose, onSubmit, comment }) => {
               value={points}
               onChange={(e) => setPoints(parseInt(e.target.value, 10) || 0)}
               min="0"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             />
           </div>
         </div>
-
         <div className="flex justify-end space-x-3 pt-6 mt-4 border-t">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 rounded-md"
+            className="px-4 py-2 text-sm font-medium bg-gray-200 hover:bg-gray-300 rounded-md"
           >
             Batal
           </button>
@@ -109,81 +104,73 @@ const ActionModal = ({ isOpen, onClose, onSubmit, comment }) => {
 };
 
 const CommentModerationPage = () => {
-  const { articleCommentsState, moderateComment, deleteCommentContext } =
-    useArticleInteractions();
+  const { apiCall } = useAuth();
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("pending_review");
-  const [searchTerm, setSearchTerm] = useState("");
   const [modalState, setModalState] = useState({
     isOpen: false,
     comment: null,
   });
 
-  // Mengumpulkan semua komentar dari semua artikel menjadi satu array
-  const allComments = useMemo(() => {
-    let flatComments = [];
-    Object.keys(articleCommentsState).forEach((articleId) => {
-      const comments = articleCommentsState[articleId] || [];
-      const article = allArticlesData[articleId];
+  const fetchComments = useCallback(
+    async (status) => {
+      setLoading(true);
+      try {
+        const endpoint = `/admin/comments?status=${status}`;
+        const data = await apiCall(endpoint);
+        setComments(data.data || []); // Data dari paginasi Laravel
+      } catch (error) {
+        console.error("Gagal mengambil komentar:", error);
+        setComments([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiCall]
+  );
 
-      const traverseAndFlatten = (commentList) => {
-        if (!Array.isArray(commentList)) return;
-        commentList.forEach((comment) => {
-          flatComments.push({
-            ...comment,
-            articleTitle: article?.title || "Artikel Tidak Diketahui",
-            articleId: articleId,
-          });
-          if (comment.replies?.length > 0) traverseAndFlatten(comment.replies);
-        });
-      };
-      traverseAndFlatten(comments);
-    });
-    return flatComments.sort(
-      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-    );
-  }, [articleCommentsState]);
+  useEffect(() => {
+    fetchComments(filterStatus);
+  }, [fetchComments, filterStatus]);
 
-  // Terapkan filter dan search
-  const filteredComments = useMemo(() => {
-    return allComments
-      .filter(
-        (comment) => filterStatus === "all" || comment.status === filterStatus
-      )
-      .filter((comment) => {
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        return (
-          comment.text?.toLowerCase().includes(lowerSearchTerm) ||
-          comment.author?.toLowerCase().includes(lowerSearchTerm) ||
-          comment.articleTitle?.toLowerCase().includes(lowerSearchTerm)
-        );
+  const handleApprove = async (comment) => {
+    try {
+      await apiCall(`/admin/comments/${comment.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "approved" }),
       });
-  }, [allComments, filterStatus, searchTerm]);
-
-  const openModal = (comment) => setModalState({ isOpen: true, comment });
-  const closeModal = () => setModalState({ isOpen: false, comment: null });
-
-  const handleConfirmAction = (comment, action, points) => {
-    if (action === "reject") {
-      moderateComment(
-        comment.articleId,
-        comment.id,
-        "rejected",
-        comment.userId,
-        points
-      );
-    } else if (action === "delete") {
-      deleteCommentContext(
-        comment.articleId,
-        comment.id,
-        comment.userId,
-        points
-      );
+      fetchComments(filterStatus); // Refresh list
+    } catch (error) {
+      alert(`Gagal menyetujui komentar: ${error.message}`);
     }
   };
 
-  const handleApprove = (comment) => {
-    moderateComment(comment.articleId, comment.id, "approved", comment.userId);
+  const handleConfirmAction = async (comment, action, points) => {
+    if (action === "reject") {
+      try {
+        await apiCall(`/admin/comments/${comment.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            status: "rejected",
+            points_to_deduct: points,
+          }),
+        });
+      } catch (error) {
+        alert(`Gagal menolak komentar: ${error.message}`);
+      }
+    } else if (action === "delete") {
+      try {
+        await apiCall(`/admin/comments/${comment.id}`, { method: "DELETE" });
+      } catch (error) {
+        alert(`Gagal menghapus komentar: ${error.message}`);
+      }
+    }
+    fetchComments(filterStatus); // Refresh list
   };
+
+  const openModal = (comment) => setModalState({ isOpen: true, comment });
+  const closeModal = () => setModalState({ isOpen: false, comment: null });
 
   return (
     <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200">
@@ -195,19 +182,6 @@ const CommentModerationPage = () => {
           </h1>
         </div>
         <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <div className="relative flex-grow">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Cari komentar..."
-              className="w-full px-3 py-2 pl-9 border rounded-md text-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
           <div className="relative">
             <Filter
               size={16}
@@ -227,79 +201,82 @@ const CommentModerationPage = () => {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {filteredComments.length > 0 ? (
-          filteredComments.map((comment) => (
-            <div
-              key={comment.id}
-              className={`p-4 rounded-lg border shadow-sm ${
-                comment.status === "pending_review"
-                  ? "bg-yellow-50 border-yellow-300"
-                  : "bg-gray-50 border-gray-200"
-              }`}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center space-x-3">
-                  <img
-                    src={comment.avatarUrl}
-                    alt={comment.author}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <p className="font-semibold text-gray-900">
-                    {comment.author}
+      {loading ? (
+        <div className="text-center py-10">Memuat komentar...</div>
+      ) : (
+        <div className="space-y-4">
+          {comments.length > 0 ? (
+            comments.map((comment) => (
+              <div
+                key={comment.id}
+                className={`p-4 rounded-lg border shadow-sm ${
+                  comment.status === "pending_review"
+                    ? "bg-yellow-50 border-yellow-300"
+                    : "bg-gray-50 border-gray-200"
+                }`}
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={
+                        comment.user?.avatar_url || "/placeholder-avatar.png"
+                      }
+                      alt={comment.user?.name}
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <p className="font-semibold text-gray-900">
+                      {comment.user?.name || "Pengguna Dihapus"}
+                    </p>
+                  </div>
+                  <span
+                    className={`px-2.5 py-0.5 text-xs font-semibold rounded-full capitalize ${
+                      comment.status === "pending_review"
+                        ? "bg-yellow-200 text-yellow-800"
+                        : comment.status === "rejected"
+                        ? "bg-red-200 text-red-800"
+                        : "bg-green-200 text-green-800"
+                    }`}
+                  >
+                    {comment.status.replace("_", " ")}
+                  </span>
+                </div>
+                <blockquote className="my-3 pl-3 text-gray-700 bg-white border-l-4 p-3 italic">
+                  "{comment.content}"
+                </blockquote>
+                <div className="flex justify-between items-center mt-3">
+                  <p className="text-xs text-gray-500">
+                    Pada Artikel:{" "}
+                    <span className="text-sky-600">
+                      {comment.article?.title || "Artikel Dihapus"}
+                    </span>
                   </p>
-                </div>
-                <span
-                  className={`px-2.5 py-0.5 text-xs font-semibold rounded-full capitalize ${
-                    comment.status === "pending_review"
-                      ? "bg-yellow-200 text-yellow-800"
-                      : comment.status === "rejected"
-                      ? "bg-red-200 text-red-800"
-                      : "bg-green-200 text-green-800"
-                  }`}
-                >
-                  {comment.status.replace("_", " ")}
-                </span>
-              </div>
-              <blockquote className="my-3 pl-3 text-gray-700 bg-white border-l-4 p-3 italic">
-                "{comment.text}"
-              </blockquote>
-              <div className="flex justify-between items-center mt-3">
-                <p className="text-xs text-gray-500">
-                  Pada:{" "}
-                  <Link
-                    to={`/article/${comment.articleId}`}
-                    className="text-sky-600 hover:underline"
-                  >
-                    {comment.articleTitle}
-                  </Link>
-                </p>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleApprove(comment)}
-                    disabled={comment.status === "approved"}
-                    className="flex items-center space-x-1.5 px-3 py-1.5 text-xs bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50"
-                  >
-                    <CheckCircle size={14} />
-                    <span>Setujui</span>
-                  </button>
-                  <button
-                    onClick={() => openModal(comment)}
-                    className="flex items-center space-x-1.5 px-3 py-1.5 text-xs bg-orange-500 text-white rounded-md hover:bg-orange-600"
-                  >
-                    <XCircle size={14} />
-                    <span>Tindak Lanjut</span>
-                  </button>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleApprove(comment)}
+                      disabled={comment.status === "approved"}
+                      className="flex items-center space-x-1.5 px-3 py-1.5 text-xs bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50"
+                    >
+                      <CheckCircle size={14} />
+                      <span>Setujui</span>
+                    </button>
+                    <button
+                      onClick={() => openModal(comment)}
+                      className="flex items-center space-x-1.5 px-3 py-1.5 text-xs bg-orange-500 text-white rounded-md hover:bg-orange-600"
+                    >
+                      <XCircle size={14} />
+                      <span>Tindak Lanjut</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500 py-10">
-            Tidak ada komentar yang cocok dengan filter.
-          </p>
-        )}
-      </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500 py-10">
+              Tidak ada komentar yang cocok dengan filter.
+            </p>
+          )}
+        </div>
+      )}
 
       <ActionModal
         isOpen={modalState.isOpen}

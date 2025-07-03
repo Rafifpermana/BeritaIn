@@ -1,26 +1,48 @@
-// src/dashboard/admin/BroadcastNotificationPage.jsx
 import React, { useState } from "react";
-import { useArticleInteractions } from "../../hooks/useArticleInteractions";
+import { useAuth } from "../../contexts/AuthContext";
 import { Send, Megaphone } from "lucide-react";
 
 const BroadcastNotificationPage = () => {
-  const { broadcastAdminMessage } = useArticleInteractions();
+  const { apiCall } = useAuth(); // Gunakan apiCall dari AuthContext
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
-  const [isSent, setIsSent] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [feedback, setFeedback] = useState({ type: "", message: "" });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !message.trim()) {
-      alert("Judul dan isi pesan tidak boleh kosong!");
+      setFeedback({
+        type: "error",
+        message: "Judul dan isi pesan tidak boleh kosong!",
+      });
       return;
     }
-    broadcastAdminMessage(title, message);
-    alert("Pengumuman telah dikirim ke semua pengguna (simulasi).");
-    setTitle("");
-    setMessage("");
-    setIsSent(true);
-    setTimeout(() => setIsSent(false), 3000);
+
+    setIsSending(true);
+    setFeedback({ type: "", message: "" });
+
+    try {
+      // Panggil endpoint backend untuk mengirim broadcast
+      await apiCall("/admin/broadcast", {
+        method: "POST",
+        body: JSON.stringify({ title, message }),
+      });
+
+      setFeedback({ type: "success", message: "Pengumuman berhasil dikirim!" });
+      setTitle("");
+      setMessage("");
+    } catch (error) {
+      console.error("Gagal mengirim pengumuman:", error);
+      setFeedback({
+        type: "error",
+        message: `Gagal mengirim: ${error.message}`,
+      });
+    } finally {
+      setIsSending(false);
+      // Hapus pesan feedback setelah beberapa detik
+      setTimeout(() => setFeedback({ type: "", message: "" }), 5000);
+    }
   };
 
   return (
@@ -74,13 +96,20 @@ const BroadcastNotificationPage = () => {
         <div className="flex items-center justify-between pt-2">
           <button
             type="submit"
-            className="inline-flex items-center justify-center space-x-1.5 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+            disabled={isSending}
+            className="inline-flex items-center justify-center space-x-1.5 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 disabled:bg-sky-400 disabled:cursor-not-allowed"
           >
             <Send size={16} />
-            <span>Kirim Pengumuman</span>
+            <span>{isSending ? "Mengirim..." : "Kirim Pengumuman"}</span>
           </button>
-          {isSent && (
-            <p className="text-sm text-green-600">Pengumuman terkirim!</p>
+          {feedback.message && (
+            <p
+              className={`text-sm ${
+                feedback.type === "success" ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {feedback.message}
+            </p>
           )}
         </div>
       </form>

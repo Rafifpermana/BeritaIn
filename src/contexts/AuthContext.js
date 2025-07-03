@@ -1,6 +1,8 @@
 // src/contexts/AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { allUsersData as initialUsersData } from "../data/mockData";
+
+// Alamat base URL dari API Laravel Anda
+const API_URL = "http://127.0.0.1:8000/api";
 
 export const AuthContext = createContext(null);
 
@@ -19,7 +21,7 @@ const getStoredUser = () => {
       const savedUser = localStorage.getItem("currentUser");
       return savedUser ? JSON.parse(savedUser) : null;
     } catch (error) {
-      console.error("Error reading from localStorage:", error);
+      console.error("Error reading user from localStorage:", error);
       return null;
     }
   }
@@ -35,160 +37,437 @@ const setStoredUser = (user) => {
         localStorage.removeItem("currentUser");
       }
     } catch (error) {
-      console.error("Error writing to localStorage:", error);
+      console.error("Error writing user to localStorage:", error);
+    }
+  }
+};
+
+const getStoredToken = () => {
+  if (typeof window !== "undefined") {
+    try {
+      return localStorage.getItem("authToken");
+    } catch (error) {
+      console.error("Error reading token from localStorage:", error);
+      return null;
+    }
+  }
+  return null;
+};
+
+const setStoredToken = (token) => {
+  if (typeof window !== "undefined") {
+    try {
+      if (token) {
+        localStorage.setItem("authToken", token);
+      } else {
+        localStorage.removeItem("authToken");
+      }
+    } catch (error) {
+      console.error("Error writing token to localStorage:", error);
     }
   }
 };
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(getStoredUser);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // --- STATE BARU UNTUK MENGELOLA SEMUA PENGGUNA ---
-  // Ini memungkinkan data pengguna diubah (dihapus/di-update rolenya) secara dinamis
-  const [allUsers, setAllUsers] = useState(initialUsersData);
-
+  // Initialize auth state on app load
   useEffect(() => {
-    setLoading(false);
+    initializeAuth();
   }, []);
 
-  useEffect(() => {
-    setStoredUser(currentUser);
-  }, [currentUser]);
+  const initializeAuth = async () => {
+    const token = getStoredToken();
+    const storedUser = getStoredUser();
 
-  // --- FUNGSI BARU UNTUK MANAJEMEN PENGGUNA OLEH ADMIN ---
-  const updateUserRole = (userId, newRole) => {
-    setAllUsers((currentUsers) =>
-      currentUsers.map((user) =>
-        user.id === userId ? { ...user, role: newRole } : user
-      )
-    );
+    if (token && storedUser) {
+      try {
+        // Verify token and get fresh user data
+        const userData = await apiCall("/user");
+        setCurrentUser(userData);
+
+        // If user is admin, fetch all users
+        if (userData.role === "admin") {
+          await fetchAllUsers();
+        }
+      } catch (error) {
+        console.error("Token verification failed:", error);
+        // Clear invalid session
+        logout();
+      }
+    }
+    setLoading(false);
   };
 
-  const deleteUser = (userId) => {
-    setAllUsers((currentUsers) =>
-      currentUsers.filter((user) => user.id !== userId)
-    );
-    // Jika admin menghapus akunnya sendiri, otomatis logout
-    if (currentUser && currentUser.id === userId) {
-      logout();
+  // Fungsi pembantu untuk semua panggilan API
+  const apiCall = async (endpoint, options = {}) => {
+    setError(""); // Clear previous errors
+    try {
+      const token = getStoredToken();
+
+      // 1. Jangan set Content-Type json bila body-nya FormData
+      const headers = {
+        Accept: "application/json",
+        ...(options.headers || {}),
+      };
+      if (!(options.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+      }
+
+      // 2. Tambahkan Authorization jika ada token
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      // 3. Susun opsi fetch
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: options.method || "GET",
+        headers,
+        body: options.body, // FormData atau JSON string
+      });
+
+      // 4. Parse response
+      const data = await response.json();
+      if (!response.ok) {
+        let errorMessage = data.message || "API call failed";
+        if (data.errors) {
+          errorMessage = Object.values(data.errors).flat().join(" ");
+        }
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (err) {
+      setError(err.message);
+      throw err;
     }
   };
-  // --- AKHIR FUNGSI BARU ---
 
-  const updateUserProfile = (newData) => {
-    if (!currentUser) return;
-    const updatedUser = { ...currentUser, ...newData };
-    setCurrentUser(updatedUser);
-    // Juga update data di dalam list semua user
-    setAllUsers((users) =>
-      users.map((u) => (u.id === currentUser.id ? updatedUser : u))
-    );
+  // Fetch all users (for admin)
+  const fetchAllUsers = async () => {
+    try {
+      const response = await apiCall("/users");
+      setAllUsers(response.data || response.users || response);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+      setAllUsers([]);
+    }
   };
 
-  // Login function diperbarui untuk menggunakan state allUsers
-  const login = (email, password) => {
+  // Login function
+  const login = async (email, password) => {
     setError("");
-    try {
-      if (!email || !password)
-        throw new Error("Email dan password harus diisi");
+    setLoading(true);
 
-      // Menggunakan state 'allUsers' yang dinamis, bukan data statis
-      const user = allUsers.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase()
+    try {
+      if (!email || !password) {
+        throw new Error("Email dan password harus diisi");
+      }
+
+      const data = await apiCall("/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+
+      // Set auth data
+      setCurrentUser(data.user);
+      setStoredUser(data.user);
+      setStoredToken(data.access_token);
+
+      // Fetch all users if admin
+      if (data.user.role === "admin") {
+        await fetchAllUsers();
+      }
+
+      setLoading(false);
+      return data.user;
+    } catch (err) {
+      setLoading(false);
+      return null;
+    }
+  };
+
+  // Register function
+  const register = async (name, email, password, password_confirmation) => {
+    setError("");
+    setLoading(true);
+
+    try {
+      if (!email || !name || !password || !password_confirmation) {
+        throw new Error("Semua field harus diisi");
+      }
+      if (password !== password_confirmation) {
+        throw new Error("Password dan konfirmasi password tidak cocok");
+      }
+      if (password.length < 8) {
+        throw new Error("Password harus minimal 8 karakter");
+      }
+
+      // Register user
+      await apiCall("/register", {
+        method: "POST",
+        body: JSON.stringify({ name, email, password, password_confirmation }),
+      });
+
+      // Auto login after successful registration
+      const user = await login(email, password);
+      setLoading(false);
+      return user;
+    } catch (err) {
+      setLoading(false);
+      return null;
+    }
+  };
+
+  // Logout function
+  const logout = async () => {
+    try {
+      const token = getStoredToken();
+      if (token) {
+        await apiCall("/logout", { method: "POST" });
+      }
+    } catch (err) {
+      console.error(
+        "Logout API call failed, but clearing session anyway:",
+        err
+      );
+    } finally {
+      setCurrentUser(null);
+      setAllUsers([]);
+      setStoredUser(null);
+      setStoredToken(null);
+    }
+  };
+
+  // Update user profile
+  const updateUserProfile = async (newData) => {
+    if (!currentUser) return;
+
+    try {
+      const response = await apiCall(`/users/${currentUser.id}`, {
+        method: "PUT",
+        body: JSON.stringify(newData),
+      });
+
+      const updatedUser = response.user ||
+        response.data || { ...currentUser, ...newData };
+      setCurrentUser(updatedUser);
+      setStoredUser(updatedUser);
+
+      // Update in allUsers list if admin
+      if (isAdmin()) {
+        setAllUsers((users) =>
+          users.map((u) => (u.id === currentUser.id ? updatedUser : u))
+        );
+      }
+
+      return updatedUser;
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      throw error;
+    }
+  };
+
+  // Update user role (admin only)
+  const updateUserRole = async (userId, newRole) => {
+    try {
+      const response = await apiCall(`/users/${userId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      // Refresh users list
+      await fetchAllUsers();
+
+      return response;
+    } catch (error) {
+      console.error("Failed to update user role:", error);
+      throw error;
+    }
+  };
+
+  // Delete user (admin only)
+  const deleteUser = async (userId) => {
+    try {
+      await apiCall(`/users/${userId}`, {
+        method: "DELETE",
+      });
+
+      // Remove from local state
+      setAllUsers((currentUsers) =>
+        currentUsers.filter((user) => user.id !== userId)
       );
 
-      if (!user) throw new Error("Email tidak ditemukan");
-      if (password !== "password123") throw new Error("Password salah");
+      // If admin deletes their own account, logout
+      if (currentUser && currentUser.id === userId) {
+        logout();
+      }
 
-      setLoading(true);
-      setTimeout(() => {
-        setCurrentUser(user);
-        setLoading(false);
-      }, 500);
       return true;
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-      return false;
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      throw error;
     }
   };
 
-  // Register function diperbarui untuk menggunakan state allUsers
-  const register = (email, username, password, confirmPassword) => {
-    setError("");
+  // Get user by ID
+  const getUserById = async (userId) => {
     try {
-      if (!email || !username || !password || !confirmPassword)
-        throw new Error("Semua field harus diisi");
-      if (password !== confirmPassword)
-        throw new Error("Password dan konfirmasi password tidak cocok");
-      if (password.length < 8)
-        throw new Error("Password harus minimal 8 karakter");
-
-      // Validasi menggunakan state 'allUsers'
-      if (allUsers.find((u) => u.email.toLowerCase() === email.toLowerCase()))
-        throw new Error("Email sudah terdaftar");
-      if (
-        allUsers.find(
-          (u) =>
-            u.username && u.username.toLowerCase() === username.toLowerCase()
-        )
-      )
-        throw new Error("Username sudah digunakan");
-
-      const newUser = {
-        id: `user${allUsers.length + 1}${Math.random()}`, // Tambah random untuk ID unik
-        username: username,
-        name: username,
-        email: email,
-        role: "user",
-        points: 0,
-        avatar: `https://ui-avatars.com/api/?name=${username.replace(
-          / /g,
-          "+"
-        )}&background=3498DB&color=fff`,
-        joinDate: new Date().toISOString().split("T")[0],
-      };
-
-      // Tambahkan user baru ke state allUsers
-      setAllUsers((currentUsers) => [...currentUsers, newUser]);
-
-      setLoading(true);
-      setTimeout(() => {
-        setCurrentUser(newUser);
-        setLoading(false);
-      }, 500);
-      return true;
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-      return false;
+      const response = await apiCall(`/users/${userId}`);
+      return response.user || response.data || response;
+    } catch (error) {
+      console.error("Failed to get user:", error);
+      throw error;
     }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem("currentUser");
+  // Search users (admin only)
+  const searchUsers = async (searchTerm) => {
+    try {
+      const response = await apiCall(
+        `/users/search?q=${encodeURIComponent(searchTerm)}`
+      );
+      return response.data || response.users || response;
+    } catch (error) {
+      console.error("Failed to search users:", error);
+      throw error;
+    }
   };
 
+  // Get user statistics (admin only)
+  const getUserStats = async () => {
+    try {
+      const response = await apiCall("/users/stats");
+      return response.data || response;
+    } catch (error) {
+      console.error("Failed to get user stats:", error);
+      throw error;
+    }
+  };
+
+  const fetchNotifications = async () => {
+    if (!localStorage.getItem("authToken")) return; // Jangan fetch jika tidak login
+    try {
+      const data = await apiCall("/user/notifications?limit=10"); // Ambil 10 terbaru
+      setNotifications(data.data || []);
+      setUnreadCount((data.data || []).filter((n) => !n.read_at).length);
+    } catch (error) {
+      console.error("Gagal mengambil notifikasi:", error);
+    }
+  };
+
+  // Ambil notifikasi saat user pertama kali login atau saat halaman direfresh
+  useEffect(() => {
+    if (currentUser) {
+      fetchNotifications();
+    }
+  }, [currentUser]);
+
+  // Refresh current user data
+  const refreshUser = async () => {
+    if (!currentUser) return;
+
+    try {
+      const response = await apiCall("/user");
+      const updatedUser = response.user || response.data || response;
+      setCurrentUser(updatedUser);
+      setStoredUser(updatedUser);
+      return updatedUser;
+    } catch (error) {
+      console.error("Failed to refresh user:", error);
+      throw error;
+    }
+  };
+
+  // Refresh all users (admin only)
+  const refreshAllUsers = async () => {
+    if (!isAdmin()) return;
+
+    try {
+      await fetchAllUsers();
+    } catch (error) {
+      console.error("Failed to refresh users:", error);
+      throw error;
+    }
+  };
+
+  // Check if current user is admin
   const isAdmin = () => {
     return currentUser?.role === "admin";
   };
 
-  // --- VALUE DIPERBARUI DENGAN STATE & FUNGSI BARU ---
+  // Check if current user is specific user
+  const isCurrentUser = (userId) => {
+    return currentUser?.id === userId;
+  };
+
+  // Get current user permissions
+  const getUserPermissions = () => {
+    if (!currentUser) return [];
+
+    const basePermissions = ["read_profile", "update_profile"];
+
+    if (currentUser.role === "admin") {
+      return [
+        ...basePermissions,
+        "manage_users",
+        "delete_users",
+        "view_all_users",
+        "manage_system",
+      ];
+    }
+
+    if (currentUser.role === "moderator") {
+      return [...basePermissions, "manage_content", "view_reports"];
+    }
+
+    return basePermissions;
+  };
+
+  // Check if user has specific permission
+  const hasPermission = (permission) => {
+    return getUserPermissions().includes(permission);
+  };
+
   const value = {
+    // State
     currentUser,
-    allUsers, // <-- state baru
+    setCurrentUser,
+    allUsers,
     loading,
     error,
+    notifications,
+    unreadCount,
+    fetchNotifications,
+
+    // Auth functions
     login,
     register,
     logout,
-    isAdmin,
+
+    // User management
     updateUserProfile,
-    updateUserRole, // <-- fungsi baru
-    deleteUser, // <-- fungsi baru
+    updateUserRole,
+    deleteUser,
+    getUserById,
+    searchUsers,
+    getUserStats,
+
+    // Utility functions
+    refreshUser,
+    refreshAllUsers,
+    isAdmin,
+    isCurrentUser,
+    getUserPermissions,
+    hasPermission,
+
+    // API helper
+    apiCall,
   };
 
   return React.createElement(AuthContext.Provider, { value: value }, children);
