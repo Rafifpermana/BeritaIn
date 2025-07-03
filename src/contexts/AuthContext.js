@@ -149,7 +149,7 @@ export const AuthProvider = ({ children }) => {
   // Fetch all users (for admin)
   const fetchAllUsers = async () => {
     try {
-      const response = await apiCall("/users");
+      const response = await apiCall("/admin/users");
       setAllUsers(response.data || response.users || response);
     } catch (error) {
       console.error("Failed to fetch users:", error);
