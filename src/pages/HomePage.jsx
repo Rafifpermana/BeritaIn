@@ -1,15 +1,15 @@
-// src/pages/HomePage.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import ArticleCardStats from "../utils/ArticleCardStats";
-import {
-  allArticlesData,
-  initialCommentsData,
-  calculateTotalComments,
-} from "../data/mockData";
 import { MessageSquare } from "lucide-react";
-import BookmarkButton from "../components/BookmarkButton"; // <-- Impor komponen bookmark baru
+import BookmarkButton from "../components/BookmarkButton";
+import { useHomeContent } from "../contexts/HomeContentProvider";
+import ArticleCardStats from "../utils/ArticleCardStats";
 
+// --- PERBAIKAN: Tentukan URL dasar untuk backend API Anda ---
+// Pastikan URL ini cocok dengan tempat backend Laravel Anda berjalan (misalnya, dari `php artisan serve`)
+const API_BASE_URL = "http://localhost:8000";
+
+// Helper function to create a URL-friendly slug from a title
 const createSlug = (text) => {
   if (!text || typeof text !== "string") return "";
   return text
@@ -19,6 +19,7 @@ const createSlug = (text) => {
     .replace(/[^\w-]+/g, "");
 };
 
+// Reusable component for section titles
 const SectionTitle = ({ title }) => (
   <div className="flex items-center mb-3 md:mb-5">
     <span className="w-1 h-5 sm:h-6 bg-black mr-2 sm:mr-3"></span>
@@ -26,223 +27,214 @@ const SectionTitle = ({ title }) => (
   </div>
 );
 
-// SmallStoryItem sekarang menerima 'id' untuk BookmarkButton
-const SmallStoryItem = ({ image, title, author, date, link, id }) => (
+// Reusable component for small story items
+const SmallStoryItem = ({ article }) => (
   <div className="group flex gap-3 items-start">
     <div className="relative w-1/3 sm:w-1/4 flex-shrink-0">
-      <Link to={link} className="block rounded-md overflow-hidden">
+      <Link
+        to={`/article/${createSlug(article.title)}`}
+        state={{ articleUrl: article.link }}
+        className="block rounded-md overflow-hidden"
+      >
         <img
-          src={image || "/placeholder-image.jpg"}
-          alt={title}
+          src={article.image || "/placeholder-image.jpg"}
+          alt={article.title}
           className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
         />
       </Link>
-      {/* Tombol Bookmark ditambahkan di sini */}
       <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         <BookmarkButton
-          articleId={id}
+          articleId={article.link}
           className="bg-black/30 backdrop-blur-sm"
         />
       </div>
     </div>
-    <div>
+    <div className="flex-1">
       <h4 className="text-sm font-semibold group-hover:text-blue-600 transition-colors line-clamp-2 sm:line-clamp-none">
-        <Link to={link}>{title}</Link>
+        <Link
+          to={`/article/${createSlug(article.title)}`}
+          state={{ articleUrl: article.link }}
+        >
+          {article.title}
+        </Link>
       </h4>
       <div className="text-xs text-gray-500 mt-1">
-        <span>By {author}</span>
+        <span>By {article.author || "Unknown Author"}</span>
         <span className="mx-1.5">|</span>
         <span>
-          {new Date(date).toLocaleDateString("id-ID", {
+          {new Date(article.pubDate).toLocaleDateString("id-ID", {
             month: "short",
             day: "numeric",
             year: "numeric",
           })}
         </span>
       </div>
+      <div className="mt-2">
+        <ArticleCardStats
+          likes={article.likes_count || 0}
+          dislikes={article.dislikes_count || 0}
+          comments={article.comments_count || 0}
+        />
+      </div>
     </div>
   </div>
 );
 
 const HomePage = () => {
-  const popularPostIds = [
-    "ai-poetry",
-    "remote-work-2025",
-    "social-media-algo",
-    "future-of-office",
-  ];
-  const recommendationNewsIds = [
-    "fitness-trends",
-    "gen-z-workplace",
-    "esports-shakeup",
-  ];
-  const trendingNowIds = [
-    "smart-cities",
-    "streaming-entertainment",
-    "sustainable-fashion",
-    "space-astronomy",
-  ];
-  const latestUpdatesIds = [
-    "electric-vehicles",
-    "viral-trends",
-    "esports-billion-dollar",
-    "medical-tech",
-    "remote-work-landscape",
-    "gen-z-job-market",
-  ];
-  const breakingNewsIds = [
-    "dark-side-ai",
-    "minimalism-design",
-    "hollywood-releases",
-    "cloud-gaming-future",
-    "kpop-phenomenon",
-    "future-work-model",
-  ];
-  const mustReadProminentStoryLeftId = "trump-panama";
-  const mustReadSmallerStoriesLeftIds = [
-    "sa-land",
-    "mickey-bergman-book",
-    "cerita-malam-minggu",
-  ];
-  const mustReadProminentStoryRightId = "ai-gaming-change";
-  const mustReadSmallerStoriesRightIds = [
-    "streaming-services-change",
-    "rise-sustainable-fashion",
-    "new-space-missions",
-  ];
-  const mainTravelStoryId = "main-travel-story";
+  // 2. Ambil semua data langsung dari context. Tidak ada lagi useState atau useEffect di sini.
+  const { articles, categories, loading, error } = useHomeContent();
 
-  const getArticle = (id) => allArticlesData[id];
-  const getCommentCountForArticle = (id) =>
-    calculateTotalComments(initialCommentsData[id] || []);
-  const tagsCategoryData = [
-    "Tech & Innovation",
-    "Business & Economy",
-    "Entertainment & Pop Culture",
-    "Science & Discovery",
-    "Health & Wellness",
-    "Sports",
-    "Gaming",
-    "Esport",
-    "Travel & Adventure",
-    "Politics & Global Affairs",
-    "Cryptocurrency",
-    "Education",
-    "Environment & Sustainability",
-    "Lifestyle & Trends",
-  ];
-  const moreTag = "More";
-  const mainTravelArticle = getArticle(mainTravelStoryId);
+  // 3. Logika untuk menampilkan loading, error, atau "tidak ada berita" tetap sama.
+  if (loading) {
+    return (
+      <div className="text-center py-20 font-bold text-lg">
+        Memuat Berita...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20 text-red-600 font-bold">{error}</div>
+    );
+  }
+
+  if (!articles.main && articles.popular.length === 0) {
+    return (
+      <div className="container mx-auto py-20 text-center">
+        <h2 className="text-2xl font-bold mb-4">Tidak Ada Berita</h2>
+        <p className="text-gray-600">
+          Saat ini tidak ada berita yang tersedia. Coba lagi nanti.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6 px-4 sm:py-8">
       {/* === BAGIAN PERTAMA === */}
       <div className="grid gap-6 lg:grid-cols-3 mb-8 sm:mb-10 md:mb-12">
         <div className="lg:col-span-2 space-y-3 sm:space-y-4">
-          {mainTravelArticle && (
+          {articles.main && (
             <>
               <div className="relative rounded-lg overflow-hidden shadow-lg group">
-                <Link to={`/article/${mainTravelArticle.id}`} className="block">
+                <Link
+                  to={`/article/${createSlug(articles.main.title)}`}
+                  state={{ articleUrl: articles.main.link }}
+                  className="block"
+                >
                   <img
-                    src={mainTravelArticle.image || "/placeholder-laptop.jpg"}
-                    alt={mainTravelArticle.title}
+                    src={articles.main.image}
+                    alt={articles.main.title}
                     className="w-full h-auto object-cover hidden md:block"
                     style={{ aspectRatio: "1.8 / 1" }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/placeholder-laptop.jpg";
+                    }}
                   />
                   <img
-                    src={
-                      mainTravelArticle.image ||
-                      "/placeholder-laptop-mobile.jpg"
-                    }
-                    alt={mainTravelArticle.title}
+                    src={articles.main.image}
+                    alt={articles.main.title}
                     className="w-full h-auto object-cover md:hidden aspect-[4/3] sm:aspect-video"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/placeholder-laptop-mobile.jpg";
+                    }}
                   />
                 </Link>
-                {/* Tombol Bookmark ditambahkan di sini */}
                 <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                   <BookmarkButton
-                    articleId={mainTravelArticle.id}
+                    articleId={articles.main.link}
                     className="bg-black/30 backdrop-blur-sm"
                   />
                 </div>
               </div>
               <div className="text-left">
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold hover:text-blue-600 transition-colors leading-tight">
-                  <Link to={`/article/${mainTravelArticle.id}`}>
-                    {mainTravelArticle.title}
+                  <Link
+                    to={`/article/${createSlug(articles.main.title)}`}
+                    state={{ articleUrl: articles.main.link }}
+                  >
+                    {articles.main.title}
                   </Link>
                 </h2>
                 <div className="flex items-center mt-1.5 text-gray-500 text-xs sm:text-sm">
-                  <span>By {mainTravelArticle.author}</span>
+                  <span>By {articles.main.author || "Tim Redaksi"}</span>
                   <span className="mx-2">|</span>
                   <span>
-                    {new Date(mainTravelArticle.date).toLocaleDateString(
+                    {new Date(articles.main.pubDate).toLocaleDateString(
                       "id-ID",
                       { year: "numeric", month: "long", day: "numeric" }
                     )}
                   </span>
                 </div>
-                <ArticleCardStats
-                  likes={mainTravelArticle.initialLikes}
-                  dislikes={mainTravelArticle.initialDislikes}
-                  commentCount={getCommentCountForArticle(mainTravelArticle.id)}
-                  articleId={mainTravelArticle.id}
-                />
+                <div className="mt-3">
+                  <ArticleCardStats
+                    likes={articles.main.likes_count || 0}
+                    dislikes={articles.main.dislikes_count || 0}
+                    comments={articles.main.comments_count || 0}
+                  />
+                </div>
               </div>
             </>
           )}
         </div>
         <div className="space-y-3 sm:space-y-4 lg:space-y-3">
-          {popularPostIds.map((id) => {
-            const post = getArticle(id);
-            if (!post) return null;
-            return (
-              <div
-                key={post.id}
-                className="grid grid-cols-3 gap-2.5 sm:gap-3 items-start group"
-              >
-                <div className="col-span-1 relative rounded-md overflow-hidden">
-                  <Link to={`/article/${post.id}`} className="block">
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-full h-full object-cover aspect-[4/3] group-hover:opacity-80 transition-opacity"
-                    />
-                  </Link>
-                  {/* Tombol Bookmark ditambahkan di sini */}
-                  <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <BookmarkButton
-                      articleId={post.id}
-                      className="bg-black/30 backdrop-blur-sm"
-                    />
-                  </div>
-                </div>
-                <div className="col-span-2">
-                  <h3 className="text-sm font-semibold group-hover:text-blue-600 transition-colors line-clamp-2 sm:line-clamp-3">
-                    <Link to={`/article/${post.id}`}>{post.title}</Link>
-                  </h3>
-                  <div className="flex items-center mt-1 text-gray-500 text-xs">
-                    <span>By {post.author}</span>
-                    <span className="mx-1.5">|</span>
-                    <span>
-                      {new Date(post.date).toLocaleDateString("id-ID", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </div>
-                  <ArticleCardStats
-                    likes={post.initialLikes}
-                    dislikes={post.initialDislikes}
-                    commentCount={getCommentCountForArticle(post.id)}
-                    articleId={post.id}
-                    small
+          {articles.popular.map((post) => (
+            <div
+              key={post.link}
+              className="grid grid-cols-3 gap-2.5 sm:gap-3 items-start group"
+            >
+              <div className="col-span-1 relative rounded-md overflow-hidden">
+                <Link
+                  to={`/article/${createSlug(post.title)}`}
+                  state={{ articleUrl: post.link }}
+                  className="block"
+                >
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="w-full h-full object-cover aspect-[4/3] group-hover:opacity-80 transition-opacity"
+                  />
+                </Link>
+                <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <BookmarkButton
+                    articleId={post.link}
+                    className="bg-black/30 backdrop-blur-sm"
                   />
                 </div>
               </div>
-            );
-          })}
+              <div className="col-span-2">
+                <h3 className="text-sm font-semibold group-hover:text-blue-600 transition-colors line-clamp-2 sm:line-clamp-3">
+                  <Link
+                    to={`/article/${createSlug(post.title)}`}
+                    state={{ articleUrl: post.link }}
+                  >
+                    {post.title}
+                  </Link>
+                </h3>
+                <div className="flex items-center mt-1 text-gray-500 text-xs">
+                  <span>By {post.author || "Tim Redaksi"}</span>
+                  <span className="mx-1.5">|</span>
+                  <span>
+                    {new Date(post.pubDate).toLocaleDateString("id-ID", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+                <div className="mt-2">
+                  <ArticleCardStats
+                    likes={post.likes_count || 0}
+                    dislikes={post.dislikes_count || 0}
+                    comments={post.comments_count || 0}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -250,42 +242,40 @@ const HomePage = () => {
       <section className="mb-8 sm:mb-10 md:mb-12">
         <SectionTitle title="Recommendation News" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {recommendationNewsIds.map((id) => {
-            const item = getArticle(id);
-            if (!item) return null;
-            return (
-              <div key={item.id} className="group">
-                <h3 className="text-base sm:text-lg font-semibold mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">
-                  <Link to={`/article/${item.id}`}>{item.title}</Link>
-                </h3>
-                <div className="text-xs text-gray-500">
-                  <span>By {item.author}</span>
-                  <span className="mx-1.5">|</span>
-                  <span>
-                    {new Date(item.date).toLocaleDateString("id-ID", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </span>
-                </div>
-                {/* Bookmark ditambahkan di sini, sejajar dengan stats */}
-                <div className="flex items-center space-x-4">
-                  <ArticleCardStats
-                    likes={item.initialLikes}
-                    dislikes={item.initialDislikes}
-                    commentCount={getCommentCountForArticle(item.id)}
-                    articleId={item.id}
-                    small
-                  />
-                  <BookmarkButton
-                    articleId={item.id}
-                    className="text-gray-500 hover:text-yellow-500 -ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  />
-                </div>
+          {articles.recommendation.map((item) => (
+            <div key={item.link} className="group">
+              <h3 className="text-base sm:text-lg font-semibold mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">
+                <Link
+                  to={`/article/${createSlug(item.title)}`}
+                  state={{ articleUrl: item.link }}
+                >
+                  {item.title}
+                </Link>
+              </h3>
+              <div className="text-xs text-gray-500">
+                <span>By {item.author || "Tim Redaksi"}</span>
+                <span className="mx-1.5">|</span>
+                <span>
+                  {new Date(item.pubDate).toLocaleDateString("id-ID", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
               </div>
-            );
-          })}
+              <div className="flex items-center justify-between mt-2">
+                <ArticleCardStats
+                  likes={item.likes_count || 0}
+                  dislikes={item.dislikes_count || 0}
+                  comments={item.comments_count || 0}
+                />
+                <BookmarkButton
+                  articleId={item.link}
+                  className="text-gray-500 hover:text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                />
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -294,85 +284,77 @@ const HomePage = () => {
         <section className="lg:col-span-2">
           <SectionTitle title="Trending Now" />
           <div className="space-y-5 md:space-y-6">
-            {trendingNowIds.map((id) => {
-              const item = getArticle(id);
-              if (!item) return null;
+            {articles.trending.map((item, index) => {
+              const isLarge = index === 0; // Make the first item larger
               return (
                 <div
-                  key={item.id}
+                  key={item.link}
                   className={`group flex flex-col ${
-                    item.image && item.isLarge
-                      ? "md:flex-row"
-                      : item.image
-                      ? "sm:flex-row"
-                      : ""
+                    isLarge ? "md:flex-row" : "sm:flex-row"
                   } gap-3 sm:gap-4 items-start`}
                 >
-                  {item.image && (
-                    <Link
-                      to={`/article/${item.id}`}
-                      className={`block relative rounded-md overflow-hidden ${
-                        item.isLarge
-                          ? "w-full sm:w-2/5 md:w-1/2 lg:w-2/5"
-                          : "w-full sm:w-1/3"
-                      } flex-shrink-0`}
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className={`w-full object-cover group-hover:opacity-80 transition-opacity ${
-                          item.isLarge
-                            ? "aspect-video"
-                            : "aspect-[4/3] sm:aspect-video"
-                        }`}
+                  <Link
+                    to={`/article/${createSlug(item.title)}`}
+                    state={{ articleUrl: item.link }}
+                    className={`block relative rounded-md overflow-hidden ${
+                      isLarge
+                        ? "w-full sm:w-2/5 md:w-1/2 lg:w-2/5"
+                        : "w-full sm:w-1/3"
+                    } flex-shrink-0`}
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className={`w-full object-cover group-hover:opacity-80 transition-opacity ${
+                        isLarge
+                          ? "aspect-video"
+                          : "aspect-[4/3] sm:aspect-video"
+                      }`}
+                    />
+                    <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <BookmarkButton
+                        articleId={item.link}
+                        className="bg-black/30 backdrop-blur-sm"
                       />
-                      {/* Tombol Bookmark ditambahkan di sini */}
-                      <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <BookmarkButton
-                          articleId={item.id}
-                          className="bg-black/30 backdrop-blur-sm"
-                        />
-                      </div>
-                    </Link>
-                  )}
+                    </div>
+                  </Link>
                   <div
-                    className={`${
-                      item.image && item.isLarge
-                        ? "mt-2 sm:mt-0"
-                        : item.image
-                        ? "mt-2 sm:mt-0"
-                        : ""
+                    className={`flex-1 ${
+                      isLarge ? "mt-2 sm:mt-0" : "mt-2 sm:mt-0"
                     }`}
                   >
                     <h3
                       className={`font-semibold group-hover:text-blue-600 transition-colors line-clamp-2 sm:line-clamp-none ${
-                        item.isLarge
+                        isLarge
                           ? "text-lg sm:text-xl md:text-2xl"
                           : "text-base sm:text-lg"
                       }`}
                     >
-                      <Link to={`/article/${item.id}`}>{item.title}</Link>
+                      <Link
+                        to={`/article/${createSlug(item.title)}`}
+                        state={{ articleUrl: item.link }}
+                      >
+                        {item.title}
+                      </Link>
                     </h3>
-                    {item.author && item.date && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        <span>By {item.author}</span>
-                        <span className="mx-1.5">|</span>
-                        <span>
-                          {new Date(item.date).toLocaleDateString("id-ID", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
-                    )}
-                    <ArticleCardStats
-                      likes={item.initialLikes}
-                      dislikes={item.initialDislikes}
-                      commentCount={getCommentCountForArticle(item.id)}
-                      articleId={item.id}
-                      small={!item.isLarge}
-                    />
+                    <div className="text-xs text-gray-500 mt-1">
+                      <span>By {item.author || "Tim Redaksi"}</span>
+                      <span className="mx-1.5">|</span>
+                      <span>
+                        {new Date(item.pubDate).toLocaleDateString("id-ID", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <ArticleCardStats
+                        likes={item.likes_count || 0}
+                        dislikes={item.dislikes_count || 0}
+                        comments={item.comments_count || 0}
+                      />
+                    </div>
                   </div>
                 </div>
               );
@@ -382,34 +364,33 @@ const HomePage = () => {
         <section>
           <SectionTitle title="Latest Updates" />
           <div className="space-y-2.5 sm:space-y-3">
-            {latestUpdatesIds.map((id) => {
-              const item = getArticle(id);
-              if (!item) return null;
-              return (
-                <div
-                  key={item.id}
-                  className="group flex justify-between items-start gap-2"
-                >
-                  <div>
-                    <Link
-                      to={`/article/${item.id}`}
-                      className="block text-sm font-medium text-gray-700 hover:text-blue-600 hover:underline transition-colors line-clamp-2"
-                    >
-                      {item.title}
-                    </Link>
-                    <div className="flex items-center space-x-1 mt-0.5 text-xs text-gray-500">
-                      <MessageSquare size={12} className="text-gray-400" />
-                      <span>{getCommentCountForArticle(item.id)}</span>
-                    </div>
+            {articles.latest.map((item) => (
+              <div
+                key={item.link}
+                className="group flex justify-between items-start gap-2"
+              >
+                <div className="flex-1">
+                  <Link
+                    to={`/article/${createSlug(item.title)}`}
+                    state={{ articleUrl: item.link }}
+                    className="block text-sm font-medium text-gray-700 hover:text-blue-600 hover:underline transition-colors line-clamp-2"
+                  >
+                    {item.title}
+                  </Link>
+                  <div className="mt-1">
+                    <ArticleCardStats
+                      likes={item.likes_count || 0}
+                      dislikes={item.dislikes_count || 0}
+                      comments={item.comments_count || 0}
+                    />
                   </div>
-                  {/* Tombol Bookmark ditambahkan di sini */}
-                  <BookmarkButton
-                    articleId={item.id}
-                    className="text-gray-400 hover:text-yellow-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  />
                 </div>
-              );
-            })}
+                <BookmarkButton
+                  articleId={item.link}
+                  className="text-gray-400 hover:text-yellow-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                />
+              </div>
+            ))}
           </div>
         </section>
       </div>
@@ -419,79 +400,23 @@ const HomePage = () => {
         <section className="lg:col-span-2">
           <SectionTitle title="Breaking News" />
           <div className="space-y-4 md:space-y-5">
-            {breakingNewsIds.map((id) => {
-              const item = getArticle(id);
-              if (!item) return null;
-              return (
-                <div
-                  key={item.id}
-                  className="group flex gap-3 sm:gap-4 items-start"
-                >
-                  <div className="relative w-1/3 sm:w-1/4 flex-shrink-0">
-                    <Link
-                      to={`/article/${item.id}`}
-                      className="block rounded-md overflow-hidden"
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full object-cover aspect-video group-hover:opacity-80 transition-opacity"
-                      />
-                    </Link>
-                    {/* Tombol Bookmark ditambahkan di sini */}
-                    <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <BookmarkButton
-                        articleId={item.id}
-                        className="bg-black/30 backdrop-blur-sm"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-sm sm:text-base font-semibold group-hover:text-blue-600 transition-colors line-clamp-2 sm:line-clamp-none">
-                      <Link to={`/article/${item.id}`}>{item.title}</Link>
-                    </h3>
-                    <div className="text-xs text-gray-500 mt-1">
-                      <span>By {item.author}</span>
-                      <span className="mx-1.5">|</span>
-                      <span>
-                        {new Date(item.date).toLocaleDateString("id-ID", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </div>
-                    <ArticleCardStats
-                      likes={item.initialLikes}
-                      dislikes={item.initialDislikes}
-                      commentCount={getCommentCountForArticle(item.id)}
-                      articleId={item.id}
-                      small
-                    />
-                  </div>
-                </div>
-              );
-            })}
+            {articles.breaking.map((item) => (
+              <SmallStoryItem key={item.link} article={item} />
+            ))}
           </div>
         </section>
         <section>
           <SectionTitle title="Tags Category" />
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {tagsCategoryData.map((tag, index) => (
+            {categories.map((tag) => (
               <Link
-                key={index}
-                to={`/category/${createSlug(tag)}`}
+                key={tag.name} // <-- GUNAKAN 'tag.name' SEBAGAI KEY YANG UNIK
+                to={`/category/${createSlug(tag.name)}`}
                 className="bg-gray-100 text-gray-700 text-xs px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md hover:bg-gray-200 transition-colors"
               >
-                {tag}
+                {tag.name}
               </Link>
             ))}
-            <Link
-              to="/categories"
-              className="bg-gray-700 text-white text-xs px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md hover:bg-black transition-colors"
-            >
-              {moreTag}
-            </Link>
           </div>
         </section>
       </div>
@@ -502,156 +427,96 @@ const HomePage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8">
           {/* Kolom Kiri */}
           <div>
-            {getArticle(mustReadProminentStoryLeftId) && (
+            {articles.mustRead[0] && (
               <div className="mb-6 md:mb-8 group">
                 <div className="relative block mb-2 sm:mb-3 rounded-lg overflow-hidden shadow-md">
-                  <Link to={`/article/${mustReadProminentStoryLeftId}`}>
+                  <Link
+                    to={`/article/${createSlug(articles.mustRead[0].title)}`}
+                    state={{ articleUrl: articles.mustRead[0].link }}
+                  >
                     <img
-                      src={getArticle(mustReadProminentStoryLeftId).image}
-                      alt={getArticle(mustReadProminentStoryLeftId).title}
+                      src={articles.mustRead[0].image}
+                      alt={articles.mustRead[0].title}
                       className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
                     />
                   </Link>
-                  {/* Tombol Bookmark ditambahkan di sini */}
                   <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                     <BookmarkButton
-                      articleId={mustReadProminentStoryLeftId} // atau mustReadProminentStoryRightId
+                      articleId={articles.mustRead[0].link}
                       className="bg-black/30 backdrop-blur-sm"
                     />
                   </div>
                 </div>
                 <h3 className="text-lg sm:text-xl md:text-2xl font-bold group-hover:text-blue-600 transition-colors leading-tight line-clamp-3">
-                  <Link to={`/article/${mustReadProminentStoryLeftId}`}>
-                    {getArticle(mustReadProminentStoryLeftId).title}
+                  <Link
+                    to={`/article/${createSlug(articles.mustRead[0].title)}`}
+                    state={{ articleUrl: articles.mustRead[0].link }}
+                  >
+                    {articles.mustRead[0].title}
                   </Link>
                 </h3>
-                <div className="text-xs sm:text-sm text-gray-500 mt-1.5">
-                  <span>
-                    By {getArticle(mustReadProminentStoryLeftId).author}
-                  </span>{" "}
-                  <span className="mx-2">|</span>{" "}
-                  <span>
-                    {new Date(
-                      getArticle(mustReadProminentStoryLeftId).date
-                    ).toLocaleDateString("id-ID", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </span>
+                <div className="mt-2">
+                  <ArticleCardStats
+                    likes={articles.mustRead[0].likes_count || 0}
+                    dislikes={articles.mustRead[0].dislikes_count || 0}
+                    comments={articles.mustRead[0].comments_count || 0}
+                  />
                 </div>
-                <ArticleCardStats
-                  likes={getArticle(mustReadProminentStoryLeftId).initialLikes}
-                  dislikes={
-                    getArticle(mustReadProminentStoryLeftId).initialDislikes
-                  }
-                  commentCount={getCommentCountForArticle(
-                    mustReadProminentStoryLeftId
-                  )}
-                  articleId={mustReadProminentStoryLeftId}
-                />
               </div>
             )}
             <div className="space-y-1 md:space-y-2">
-              {mustReadSmallerStoriesLeftIds.map((id) => {
-                const story = getArticle(id);
-                if (!story) return null;
-                return (
-                  <div key={story.id} className="py-2">
-                    <SmallStoryItem
-                      {...story}
-                      id={id}
-                      link={`/article/${story.id}`}
-                    />
-                    <div className="pl-[calc(33.33%+0.5rem)] sm:pl-[calc(25%+0.5rem)]">
-                      <ArticleCardStats
-                        likes={story.initialLikes}
-                        dislikes={story.initialDislikes}
-                        commentCount={getCommentCountForArticle(story.id)}
-                        articleId={story.id}
-                        small
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+              {articles.mustRead.slice(1, 4).map((story) => (
+                <div key={story.link} className="py-2">
+                  <SmallStoryItem article={story} />
+                </div>
+              ))}
             </div>
           </div>
           {/* Kolom Kanan */}
           <div className="mt-6 lg:mt-0">
-            {getArticle(mustReadProminentStoryRightId) && (
+            {articles.mustRead[4] && (
               <div className="mb-6 md:mb-8 group">
                 <div className="relative block mb-2 sm:mb-3 rounded-lg overflow-hidden shadow-md">
-                  <Link to={`/article/${mustReadProminentStoryRightId}`}>
+                  <Link
+                    to={`/article/${createSlug(articles.mustRead[4].title)}`}
+                    state={{ articleUrl: articles.mustRead[4].link }}
+                  >
                     <img
-                      src={getArticle(mustReadProminentStoryRightId).image}
-                      alt={getArticle(mustReadProminentStoryRightId).title}
+                      src={articles.mustRead[4].image}
+                      alt={articles.mustRead[4].title}
                       className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
                     />
                   </Link>
-                  {/* Tombol Bookmark ditambahkan di sini */}
                   <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                     <BookmarkButton
-                      articleId={mustReadProminentStoryRightId}
+                      articleId={articles.mustRead[4].link}
                       className="bg-black/30 backdrop-blur-sm"
                     />
                   </div>
                 </div>
                 <h3 className="text-lg sm:text-xl md:text-2xl font-bold group-hover:text-blue-600 transition-colors leading-tight line-clamp-3">
-                  <Link to={`/article/${mustReadProminentStoryRightId}`}>
-                    {getArticle(mustReadProminentStoryRightId).title}
+                  <Link
+                    to={`/article/${createSlug(articles.mustRead[4].title)}`}
+                    state={{ articleUrl: articles.mustRead[4].link }}
+                  >
+                    {articles.mustRead[4].title}
                   </Link>
                 </h3>
-                <div className="text-xs sm:text-sm text-gray-500 mt-1.5">
-                  <span>
-                    By {getArticle(mustReadProminentStoryRightId).author}
-                  </span>{" "}
-                  <span className="mx-2">|</span>{" "}
-                  <span>
-                    {new Date(
-                      getArticle(mustReadProminentStoryRightId).date
-                    ).toLocaleDateString("id-ID", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </span>
+                <div className="mt-2">
+                  <ArticleCardStats
+                    likes={articles.mustRead[4].likes_count || 0}
+                    dislikes={articles.mustRead[4].dislikes_count || 0}
+                    comments={articles.mustRead[4].comments_count || 0}
+                  />
                 </div>
-                <ArticleCardStats
-                  likes={getArticle(mustReadProminentStoryRightId).initialLikes}
-                  dislikes={
-                    getArticle(mustReadProminentStoryRightId).initialDislikes
-                  }
-                  commentCount={getCommentCountForArticle(
-                    mustReadProminentStoryRightId
-                  )}
-                  articleId={mustReadProminentStoryRightId}
-                />
               </div>
             )}
             <div className="space-y-1 md:space-y-2">
-              {mustReadSmallerStoriesRightIds.map((id) => {
-                const story = getArticle(id);
-                if (!story) return null;
-                return (
-                  <div key={story.id} className="py-2">
-                    <SmallStoryItem
-                      {...story}
-                      id={id}
-                      link={`/article/${story.id}`}
-                    />
-                    <div className="pl-[calc(33.33%+0.5rem)] sm:pl-[calc(25%+0.5rem)]">
-                      <ArticleCardStats
-                        likes={story.initialLikes}
-                        dislikes={story.initialDislikes}
-                        commentCount={getCommentCountForArticle(story.id)}
-                        articleId={story.id}
-                        small
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+              {articles.mustRead.slice(5, 8).map((story) => (
+                <div key={story.link} className="py-2">
+                  <SmallStoryItem article={story} />
+                </div>
+              ))}
             </div>
           </div>
         </div>

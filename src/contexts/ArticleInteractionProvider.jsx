@@ -1,12 +1,9 @@
 // src/contexts/ArticleInteractionProvider.jsx
 import React, { useState, useCallback } from "react";
 import { ArticleInteractionContext } from "./ArticleInteractionContextDefinition";
-import {
-  allArticlesData as initialArticlesStaticData,
-  initialCommentsData as rawInitialCommentsData,
-  calculateTotalComments,
-  allUsersData,
-} from "../data/mockData";
+import apiClient from "../api/axios";
+
+const API_BASE_URL = "http://localhost:8000/api";
 
 // --- Fungsi Helper (tidak diubah) ---
 const addReplyRecursive = (comments, parentId, newReply) => {
@@ -22,6 +19,20 @@ const addReplyRecursive = (comments, parentId, newReply) => {
     }
     return comment;
   });
+};
+
+const countCommentsRecursive = (comments) => {
+  let count = 0;
+  if (!comments || comments.length === 0) {
+    return 0;
+  }
+  for (const comment of comments) {
+    count++; // Hitung komentar utama
+    if (comment.replies && comment.replies.length > 0) {
+      count += countCommentsRecursive(comment.replies); // Tambahkan jumlah balasan
+    }
+  }
+  return count;
 };
 
 const updateCommentVoteRecursive = (list, id, voteType) => {
@@ -56,30 +67,11 @@ const updateCommentVoteRecursive = (list, id, voteType) => {
 };
 
 export const ArticleInteractionProvider = ({ children }) => {
-  const [articleInteractions, setArticleInteractions] = useState(() => {
-    const interactions = {};
-    Object.keys(initialArticlesStaticData).forEach((id) => {
-      interactions[id] = {
-        likes: initialArticlesStaticData[id].initialLikes || 0,
-        dislikes: initialArticlesStaticData[id].initialDislikes || 0,
-        userVote: null,
-        isBookmarked: false,
-      };
-    });
-    return interactions;
-  });
+  const [articleInteractions, setArticleInteractions] = useState({});
 
-  const [articleCommentsState, setArticleCommentsState] = useState(
-    rawInitialCommentsData
-  );
+  const [articleCommentsState, setArticleCommentsState] = useState({});
   const [notifications, setNotifications] = useState([]);
-  const [userPointsMap, setUserPointsMap] = useState(() => {
-    const points = {};
-    allUsersData.forEach((user) => {
-      points[user.id] = user.points;
-    });
-    return points;
-  });
+  const [userPointsMap, setUserPointsMap] = useState({});
 
   const unreadNotificationCount = notifications.filter((n) => !n.read).length;
 
@@ -95,18 +87,271 @@ export const ArticleInteractionProvider = ({ children }) => {
     setNotifications((prev) => [newNotification, ...prev].slice(0, 20));
   }, []);
 
+  const loadInitialInteractions = useCallback(async (articleUrl) => {
+    try {
+      // Panggil endpoint GET untuk data interaksi (like, dislike, bookmark)
+      const response = await apiClient.get(
+        `${API_BASE_URL}/interactions/article`,
+        {
+          params: { article_url: articleUrl },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+
+      if (response.data.success) {
+        const { likes_count, dislikes_count, user_vote, is_bookmarked } =
+          response.data.data;
+        setArticleInteractions((prev) => ({
+          ...prev,
+          [articleUrl]: {
+            likes: likes_count,
+            dislikes: dislikes_count,
+            userVote: user_vote,
+            isBookmarked: is_bookmarked,
+          },
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to load article interactions:", error);
+    }
+  }, []);
+
+  const loadComments = useCallback(async (articleUrl) => {
+    try {
+      // Panggil endpoint GET untuk data komentar
+      const response = await apiClient.get(
+        `${API_BASE_URL}/interactions/comments`,
+        {
+          params: { article_url: articleUrl },
+        }
+      );
+
+      if (response.data.success) {
+        // Langsung gunakan data komentar dari backend
+        setArticleCommentsState((prev) => ({
+          ...prev,
+          [articleUrl]: response.data.data,
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to load comments:", error);
+    }
+  }, []);
+
+  // Helper function to get article data from URL
+  const getArticleDataFromUrl = (articleUrl) => {
+    // Fungsi ini sekarang hanya sebagai fallback untuk mengirim URL ke backend.
+    // Detail artikel akan diisi oleh backend.
+    return {
+      url: articleUrl,
+      title: "Article from Client", // Judul ini hanya sementara
+      description: "",
+      image: "",
+      source_name: "External",
+      pubDate: new Date().toISOString(),
+    };
+  };
+
+  const toggleBookmark = async (articleData) => {
+    // <-- Parameter diubah
+    try {
+      const response = await apiClient.post(`/interactions/bookmark`, {
+        article: {
+          // <-- Payload disesuaikan
+          url: articleData.url,
+          title: articleData.title,
+          description: articleData.excerpt || "",
+          image: articleData.image || "",
+          source_name: articleData.source_name || "Unknown",
+          pubDate: articleData.published_at || new Date().toISOString(),
+        },
+      });
+
+      const isBookmarked = response.data.bookmarked;
+      setArticleInteractions((prev) => ({
+        ...prev,
+        [articleData.url]: {
+          // <-- Key menggunakan articleData.url
+          ...prev[articleData.url],
+          isBookmarked,
+        },
+      }));
+
+      // Logika notifikasi tetap sama
+      if (isBookmarked) {
+        addNotification(
+          `Artikel ditambahkan ke bookmark.`,
+          "/user/dashboard/bookmarks"
+        );
+      } else {
+        addNotification(
+          `Artikel dihapus dari bookmark.`,
+          "/user/dashboard/bookmarks"
+        );
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      addNotification("Gagal mengubah bookmark. Coba lagi.", "#", "error");
+    }
+  };
+
+  const toggleLikeArticle = async (articleData) => {
+    // <-- Perhatikan: parameternya sekarang 'articleData'
+    try {
+      // Anda TIDAK perlu lagi memanggil getArticleDataFromUrl di sini
+
+      const response = await apiClient.post(`/interactions/vote`, {
+        article: {
+          // Pastikan Anda mengirim objek yang sesuai dengan kebutuhan backend
+          url: articleData.url,
+          title: articleData.title,
+          description: articleData.excerpt || "",
+          image: articleData.image || "",
+          source_name: articleData.source_name || "Unknown",
+          pubDate: articleData.published_at || new Date().toISOString(),
+        },
+        type: "like",
+      });
+
+      // Bagian ini sudah benar, yaitu menggunakan respons dari API
+      const { likes_count, dislikes_count, current_vote } = response.data;
+      setArticleInteractions((prev) => ({
+        ...prev,
+        [articleData.url]: {
+          // Gunakan articleData.url sebagai key
+          ...prev[articleData.url],
+          likes: likes_count,
+          dislikes: dislikes_count,
+          userVote: current_vote,
+        },
+      }));
+    } catch (error) {
+      console.error("Error toggling like:", error);
+      addNotification(
+        "Gagal memberikan like. Silakan coba lagi.",
+        "#",
+        "error"
+      );
+    }
+  };
+
+  const toggleDislikeArticle = async (articleData) => {
+    try {
+      const response = await apiClient.post(`/interactions/vote`, {
+        article: {
+          url: articleData.url,
+          title: articleData.title,
+          description: articleData.excerpt || "",
+          image: articleData.image || "",
+          source_name: articleData.source_name || "Unknown",
+          pubDate: articleData.published_at || new Date().toISOString(),
+        },
+        type: "dislike",
+      });
+
+      // Update local state immediately for better UX
+      const { likes_count, dislikes_count, current_vote } = response.data;
+      setArticleInteractions((prev) => ({
+        ...prev,
+        [articleData.url]: {
+          ...prev[articleData.url],
+          likes: likes_count,
+          dislikes: dislikes_count,
+          userVote: current_vote,
+        },
+      }));
+    } catch (error) {
+      console.error("Error toggling dislike:", error);
+      addNotification("Gagal memberikan dislike. Coba lagi.", "#", "error");
+    }
+  };
+
+  const addCommentToArticle = async (articleData, text) => {
+    // <-- Parameter disederhanakan
+    try {
+      const response = await apiClient.post(`/interactions/comment`, {
+        article: {
+          // <-- Payload disesuaikan
+          url: articleData.url,
+          title: articleData.title,
+          description: articleData.excerpt || "",
+          image: articleData.image || "",
+          source_name: articleData.source_name || "Unknown",
+          pubDate: articleData.published_at || new Date().toISOString(),
+        },
+        content: text,
+        parent_id: null,
+      });
+
+      const newCommentFromServer = response.data;
+      setArticleCommentsState((prev) => ({
+        ...prev,
+        [articleData.url]: [
+          newCommentFromServer,
+          ...(prev[articleData.url] || []),
+        ], // <-- Key menggunakan articleData.url
+      }));
+
+      addNotification(
+        `${newCommentFromServer.user.name} mengomentari artikel`,
+        `/article/${articleData.url.split("/").pop()}#comment-section`
+      );
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      addNotification("Gagal menambahkan komentar. Coba lagi.", "#", "error");
+    }
+  };
+
+  const addReplyToComment = async (articleData, parentId, text) => {
+    // <-- Parameter disederhanakan
+    try {
+      const response = await apiClient.post(`/interactions/comment`, {
+        article: {
+          // <-- Payload disesuaikan
+          url: articleData.url,
+          title: articleData.title,
+          description: articleData.excerpt || "",
+          image: articleData.image || "",
+          source_name: articleData.source_name || "Unknown",
+          pubDate: articleData.published_at || new Date().toISOString(),
+        },
+        content: text,
+        parent_id: parentId,
+      });
+
+      const newReplyFromServer = response.data;
+      setArticleCommentsState((prev) => ({
+        ...prev,
+        [articleData.url]: addReplyRecursive(
+          // <-- Key menggunakan articleData.url
+          prev[articleData.url] || [],
+          parentId,
+          newReplyFromServer
+        ),
+      }));
+
+      addNotification(
+        `${newReplyFromServer.user.name} membalas komentar Anda.`,
+        `/article/${articleData.url.split("/").pop()}#comment-${
+          newReplyFromServer.id
+        }`
+      );
+    } catch (error) {
+      console.error("Error adding reply:", error);
+      addNotification("Gagal menambahkan balasan. Coba lagi.", "#", "error");
+    }
+  };
+
+  // Keep existing functions for admin and local operations
   const deductUserPoints = (userId, amount) => {
     setUserPointsMap((prev) => {
       const currentPoints = prev[userId] || 0;
       const newPoints = Math.max(0, currentPoints - amount);
-      const user = allUsersData.find((u) => u.id === userId);
-      if (user) {
-        addNotification(
-          `Poin untuk ${user.name} dikurangi ${amount} karena pelanggaran. Poin sekarang: ${newPoints}.`,
-          `/admin/dashboard/users`,
-          "points_deduction"
-        );
-      }
+      addNotification(
+        `Poin untuk pengguna ID: ${userId} dikurangi ${amount}. Poin sekarang: ${newPoints}.`,
+        `/admin/dashboard/users`,
+        "points_deduction"
+      );
       return { ...prev, [userId]: newPoints };
     });
   };
@@ -162,7 +407,7 @@ export const ArticleInteractionProvider = ({ children }) => {
       deductUserPoints(userId, pointsToDeduct);
     }
     addNotification(
-      `Komentar pada artikel "${initialArticlesStaticData[articleId]?.title}" telah dihapus oleh admin.`,
+      `Komentar telah dihapus oleh admin.`,
       `/article/${articleId}`
     );
   };
@@ -177,117 +422,6 @@ export const ArticleInteractionProvider = ({ children }) => {
 
   const deleteNotification = (id) =>
     setNotifications((prev) => prev.filter((n) => n.id !== id));
-
-  const toggleBookmark = (articleId) => {
-    const isCurrentlyBookmarked = articleInteractions[articleId]?.isBookmarked;
-    setArticleInteractions((prev) => ({
-      ...prev,
-      [articleId]: { ...prev[articleId], isBookmarked: !isCurrentlyBookmarked },
-    }));
-    if (!isCurrentlyBookmarked) {
-      addNotification(
-        `Artikel "${initialArticlesStaticData[articleId]?.title}" ditambahkan ke bookmark.`,
-        "/user/dashboard/bookmarks"
-      );
-    } else {
-      addNotification(
-        `Artikel "${initialArticlesStaticData[articleId]?.title}" dihapus dari bookmark.`,
-        "/user/dashboard/bookmarks"
-      );
-    }
-  };
-
-  const toggleLikeArticle = (articleId) => {
-    setArticleInteractions((prev) => {
-      const current = prev[articleId];
-      const isLiked = current.userVote === "liked";
-      return {
-        ...prev,
-        [articleId]: {
-          ...current,
-          likes: isLiked ? current.likes - 1 : current.likes + 1,
-          dislikes:
-            current.userVote === "disliked"
-              ? current.dislikes - 1
-              : current.dislikes,
-          userVote: isLiked ? null : "liked",
-        },
-      };
-    });
-  };
-
-  const toggleDislikeArticle = (articleId) => {
-    setArticleInteractions((prev) => {
-      const current = prev[articleId];
-      const isDisliked = current.userVote === "disliked";
-      return {
-        ...prev,
-        [articleId]: {
-          ...current,
-          dislikes: isDisliked ? current.dislikes - 1 : current.dislikes + 1,
-          likes:
-            current.userVote === "liked" ? current.likes - 1 : current.likes,
-          userVote: isDisliked ? null : "disliked",
-        },
-      };
-    });
-  };
-
-  const addCommentToArticle = (articleId, authorName, text, currentUser) => {
-    const newComment = {
-      id: Date.now(),
-      articleId,
-      userId: currentUser.id,
-      author: authorName,
-      text,
-      timestamp: Date.now(),
-      avatarUrl: currentUser.avatarUrl,
-      likes: 0,
-      dislikes: 0,
-      userVoteOnComment: null,
-      replies: [],
-      status: "approved",
-    };
-    setArticleCommentsState((prev) => ({
-      ...prev,
-      [articleId]: [newComment, ...(prev[articleId] || [])],
-    }));
-    addNotification(
-      `${authorName} mengomentari: "${initialArticlesStaticData[articleId]?.title}"`,
-      `/article/${articleId}#comment-section`
-    );
-  };
-
-  const addReplyToComment = (
-    articleId,
-    parentId,
-    authorName,
-    text,
-    currentUser
-  ) => {
-    const newReply = {
-      id: Date.now(),
-      parentId,
-      articleId,
-      userId: currentUser.id,
-      author: authorName,
-      text,
-      timestamp: Date.now(),
-      avatarUrl: currentUser.avatarUrl,
-      likes: 0,
-      dislikes: 0,
-      userVoteOnComment: null,
-      replies: [],
-    };
-    setArticleCommentsState((prev) => ({
-      ...prev,
-      [articleId]: addReplyRecursive(prev[articleId] || [], parentId, newReply),
-    }));
-    addNotification(
-      `${authorName} membalas komentar Anda.`,
-      `/article/${articleId}#comment-${newReply.id}`
-    );
-  };
 
   const toggleCommentLike = (articleId, commentId) =>
     setArticleCommentsState((prev) => ({
@@ -308,8 +442,8 @@ export const ArticleInteractionProvider = ({ children }) => {
       ),
     }));
   const getCommentCountForArticleContext = useCallback(
-    (articleId) =>
-      calculateTotalComments(articleCommentsState[articleId] || []),
+    (articleUrl) =>
+      countCommentsRecursive(articleCommentsState[articleUrl] || []),
     [articleCommentsState]
   );
   const markNotificationAsRead = (id) =>
@@ -336,6 +470,8 @@ export const ArticleInteractionProvider = ({ children }) => {
     markAllNotificationsAsRead,
     addNotification,
     deleteNotification,
+    loadInitialInteractions,
+    loadComments,
     // --- Admin Functions ---
     userPointsMap,
     moderateComment,

@@ -104,8 +104,8 @@ const CommentItem = ({
   const {
     id,
     author,
-    text,
-    timestamp,
+    content,
+    created_at,
     avatarUrl,
     likes = 0,
     dislikes = 0,
@@ -126,7 +126,9 @@ const CommentItem = ({
         <div className="flex-grow">
           <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
             <p className="text-sm font-semibold text-gray-800">{author}</p>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">{text}</p>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              {content}
+            </p>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-3 mt-1.5 pl-1">
             <button
@@ -178,7 +180,7 @@ const CommentItem = ({
             </button>
             <span className="text-xs text-gray-400">•</span>
             <span className="text-xs text-gray-400">
-              {new Date(timestamp).toLocaleDateString("id-ID", {
+              {new Date(created_at).toLocaleDateString("id-ID", {
                 day: "numeric",
                 month: "short",
                 year: "numeric",

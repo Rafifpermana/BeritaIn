@@ -1,14 +1,10 @@
 // src/pages/SearchResultsPage.jsx
 import React, { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import {
-  allArticlesData,
-  initialCommentsData,
-  calculateTotalComments,
-} from "../data/mockData";
-import ArticleCardStats from "../utils/ArticleCardStats";
+import axios from "axios";
 
-// Fungsi untuk membuat slug (harus sama dengan yang di Navbar.jsx)
+const API_BASE_URL = "http://localhost:8000/api";
+
 const createSlug = (text) => {
   if (!text) return "";
   return text
@@ -18,82 +14,92 @@ const createSlug = (text) => {
     .replace(/[^\w-]+/g, "");
 };
 
-const CATEGORIES_LIST_FOR_DISPLAY = [
-  // Sama seperti di CategoryPage
-  "Tech & Innovation",
-  "Business & Economy",
-  "Entertainment & Pop Culture",
-  "Science & Discovery",
-  "Health & Wellness",
-  "Sports",
-  "Gaming",
-  "Esport",
-  "Travel & Adventure",
-  "Politics & Global Affairs",
-  "Cryptocurrency",
-  "Education",
-  "Environment & Sustainability",
-  "Lifestyle & Trends",
-];
-
 const SearchResultsPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q");
-  const categorySlugFromQuery = searchParams.get("category");
-  const [results, setResults] = useState([]);
-  const [categoryNameDisplay, setCategoryNameDisplay] = useState("");
+  const category = searchParams.get("category"); // Ambil parameter kategori jika ada
+
+  const [allResults, setAllResults] = useState([]);
+  const [paginatedResults, setPaginatedResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // State untuk client-side pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [articlesPerPage] = useState(12);
 
   useEffect(() => {
-    setLoading(true);
-    if (query) {
-      let filteredArticles = Object.values(allArticlesData);
-
-      if (categorySlugFromQuery) {
-        const originalCatName = CATEGORIES_LIST_FOR_DISPLAY.find(
-          (cat) => createSlug(cat) === categorySlugFromQuery
-        );
-        if (originalCatName) {
-          setCategoryNameDisplay(originalCatName);
-        } else {
-          setCategoryNameDisplay(
-            categorySlugFromQuery
-              .replace(/-/g, " ")
-              .split(" ")
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(" ")
-          );
-        }
-
-        filteredArticles = filteredArticles.filter(
-          (article) =>
-            article.category &&
-            createSlug(article.category) === categorySlugFromQuery
-        );
-      } else {
-        setCategoryNameDisplay("");
-      }
-
-      filteredArticles = filteredArticles.filter(
-        (article) =>
-          article.title.toLowerCase().includes(query.toLowerCase()) ||
-          (article.contentHTML &&
-            article.contentHTML.toLowerCase().includes(query.toLowerCase())) ||
-          (article.author &&
-            article.author.toLowerCase().includes(query.toLowerCase()))
-      );
-      setResults(filteredArticles);
-    } else {
-      setResults([]); // Jika tidak ada query, kosongkan hasil
+    if (!query) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
-  }, [query, categorySlugFromQuery]);
+
+    window.scrollTo(0, 0);
+
+    const fetchSearchResults = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Panggil API dengan parameter 'q' (query) dan 'category' (opsional)
+        const response = await axios.get(`${API_BASE_URL}/news`, {
+          params: {
+            q: query,
+            category: category || undefined, // Kirim kategori jika ada
+          },
+        });
+
+        // Respons dari fungsi searchNews Anda mungkin langsung array
+        if (response.data && Array.isArray(response.data)) {
+          setAllResults(response.data);
+        } else {
+          setAllResults([]);
+        }
+      } catch (err) {
+        setError("Gagal melakukan pencarian.");
+        console.error("Error fetching search results:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSearchResults();
+  }, [query, category]);
+
+  // useEffect untuk meng-update artikel yang ditampilkan saat halaman berubah
+  useEffect(() => {
+    if (allResults.length > 0) {
+      const indexOfLastResult = currentPage * articlesPerPage;
+      const indexOfFirstResult = indexOfLastResult - articlesPerPage;
+      setPaginatedResults(
+        allResults.slice(indexOfFirstResult, indexOfLastResult)
+      );
+    } else {
+      setPaginatedResults([]);
+    }
+  }, [currentPage, allResults, articlesPerPage]);
+
+  const totalPages = Math.ceil(allResults.length / articlesPerPage);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo(0, 0);
+    }
+  };
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4 sm:p-6 lg:p-8 text-center text-gray-500 min-h-[calc(100vh-200px)] flex items-center justify-center">
-        Mencari artikel...
+      <div className="container mx-auto p-8 text-center min-h-[50vh] flex items-center justify-center">
+        <p className="text-lg font-semibold text-gray-600">
+          Mencari artikel...
+        </p>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20 text-red-500 font-bold">{error}</div>
     );
   }
 
@@ -103,67 +109,82 @@ const SearchResultsPage = () => {
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
           Hasil Pencarian untuk: "{query}"
         </h1>
-        {categoryNameDisplay && (
-          <p className="text-md text-gray-600 mt-1">
-            Dalam kategori:{" "}
-            <span className="font-semibold text-blue-600">
-              {categoryNameDisplay}
-            </span>
-          </p>
-        )}
+        <p className="text-sm text-gray-500 mt-1">
+          {allResults.length} hasil ditemukan
+        </p>
       </div>
 
-      {results.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {results.map((article) => (
-            <div
-              key={article.id}
-              className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out overflow-hidden flex flex-col group"
-            >
-              <Link to={`/article/${article.id}`} className="block">
-                {article.image && (
-                  <div className="w-full h-48 overflow-hidden">
-                    <img
-                      src={article.image}
-                      alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
-                    />
-                  </div>
-                )}
-              </Link>
-              <div className="p-5 flex flex-col flex-grow">
-                <Link to={`/article/${article.id}`}>
+      {paginatedResults.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {paginatedResults.map((article) => (
+              <div
+                key={article.link}
+                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col group"
+              >
+                <Link
+                  to={`/article/${createSlug(article.title)}`}
+                  state={{ articleUrl: article.link }}
+                  className="block aspect-video overflow-hidden rounded-t-lg"
+                >
+                  <img
+                    src={article.image || "/placeholder-image.jpg"}
+                    alt={article.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/placeholder-image.jpg";
+                    }}
+                  />
+                </Link>
+                <div className="p-4 flex flex-col flex-grow">
                   <h2
-                    className="text-md lg:text-lg font-semibold mb-2 text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-3"
+                    className="text-md font-semibold mb-2 text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-3 flex-grow"
                     title={article.title}
                   >
-                    {article.title}
+                    <Link
+                      to={`/article/${createSlug(article.title)}`}
+                      state={{ articleUrl: article.link }}
+                    >
+                      {article.title}
+                    </Link>
                   </h2>
-                </Link>
-                <div className="text-xs text-gray-500 mt-auto pt-2">
-                  <span className="font-medium">
-                    {article.author || "Penulis"}
-                  </span>{" "}
-                  <br />
-                  {new Date(article.date).toLocaleDateString("id-ID", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  <div className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-100">
+                    <span className="font-medium">By Tim Redaksi</span>
+                    <br />
+                    {new Date(article.pubDate).toLocaleDateString("id-ID", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </div>
                 </div>
-                <ArticleCardStats
-                  likes={article.initialLikes || 0}
-                  dislikes={article.initialDislikes || 0}
-                  commentCount={calculateTotalComments(
-                    initialCommentsData[article.id] || []
-                  )}
-                  articleId={article.id}
-                  small
-                />
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+
+          {/* Kontrol Pagination */}
+          <div className="flex justify-between items-center mt-12">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              &larr; Sebelumnya
+            </button>
+            <span className="text-gray-700">
+              Halaman <strong>{currentPage}</strong> dari{" "}
+              <strong>{totalPages}</strong>
+            </span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Berikutnya &rarr;
+            </button>
+          </div>
+        </>
       ) : (
         <div className="text-center py-12">
           <img
@@ -175,15 +196,12 @@ const SearchResultsPage = () => {
             Oops! Hasil Tidak Ditemukan
           </p>
           <p className="text-gray-500 mt-2">
-            Tidak ada hasil yang cocok untuk pencarian "{query}"{" "}
-            {categoryNameDisplay
-              ? `dalam kategori "${categoryNameDisplay}"`
-              : ""}
-            .
+            Tidak ada hasil yang cocok untuk pencarian Anda. Coba kata kunci
+            lain.
           </p>
           <Link
             to="/"
-            className="mt-6 inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
+            className="mt-6 inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded-lg shadow-md hover:bg-blue-700"
           >
             Kembali ke Beranda
           </Link>

@@ -13,7 +13,9 @@ import {
 import ClientPortal from "../utils/Portal";
 import { useAuth } from "../contexts/AuthContext";
 import { useArticleInteractions } from "../hooks/useArticleInteractions";
+import { useHomeContent } from "../contexts/HomeContentProvider"; // <-- 1. Impor hook untuk kategori
 
+// Helper function untuk membuat slug
 const createSlug = (text) => {
   if (!text || typeof text !== "string") return "";
   return text
@@ -23,23 +25,7 @@ const createSlug = (text) => {
     .replace(/[^\w-]+/g, "");
 };
 
-const CATEGORIES_NAVBAR_LIST = [
-  "Tech & Innovation",
-  "Business & Economy",
-  "Entertainment & Pop Culture",
-  "Science & Discovery",
-  "Health & Wellness",
-  "Sports",
-  "Gaming",
-  "Esport",
-  "Travel & Adventure",
-  "Politics & Global Affairs",
-  "Cryptocurrency",
-  "Education",
-  "Environment & Sustainability",
-  "Lifestyle & Trends",
-];
-
+// Komponen ProfileDropdown (tidak ada perubahan)
 const ProfileDropdown = ({ onLogout, isAdmin }) => (
   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border z-50 py-1 animate-in slide-in-from-top-2 duration-200">
     <Link
@@ -88,11 +74,13 @@ const Navbar = () => {
     markAllNotificationsAsRead,
   } = useArticleInteractions();
 
-  // Enhanced scroll handler with smooth transitions
+  // 2. Ambil daftar kategori dari context, bukan dari variabel statis
+  const { categories } = useHomeContent();
+
+  // Semua useEffect dan fungsi handler (handleScroll, handleLogout, dll.) tetap sama
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       if (currentScrollY < 50) {
         setShowNavbar(true);
       } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
@@ -100,10 +88,8 @@ const Navbar = () => {
       } else if (currentScrollY < lastScrollY) {
         setShowNavbar(true);
       }
-
       setLastScrollY(currentScrollY);
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
@@ -213,22 +199,24 @@ const Navbar = () => {
                 </button>
                 {isSearchDropdownOpen && (
                   <div className="absolute top-full left-0 mt-2 w-60 bg-white border rounded-lg shadow-xl z-10 max-h-72 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
-                    {["All Categories", ...CATEGORIES_NAVBAR_LIST].map(
-                      (cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => handleCategorySelect(cat)}
-                          className={`block w-full text-left px-3 py-2.5 text-sm font-medium transition-colors ${
-                            selectedCategory === cat
-                              ? "bg-blue-50 text-blue-700"
-                              : "text-gray-700 hover:bg-gray-100"
-                          }`}
-                        >
-                          {cat}
-                        </button>
-                      )
-                    )}
+                    {/* 3. Render kategori dari context */}
+                    {[
+                      "All Categories",
+                      ...categories.map((cat) => cat.name),
+                    ].map((catName) => (
+                      <button
+                        key={catName}
+                        type="button"
+                        onClick={() => handleCategorySelect(catName)}
+                        className={`block w-full text-left px-3 py-2.5 text-sm font-medium transition-colors ${
+                          selectedCategory === catName
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        {catName}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
@@ -427,20 +415,23 @@ const Navbar = () => {
             </button>
             {isSearchDropdownOpen && (
               <div className="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-xl z-10 max-h-64 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
-                {["All Categories", ...CATEGORIES_NAVBAR_LIST].map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => handleCategorySelect(cat)}
-                    className={`block w-full text-left px-3 py-2.5 text-sm font-medium transition-colors ${
-                      selectedCategory === cat
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+                {/* 3. Render kategori dari context (untuk mobile) */}
+                {["All Categories", ...categories.map((cat) => cat.name)].map(
+                  (catName) => (
+                    <button
+                      key={catName}
+                      type="button"
+                      onClick={() => handleCategorySelect(catName)}
+                      className={`block w-full text-left px-3 py-2.5 text-sm font-medium transition-colors ${
+                        selectedCategory === catName
+                          ? "bg-blue-50 text-blue-700"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {catName}
+                    </button>
+                  )
+                )}
               </div>
             )}
           </div>

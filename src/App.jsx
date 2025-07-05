@@ -12,6 +12,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./utils/ScrollToTop";
 import { ArticleInteractionProvider } from "./contexts/ArticleInteractionProvider";
+import { HomeContentProvider } from "./contexts/HomeContentProvider";
 
 // Halaman
 import HomePage from "./pages/HomePage";
@@ -55,41 +56,49 @@ function App() {
   return (
     <Router>
       <ArticleInteractionProvider>
-        <ScrollToTop />
-        <Routes>
-          {/* Rute Publik */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+        <HomeContentProvider>
+          <ScrollToTop />
+          <Routes>
+            {/* Rute Publik */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-          {/* Rute dengan Layout Utama (bisa diakses publik) */}
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="article/:articleId" element={<DetailPage />} />
-            <Route path="category/:categorySlug" element={<CategoryPage />} />
-            <Route path="search" element={<SearchResultsPage />} />
-          </Route>
-
-          {/* Rute Terproteksi untuk User Biasa */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/user/dashboard" element={<UserDashboardPage />}>
-              <Route index element={<DashboardOverview />} />
-              <Route path="bookmarks" element={<UserBookmarks />} />
-              <Route path="points" element={<UserPoints />} />
-              <Route path="guidelines" element={<CommunityGuidelines />} />
-              <Route path="all-notifications" element={<UserNotifications />} />
+            {/* Rute dengan Layout Utama (bisa diakses publik) */}
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="article/:articleId" element={<DetailPage />} />
+              <Route path="category/:categorySlug" element={<CategoryPage />} />
+              <Route path="search" element={<SearchResultsPage />} />
             </Route>
-          </Route>
 
-          {/* Rute Terproteksi khusus Admin */}
-          <Route element={<ProtectedRoute adminOnly={true} />}>
-            <Route path="/admin/dashboard" element={<AdminDashboardPage />}>
-              <Route index element={<AdminOverview />} />
-              <Route path="users" element={<UserManagementPage />} />
-              <Route path="comments" element={<CommentModerationPage />} />
-              <Route path="broadcast" element={<BroadcastNotificationPage />} />
+            {/* Rute Terproteksi untuk User Biasa */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/user/dashboard" element={<UserDashboardPage />}>
+                <Route index element={<DashboardOverview />} />
+                <Route path="bookmarks" element={<UserBookmarks />} />
+                <Route path="points" element={<UserPoints />} />
+                <Route path="guidelines" element={<CommunityGuidelines />} />
+                <Route
+                  path="all-notifications"
+                  element={<UserNotifications />}
+                />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
+
+            {/* Rute Terproteksi khusus Admin */}
+            <Route element={<ProtectedRoute adminOnly={true} />}>
+              <Route path="/admin/dashboard" element={<AdminDashboardPage />}>
+                <Route index element={<AdminOverview />} />
+                <Route path="users" element={<UserManagementPage />} />
+                <Route path="comments" element={<CommentModerationPage />} />
+                <Route
+                  path="broadcast"
+                  element={<BroadcastNotificationPage />}
+                />
+              </Route>
+            </Route>
+          </Routes>
+        </HomeContentProvider>
       </ArticleInteractionProvider>
     </Router>
   );
