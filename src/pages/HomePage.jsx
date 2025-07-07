@@ -59,7 +59,7 @@ const SmallStoryItem = ({ article }) => (
         </Link>
       </h4>
       <div className="text-xs text-gray-500 mt-1">
-        <span>By {article.author || "Unknown Author"}</span>
+        <span>By {article.author || "Tim Redaksi"}</span>
         <span className="mx-1.5">|</span>
         <span>
           {new Date(article.pubDate).toLocaleDateString("id-ID", {

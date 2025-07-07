@@ -45,10 +45,12 @@ const CommentForm = ({ onSubmitComment }) => {
       className="mt-6 mb-8 p-4 bg-gray-50 rounded-lg shadow"
     >
       <div className="flex items-start space-x-3">
-        <UserAvatar
-          name={currentUser.name}
-          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-        />
+        {currentUser && (
+          <UserAvatar
+            name={currentUser.name}
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+          />
+        )}
         <div className="flex-grow">
           {currentUser && (
             <p className="text-sm font-semibold text-gray-800 mb-2">

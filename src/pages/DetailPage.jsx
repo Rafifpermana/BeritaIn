@@ -175,7 +175,7 @@ const DetailPage = () => {
               By{" "}
               <span className="font-semibold text-blue-700">
                 {/* PERBAIKAN: Sesuaikan dengan struktur response backend */}
-                By Tim Redaksi
+                Tim Redaksi
               </span>
             </span>
             <span className="mx-2">•</span>
