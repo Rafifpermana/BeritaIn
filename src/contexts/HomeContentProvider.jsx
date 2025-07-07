@@ -45,7 +45,7 @@ export const HomeContentProvider = ({ children }) => {
       try {
         const [newsResponse, categoriesResponse] = await Promise.all([
           axios.get(`${API_BASE_URL}/news`, {
-            params: { limit_per_source: 20 },
+            params: { limit_per_source: 50 },
           }),
           axios.get(`${API_BASE_URL}/categories`),
         ]);
@@ -65,15 +65,39 @@ export const HomeContentProvider = ({ children }) => {
         if (newsData.length > 0) {
           const allNews = shuffleArray(newsData);
           const articlesWithImages = allNews.filter((a) => a.image);
+
+          console.log("Total news:", allNews.length);
+          console.log("Articles with images:", articlesWithImages.length);
+
           setArticles({
             main: articlesWithImages[0] || allNews[0],
-            popular: articlesWithImages.slice(1, 5),
+            popular:
+              articlesWithImages.slice(1, 5).length >= 4
+                ? articlesWithImages.slice(1, 5)
+                : allNews.slice(1, 5),
             recommendation: allNews.slice(5, 8),
-            trending: articlesWithImages.slice(8, 12),
+            trending:
+              articlesWithImages.slice(8, 12).length >= 4
+                ? articlesWithImages.slice(8, 12)
+                : allNews.slice(8, 12),
             latest: allNews.slice(12, 18),
-            breaking: articlesWithImages.slice(18, 24),
-            mustRead: articlesWithImages.slice(24, 32),
+            breaking:
+              articlesWithImages.slice(18, 24).length >= 6
+                ? articlesWithImages.slice(18, 24)
+                : allNews.slice(18, 24),
+            mustRead:
+              articlesWithImages.slice(24, 32).length >= 8
+                ? articlesWithImages.slice(24, 32)
+                : allNews.slice(24, 32),
           });
+          console.log(
+            "Breaking news count:",
+            articlesWithImages.slice(18, 24).length
+          );
+          console.log(
+            "Must read count:",
+            articlesWithImages.slice(24, 32).length
+          );
         }
         // ==========================================================
 

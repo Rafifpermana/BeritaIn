@@ -400,7 +400,7 @@ const HomePage = () => {
         <section className="lg:col-span-2">
           <SectionTitle title="Breaking News" />
           <div className="space-y-4 md:space-y-5">
-            {articles.breaking.map((item) => (
+            {articles.breaking.slice(0, 6).map((item) => (
               <SmallStoryItem key={item.link} article={item} />
             ))}
           </div>
@@ -422,105 +422,107 @@ const HomePage = () => {
       </div>
 
       {/* === BAGIAN KEEMPAT (MUST-READ STORIES) === */}
-      <section>
-        <SectionTitle title="Must-Read Stories" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8">
-          {/* Kolom Kiri */}
-          <div>
-            {articles.mustRead[0] && (
-              <div className="mb-6 md:mb-8 group">
-                <div className="relative block mb-2 sm:mb-3 rounded-lg overflow-hidden shadow-md">
-                  <Link
-                    to={`/article/${createSlug(articles.mustRead[0].title)}`}
-                    state={{ articleUrl: articles.mustRead[0].link }}
-                  >
-                    <img
-                      src={articles.mustRead[0].image}
-                      alt={articles.mustRead[0].title}
-                      className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
-                    />
-                  </Link>
-                  <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <BookmarkButton
-                      articleId={articles.mustRead[0].link}
-                      className="bg-black/30 backdrop-blur-sm"
+      {articles.mustRead && articles.mustRead.length > 0 && (
+        <section>
+          <SectionTitle title="Must-Read Stories" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8">
+            {/* Kolom Kiri */}
+            <div>
+              {articles.mustRead[0] && (
+                <div className="mb-6 md:mb-8 group">
+                  <div className="relative block mb-2 sm:mb-3 rounded-lg overflow-hidden shadow-md">
+                    <Link
+                      to={`/article/${createSlug(articles.mustRead[0].title)}`}
+                      state={{ articleUrl: articles.mustRead[0].link }}
+                    >
+                      <img
+                        src={articles.mustRead[0].image}
+                        alt={articles.mustRead[0].title}
+                        className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
+                      />
+                    </Link>
+                    <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <BookmarkButton
+                        articleId={articles.mustRead[0].link}
+                        className="bg-black/30 backdrop-blur-sm"
+                      />
+                    </div>
+                  </div>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold group-hover:text-blue-600 transition-colors leading-tight line-clamp-3">
+                    <Link
+                      to={`/article/${createSlug(articles.mustRead[0].title)}`}
+                      state={{ articleUrl: articles.mustRead[0].link }}
+                    >
+                      {articles.mustRead[0].title}
+                    </Link>
+                  </h3>
+                  <div className="mt-2">
+                    <ArticleCardStats
+                      likes={articles.mustRead[0].likes_count || 0}
+                      dislikes={articles.mustRead[0].dislikes_count || 0}
+                      comments={articles.mustRead[0].comments_count || 0}
                     />
                   </div>
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold group-hover:text-blue-600 transition-colors leading-tight line-clamp-3">
-                  <Link
-                    to={`/article/${createSlug(articles.mustRead[0].title)}`}
-                    state={{ articleUrl: articles.mustRead[0].link }}
-                  >
-                    {articles.mustRead[0].title}
-                  </Link>
-                </h3>
-                <div className="mt-2">
-                  <ArticleCardStats
-                    likes={articles.mustRead[0].likes_count || 0}
-                    dislikes={articles.mustRead[0].dislikes_count || 0}
-                    comments={articles.mustRead[0].comments_count || 0}
-                  />
-                </div>
+              )}
+              <div className="space-y-1 md:space-y-2">
+                {articles.mustRead.slice(1, 4).map((story) => (
+                  <div key={story.link} className="py-2">
+                    <SmallStoryItem article={story} />
+                  </div>
+                ))}
               </div>
-            )}
-            <div className="space-y-1 md:space-y-2">
-              {articles.mustRead.slice(1, 4).map((story) => (
-                <div key={story.link} className="py-2">
-                  <SmallStoryItem article={story} />
-                </div>
-              ))}
             </div>
-          </div>
-          {/* Kolom Kanan */}
-          <div className="mt-6 lg:mt-0">
-            {articles.mustRead[4] && (
-              <div className="mb-6 md:mb-8 group">
-                <div className="relative block mb-2 sm:mb-3 rounded-lg overflow-hidden shadow-md">
-                  <Link
-                    to={`/article/${createSlug(articles.mustRead[4].title)}`}
-                    state={{ articleUrl: articles.mustRead[4].link }}
-                  >
-                    <img
-                      src={articles.mustRead[4].image}
-                      alt={articles.mustRead[4].title}
-                      className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
-                    />
-                  </Link>
-                  <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <BookmarkButton
-                      articleId={articles.mustRead[4].link}
-                      className="bg-black/30 backdrop-blur-sm"
+            {/* Kolom Kanan */}
+            <div className="mt-6 lg:mt-0">
+              {articles.mustRead[4] && (
+                <div className="mb-6 md:mb-8 group">
+                  <div className="relative block mb-2 sm:mb-3 rounded-lg overflow-hidden shadow-md">
+                    <Link
+                      to={`/article/${createSlug(articles.mustRead[4].title)}`}
+                      state={{ articleUrl: articles.mustRead[4].link }}
+                    >
+                      <img
+                        src={articles.mustRead[4].image}
+                        alt={articles.mustRead[4].title}
+                        className="w-full object-cover aspect-video sm:aspect-[16/9] group-hover:opacity-80 transition-opacity"
+                      />
+                    </Link>
+                    <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <BookmarkButton
+                        articleId={articles.mustRead[4].link}
+                        className="bg-black/30 backdrop-blur-sm"
+                      />
+                    </div>
+                  </div>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold group-hover:text-blue-600 transition-colors leading-tight line-clamp-3">
+                    <Link
+                      to={`/article/${createSlug(articles.mustRead[4].title)}`}
+                      state={{ articleUrl: articles.mustRead[4].link }}
+                    >
+                      {articles.mustRead[4].title}
+                    </Link>
+                  </h3>
+                  <div className="mt-2">
+                    <ArticleCardStats
+                      likes={articles.mustRead[4].likes_count || 0}
+                      dislikes={articles.mustRead[4].dislikes_count || 0}
+                      comments={articles.mustRead[4].comments_count || 0}
                     />
                   </div>
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold group-hover:text-blue-600 transition-colors leading-tight line-clamp-3">
-                  <Link
-                    to={`/article/${createSlug(articles.mustRead[4].title)}`}
-                    state={{ articleUrl: articles.mustRead[4].link }}
-                  >
-                    {articles.mustRead[4].title}
-                  </Link>
-                </h3>
-                <div className="mt-2">
-                  <ArticleCardStats
-                    likes={articles.mustRead[4].likes_count || 0}
-                    dislikes={articles.mustRead[4].dislikes_count || 0}
-                    comments={articles.mustRead[4].comments_count || 0}
-                  />
-                </div>
+              )}
+              <div className="space-y-1 md:space-y-2">
+                {articles.mustRead.slice(5, 8).map((story) => (
+                  <div key={story.link} className="py-2">
+                    <SmallStoryItem article={story} />
+                  </div>
+                ))}
               </div>
-            )}
-            <div className="space-y-1 md:space-y-2">
-              {articles.mustRead.slice(5, 8).map((story) => (
-                <div key={story.link} className="py-2">
-                  <SmallStoryItem article={story} />
-                </div>
-              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 };
