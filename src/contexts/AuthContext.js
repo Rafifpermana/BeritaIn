@@ -243,21 +243,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Update user profile
-  const updateUserProfile = async (newData) => {
+  const updateUserProfile = async (formData) => {
     if (!currentUser) return;
 
     try {
-      const response = await apiCall(`/users/${currentUser.id}`, {
-        method: "PUT",
-        body: JSON.stringify(newData),
+      // Endpoint diubah menjadi /user/profile dengan metode POST
+      const response = await apiCall(`/user/profile`, {
+        method: "POST",
+        body: formData, // Langsung kirim FormData
       });
 
-      const updatedUser = response.user ||
-        response.data || { ...currentUser, ...newData };
+      const updatedUser = response.user;
       setCurrentUser(updatedUser);
       setStoredUser(updatedUser);
 
-      // Update in allUsers list if admin
       if (isAdmin()) {
         setAllUsers((users) =>
           users.map((u) => (u.id === currentUser.id ? updatedUser : u))
@@ -266,7 +265,20 @@ export const AuthProvider = ({ children }) => {
 
       return updatedUser;
     } catch (error) {
-      console.error("Failed to update profile:", error);
+      console.error("Gagal memperbarui profil:", error);
+      throw error;
+    }
+  };
+
+  const updatePassword = async (passwordData) => {
+    try {
+      const response = await apiCall("/user/password", {
+        method: "POST",
+        body: JSON.stringify(passwordData),
+      });
+      return response;
+    } catch (error) {
+      console.error("Gagal mengubah password:", error);
       throw error;
     }
   };
@@ -429,6 +441,7 @@ export const AuthProvider = ({ children }) => {
 
     // User management
     updateUserProfile,
+    updatePassword,
     updateUserRole,
     deleteUser,
     getUserById,

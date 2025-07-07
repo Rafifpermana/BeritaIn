@@ -1,44 +1,97 @@
-// src/dashboard/users/DashboardOverview.jsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import {
-  UserCircle,
-  KeyRound,
-  ImageIcon,
-  Save,
-  Mail,
-  ShieldCheck,
-} from "lucide-react";
+import { UserCircle, KeyRound, Save, Mail, ShieldCheck } from "lucide-react";
 
-// Komponen untuk seksi pengaturan profil
+// Fungsi untuk generate warna background berdasarkan nama
+const generateAvatarColor = (name) => {
+  const colors = [
+    "bg-red-500",
+    "bg-blue-500",
+    "bg-green-500",
+    "bg-yellow-500",
+    "bg-purple-500",
+    "bg-pink-500",
+    "bg-indigo-500",
+    "bg-teal-500",
+    "bg-orange-500",
+    "bg-cyan-500",
+    "bg-emerald-500",
+    "bg-rose-500",
+    "bg-violet-500",
+    "bg-amber-500",
+    "bg-lime-500",
+    "bg-sky-500",
+  ];
+
+  // Gunakan hash dari nama untuk memilih warna yang konsisten
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  return colors[Math.abs(hash) % colors.length];
+};
+
+// Fungsi untuk mendapatkan initial dari nama
+const getInitials = (name) => {
+  if (!name) return "U";
+
+  const words = name.trim().split(" ");
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+
+  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+};
+
+// Komponen Avatar
+const UserAvatar = ({ name, size = "w-20 h-20 sm:w-24 sm:h-24" }) => {
+  const initials = getInitials(name);
+  const bgColor = generateAvatarColor(name || "User");
+
+  return (
+    <div
+      className={`${size} rounded-full ${bgColor} flex items-center justify-center text-white font-bold text-lg shadow-lg`}
+    >
+      {initials}
+    </div>
+  );
+};
+
+// Komponen ProfileSettingsSection
 const ProfileSettingsSection = ({ currentUser, onUpdateProfile }) => {
   const [usernameInput, setUsernameInput] = useState(currentUser.name || "");
-  const [avatarPreview, setAvatarPreview] = useState(
-    currentUser.avatarUrl || "/placeholder-avatar.png"
-  );
-  const fileInputRef = useRef(null);
+  const [feedback, setFeedback] = useState({ type: "", text: "" });
 
   useEffect(() => {
     setUsernameInput(currentUser.name || "");
-    setAvatarPreview(currentUser.avatarUrl || "/placeholder-avatar.png");
-  }, [currentUser]);
+  }, [currentUser.name]);
 
-  const handleProfileSubmit = (e) => {
-    e.preventDefault();
-    onUpdateProfile({ name: usernameInput });
-    alert("Username berhasil diperbarui!");
+  const showFeedback = (type, text) => {
+    setFeedback({ type, text });
+    setTimeout(() => {
+      setFeedback({ type: "", text: "" });
+    }, 3000);
   };
 
-  const handleImageChange = (event) => {
-    if (event.target.files && event.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const newAvatarDataUrl = e.target.result;
-        setAvatarPreview(newAvatarDataUrl);
-        onUpdateProfile({ avatarUrl: newAvatarDataUrl });
-        alert("Foto profil berhasil diperbarui!");
-      };
-      reader.readAsDataURL(event.target.files[0]);
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+
+    if (usernameInput !== currentUser.name) {
+      formData.append("name", usernameInput);
+    }
+
+    if (formData.entries().next().done) {
+      showFeedback("error", "Tidak ada perubahan untuk disimpan.");
+      return;
+    }
+
+    try {
+      await onUpdateProfile(formData);
+      showFeedback("success", "Profil berhasil diperbarui!");
+    } catch (error) {
+      showFeedback("error", "Gagal memperbarui profil.");
     }
   };
 
@@ -47,103 +100,93 @@ const ProfileSettingsSection = ({ currentUser, onUpdateProfile }) => {
       <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
         <UserCircle size={24} className="mr-3 text-blue-600" /> Profil Saya
       </h2>
-      <div className="mb-8">
-        <h3 className="text-md font-medium text-gray-700 mb-3">Foto Profil</h3>
-        <div className="flex items-center space-x-4">
-          <img
-            src={avatarPreview}
-            alt="Foto Profil"
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-gray-300"
-          />
-          <div>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              ref={fileInputRef}
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center space-x-2"
-            >
-              <ImageIcon size={16} />
-              <span>Unggah Foto</span>
-            </button>
-            <p className="text-xs text-gray-500 mt-1.5">
-              JPG, GIF atau PNG. Maks 1MB.
-            </p>
+      <form onSubmit={handleProfileSubmit} className="space-y-4">
+        <div className="mb-8">
+          <h3 className="text-md font-medium text-gray-700 mb-3">
+            Foto Profil
+          </h3>
+          <div className="flex items-center space-x-4">
+            <UserAvatar name={currentUser.name} />
+            <div>
+              <p className="text-sm text-gray-600 font-medium">
+                {getInitials(currentUser.name)}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Avatar otomatis berdasarkan nama Anda
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-      <div>
-        <h3 className="text-md font-medium text-gray-700 mb-3">
-          Informasi Dasar
-        </h3>
-        <form onSubmit={handleProfileSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-600 mb-1"
-            >
-              Username
-            </label>
-            <div className="relative">
-              <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                id="username"
-                value={usernameInput}
-                onChange={(e) => setUsernameInput(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md"
-              />
-            </div>
+        <div>
+          <label
+            htmlFor="username"
+            className="block text-sm font-medium text-gray-600 mb-1"
+          >
+            Username
+          </label>
+          <div className="relative">
+            <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              id="username"
+              value={usernameInput}
+              onChange={(e) => setUsernameInput(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md"
+            />
           </div>
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-600 mb-1"
-            >
-              Email{" "}
-              <span className="text-xs text-gray-400">
-                (tidak dapat diubah)
-              </span>
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="email"
-                id="email"
-                value={currentUser.email}
-                readOnly
-                className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
-              />
-            </div>
+        </div>
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-600 mb-1"
+          >
+            Email{" "}
+            <span className="text-xs text-gray-400">(tidak dapat diubah)</span>
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="email"
+              id="email"
+              value={currentUser.email}
+              readOnly
+              className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+            />
           </div>
-          <div className="pt-2">
-            <button
-              type="submit"
-              className="flex items-center justify-center px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+        </div>
+        <div className="pt-2">
+          <button
+            type="submit"
+            className="flex items-center justify-center px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+          >
+            <Save size={16} className="mr-2" /> Simpan Perubahan
+          </button>
+          {feedback.text && (
+            <p
+              className={`text-sm font-medium transition-opacity duration-300 mt-2 ${
+                feedback.type === "success" ? "text-green-600" : "text-red-600"
+              }`}
             >
-              <Save size={16} className="mr-2" /> Simpan Informasi
-            </button>
-          </div>
-        </form>
-      </div>
+              {feedback.text}
+            </p>
+          )}
+        </div>
+      </form>
     </section>
   );
 };
 
-// Komponen untuk seksi keamanan
-const SecuritySettingsSection = () => {
+// Komponen SecuritySettingsSection (terhubung dengan backend)
+const SecuritySettingsSection = ({ onUpdatePassword }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const handlePasswordChange = (e) => {
+  const handlePasswordChange = async (e) => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
+
     if (newPassword !== confirmNewPassword) {
       setMessage({
         type: "error",
@@ -155,14 +198,27 @@ const SecuritySettingsSection = () => {
       setMessage({ type: "error", text: "Password baru minimal 8 karakter." });
       return;
     }
-    console.log("Simulasi ubah password...");
-    setMessage({
-      type: "success",
-      text: "Password berhasil diubah (simulasi).",
-    });
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmNewPassword("");
+
+    try {
+      await onUpdatePassword({
+        current_password: currentPassword,
+        password: newPassword,
+        password_confirmation: confirmNewPassword,
+      });
+      setMessage({
+        type: "success",
+        text: "Password berhasil diubah!",
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch (error) {
+      const errorMsg = error.message || "Gagal mengubah password.";
+      setMessage({
+        type: "error",
+        text: errorMsg,
+      });
+    }
   };
 
   return (
@@ -250,7 +306,7 @@ const SecuritySettingsSection = () => {
 
 // Komponen utama
 const DashboardOverview = () => {
-  const { currentUser, updateUserProfile } = useOutletContext();
+  const { currentUser, updateUserProfile, updatePassword } = useOutletContext();
 
   if (!currentUser) {
     return (
@@ -276,7 +332,7 @@ const DashboardOverview = () => {
         onUpdateProfile={updateUserProfile}
       />
 
-      <SecuritySettingsSection />
+      <SecuritySettingsSection onUpdatePassword={updatePassword} />
     </div>
   );
 };

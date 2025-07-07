@@ -20,7 +20,8 @@ import { useArticleInteractions } from "../hooks/useArticleInteractions";
 const UserDashboardPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, logout, loading, updateUserProfile } = useAuth();
+  const { currentUser, logout, loading, updateUserProfile, updatePassword } =
+    useAuth();
 
   const {
     notifications,
@@ -502,7 +503,9 @@ const UserDashboardPage = () => {
 
           {/* Main Content Area */}
           <main className="flex-1 min-w-0">
-            <Outlet context={{ currentUser, updateUserProfile }} />
+            <Outlet
+              context={{ currentUser, updateUserProfile, updatePassword }}
+            />
           </main>
         </div>
       </div>
