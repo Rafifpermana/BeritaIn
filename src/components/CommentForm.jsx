@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Send, Info } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import UserAvatar from "./UserAvatar";
 
 const CommentForm = ({ onSubmitComment }) => {
   const { currentUser } = useAuth();
@@ -44,9 +45,8 @@ const CommentForm = ({ onSubmitComment }) => {
       className="mt-6 mb-8 p-4 bg-gray-50 rounded-lg shadow"
     >
       <div className="flex items-start space-x-3">
-        <img
-          src={currentUser?.avatarUrl || "/placeholder-avatar.png"}
-          alt="Avatar"
+        <UserAvatar
+          name={currentUser.name}
           className="w-10 h-10 rounded-full object-cover flex-shrink-0"
         />
         <div className="flex-grow">

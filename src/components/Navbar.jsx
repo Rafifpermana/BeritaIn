@@ -13,7 +13,8 @@ import {
 import ClientPortal from "../utils/Portal";
 import { useAuth } from "../contexts/AuthContext";
 import { useArticleInteractions } from "../hooks/useArticleInteractions";
-import { useHomeContent } from "../contexts/HomeContentProvider"; // <-- 1. Impor hook untuk kategori
+import { useHomeContent } from "../contexts/HomeContentProvider";
+import UserAvatar from "./UserAvatar";
 
 // Helper function untuk membuat slug
 const createSlug = (text) => {
@@ -347,11 +348,7 @@ const Navbar = () => {
                   onClick={() => setIsProfileDropdownOpen((p) => !p)}
                   className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
                 >
-                  <img
-                    src={currentUser.avatarUrl || "/placeholder-avatar.png"}
-                    alt="User Avatar"
-                    className="h-8 w-8 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-200 transition-all duration-200"
-                  />
+                  <UserAvatar name={currentUser.name} size="w-9 h-9" />
                   <span className="text-sm font-medium text-gray-700 hidden sm:inline">
                     {currentUser.name}
                   </span>

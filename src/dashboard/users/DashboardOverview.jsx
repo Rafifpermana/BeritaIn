@@ -1,66 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { UserCircle, KeyRound, Save, Mail, ShieldCheck } from "lucide-react";
-
-// Fungsi untuk generate warna background berdasarkan nama
-const generateAvatarColor = (name) => {
-  const colors = [
-    "bg-red-500",
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-yellow-500",
-    "bg-purple-500",
-    "bg-pink-500",
-    "bg-indigo-500",
-    "bg-teal-500",
-    "bg-orange-500",
-    "bg-cyan-500",
-    "bg-emerald-500",
-    "bg-rose-500",
-    "bg-violet-500",
-    "bg-amber-500",
-    "bg-lime-500",
-    "bg-sky-500",
-  ];
-
-  // Gunakan hash dari nama untuk memilih warna yang konsisten
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  return colors[Math.abs(hash) % colors.length];
-};
-
-// Fungsi untuk mendapatkan initial dari nama
-const getInitials = (name) => {
-  if (!name) return "U";
-
-  const words = name.trim().split(" ");
-  if (words.length === 1) {
-    return words[0].charAt(0).toUpperCase();
-  }
-
-  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
-};
-
-// Komponen Avatar
-const UserAvatar = ({ name, size = "w-20 h-20 sm:w-24 sm:h-24" }) => {
-  const initials = getInitials(name);
-  const bgColor = generateAvatarColor(name || "User");
-
-  return (
-    <div
-      className={`${size} rounded-full ${bgColor} flex items-center justify-center text-white font-bold text-lg shadow-lg`}
-    >
-      {initials}
-    </div>
-  );
-};
+import UserAvatar from "../../components/UserAvatar";
 
 // Komponen ProfileSettingsSection
 const ProfileSettingsSection = ({ currentUser, onUpdateProfile }) => {
   const [usernameInput, setUsernameInput] = useState(currentUser.name || "");
+
   const [feedback, setFeedback] = useState({ type: "", text: "" });
 
   useEffect(() => {
@@ -106,15 +52,13 @@ const ProfileSettingsSection = ({ currentUser, onUpdateProfile }) => {
             Foto Profil
           </h3>
           <div className="flex items-center space-x-4">
-            <UserAvatar name={currentUser.name} />
-            <div>
-              <p className="text-sm text-gray-600 font-medium">
-                {getInitials(currentUser.name)}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Avatar otomatis berdasarkan nama Anda
-              </p>
-            </div>
+            <UserAvatar
+              name={currentUser.name}
+              size="w-20 h-20 sm:w-24 sm:h-24"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Avatar otomatis berdasarkan nama Anda
+            </p>
           </div>
         </div>
         <div>

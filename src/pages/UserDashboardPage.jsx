@@ -1,4 +1,3 @@
-// src/pages/UserDashboardPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
@@ -16,6 +15,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useArticleInteractions } from "../hooks/useArticleInteractions";
+import UserAvatar from "../components/UserAvatar";
 
 const UserDashboardPage = () => {
   const location = useLocation();
@@ -227,11 +227,7 @@ const UserDashboardPage = () => {
       {isMobile && (
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center space-x-3">
-            <img
-              className="h-10 w-10 rounded-full object-cover ring-2 ring-blue-200"
-              src={currentUser.avatarUrl || "/placeholder-avatar.png"}
-              alt="User Avatar"
-            />
+            <UserAvatar name={currentUser.name} size="w-9 h-9" />
             <div>
               <p className="text-sm font-semibold text-gray-800">
                 {currentUser.name}
@@ -460,11 +456,7 @@ const UserDashboardPage = () => {
 
               {/* Profile section - only show on desktop */}
               <div className="hidden lg:flex items-center space-x-3">
-                <img
-                  className="h-8 w-8 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-200 transition-all duration-200"
-                  src={currentUser.avatarUrl || "/placeholder-avatar.png"}
-                  alt="User Avatar"
-                />
+                <UserAvatar name={currentUser.name} size="w-9 h-9" />
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-gray-700">
                     {currentUser.name}
