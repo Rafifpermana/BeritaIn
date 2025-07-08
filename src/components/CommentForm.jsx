@@ -45,19 +45,18 @@ const CommentForm = ({ onSubmitComment }) => {
       className="mt-6 mb-8 p-4 bg-gray-50 rounded-lg shadow"
     >
       <div className="flex items-start space-x-3">
-        {currentUser && (
-          <UserAvatar
-            name={currentUser.name}
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-          />
-        )}
+        {/* Avatar - hanya tampil jika user login */}
+        {currentUser && <UserAvatar name={currentUser.name} size="w-10 h-10" />}
+
         <div className="flex-grow">
+          {/* Nama user - hanya tampil jika user login */}
           {currentUser && (
             <p className="text-sm font-semibold text-gray-800 mb-2">
               {currentUser.name}
             </p>
           )}
 
+          {/* Text area untuk komentar */}
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
@@ -69,7 +68,7 @@ const CommentForm = ({ onSubmitComment }) => {
                         ${
                           isGuest || !canComment
                             ? "bg-gray-200 cursor-not-allowed placeholder-red-500"
-                            : "border-gray-300 focus:ring-1 focus:ring-blue-500"
+                            : "border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                         }`}
           />
 
@@ -84,13 +83,14 @@ const CommentForm = ({ onSubmitComment }) => {
             </div>
           )}
 
+          {/* Tombol submit */}
           <button
             type="submit"
             disabled={isGuest || !canComment} // Tombol juga dinonaktifkan
             className={`mt-3 flex items-center space-x-1.5 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors
                         ${
                           canComment && !isGuest
-                            ? "bg-blue-600 hover:bg-blue-700"
+                            ? "bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             : "bg-gray-400 cursor-not-allowed"
                         }`}
           >
