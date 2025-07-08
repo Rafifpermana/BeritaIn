@@ -289,7 +289,7 @@ export const ArticleInteractionProvider = ({ children }) => {
         [articleData.url]: [
           newCommentFromServer,
           ...(prev[articleData.url] || []),
-        ], // <-- Key menggunakan articleData.url
+        ],
       }));
 
       addNotification(

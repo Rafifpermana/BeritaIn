@@ -128,11 +128,16 @@ const CommentItem = ({
     <div style={indentStyle} className="py-3">
       <div className="flex items-start space-x-3">
         {/* Gunakan UserAvatar untuk foto profil */}
-        <UserAvatar name={author} size="w-8 h-8 sm:w-9 sm:h-9" />
+        <UserAvatar
+          name={comment.user ? comment.user.name : author}
+          size="w-8 h-8 sm:w-9 sm:h-9"
+        />
 
         <div className="flex-grow">
           <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
-            <p className="text-sm font-semibold text-gray-800 mb-1">{author}</p>
+            <p className="text-sm font-semibold text-gray-800 mb-1">
+              {comment.user ? comment.user.name : author}
+            </p>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">
               {content}
             </p>
