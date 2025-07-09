@@ -68,7 +68,7 @@ const updateCommentVoteRecursive = (list, id, voteType) => {
 
 export const ArticleInteractionProvider = ({ children }) => {
   const [articleInteractions, setArticleInteractions] = useState({});
-
+  const [bookmarkedArticles, setBookmarkedArticles] = useState([]);
   const [articleCommentsState, setArticleCommentsState] = useState({});
   const [notifications, setNotifications] = useState([]);
   const [userPointsMap, setUserPointsMap] = useState({});
@@ -153,17 +153,21 @@ export const ArticleInteractionProvider = ({ children }) => {
   };
 
   const toggleBookmark = async (articleData) => {
-    // <-- Parameter diubah
+    // Parameter sudah berupa objek
     try {
+      // Panggil API dengan payload yang sesuai
       const response = await apiClient.post(`/interactions/bookmark`, {
         article: {
-          // <-- Payload disesuaikan
-          url: articleData.url,
+          // Pastikan payload sesuai dengan yang dibutuhkan backend
+          url: articleData.url, // atau articleData.link
           title: articleData.title,
-          description: articleData.excerpt || "",
+          description: articleData.description || articleData.excerpt || "",
           image: articleData.image || "",
           source_name: articleData.source_name || "Unknown",
-          pubDate: articleData.published_at || new Date().toISOString(),
+          pubDate:
+            articleData.pubDate ||
+            articleData.published_at ||
+            new Date().toISOString(),
         },
       });
 
@@ -171,7 +175,7 @@ export const ArticleInteractionProvider = ({ children }) => {
       setArticleInteractions((prev) => ({
         ...prev,
         [articleData.url]: {
-          // <-- Key menggunakan articleData.url
+          // Gunakan URL sebagai key
           ...prev[articleData.url],
           isBookmarked,
         },
@@ -194,6 +198,21 @@ export const ArticleInteractionProvider = ({ children }) => {
       addNotification("Gagal mengubah bookmark. Coba lagi.", "#", "error");
     }
   };
+
+  const fetchBookmarkedArticles = useCallback(async () => {
+    try {
+      // Panggil endpoint yang sudah ada di backend Anda
+      const response = await apiClient.get("/user/bookmarks");
+
+      // Kita hanya butuh data artikel dari setiap bookmark
+      const articles = response.data.data.map((bookmark) => bookmark.article);
+      setBookmarkedArticles(articles);
+    } catch (error) {
+      console.error("Failed to fetch bookmarked articles:", error);
+      // Anda bisa menambahkan notifikasi error di sini jika perlu
+      addNotification("Gagal memuat artikel yang disimpan.", "#", "error");
+    }
+  }, [addNotification]);
 
   const toggleLikeArticle = async (articleData) => {
     // <-- Perhatikan: parameternya sekarang 'articleData'
@@ -472,6 +491,8 @@ export const ArticleInteractionProvider = ({ children }) => {
     deleteNotification,
     loadInitialInteractions,
     loadComments,
+    bookmarkedArticles, // Tambahkan ini
+    fetchBookmarkedArticles,
     // --- Admin Functions ---
     userPointsMap,
     moderateComment,

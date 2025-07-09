@@ -1,33 +1,32 @@
 // src/dashboard/users/UserBookmarks.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useArticleInteractions } from "../../hooks/useArticleInteractions";
-import { allArticlesData } from "../../data/mockData.js";
 import ArticleCardStats from "../../utils/ArticleCardStats.jsx";
 import { Bookmark } from "lucide-react";
 
+// Helper function untuk membuat slug (konsisten dengan bagian lain)
+const createSlug = (text) => {
+  if (!text) return "";
+  return text
+    .toLowerCase()
+    .replace(/ & /g, "-and-")
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "");
+};
+
 const UserBookmarks = () => {
-  const { articleInteractions, getCommentCountForArticleContext } =
-    useArticleInteractions();
+  // Ambil state dan fungsi yang kita butuhkan dari context
+  const {
+    bookmarkedArticles,
+    fetchBookmarkedArticles,
+    getCommentCountForArticleContext,
+  } = useArticleInteractions();
 
-  // Guard clause untuk memastikan articleInteractions adalah objek sebelum diolah
-  const bookmarkedArticlesDetails =
-    articleInteractions && typeof articleInteractions === "object"
-      ? Object.entries(articleInteractions)
-          .filter(([, interaction]) => interaction.isBookmarked)
-          .map(([articleId, interaction]) => {
-            const staticData = allArticlesData[articleId];
-            if (!staticData) return null; // Lewati jika data artikel tidak ditemukan
-
-            return {
-              ...staticData,
-              likes: interaction.likes,
-              dislikes: interaction.dislikes,
-              commentCount: getCommentCountForArticleContext(articleId),
-            };
-          })
-          .filter(Boolean) // Hapus item null dari array
-      : []; // Jika articleInteractions belum siap, kembalikan array kosong
+  // Panggil fungsi untuk mengambil data saat komponen pertama kali dimuat
+  useEffect(() => {
+    fetchBookmarkedArticles();
+  }, [fetchBookmarkedArticles]);
 
   return (
     <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200">
@@ -38,18 +37,23 @@ const UserBookmarks = () => {
         </h1>
       </div>
 
-      {bookmarkedArticlesDetails.length > 0 ? (
+      {bookmarkedArticles && bookmarkedArticles.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {bookmarkedArticlesDetails.map((article) => (
+          {bookmarkedArticles.map((article) => (
             <div
-              key={article.id}
+              key={article.id} // Gunakan ID artikel yang unik
               className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col group border"
             >
-              <Link to={`/article/${article.id}`} className="block">
-                {article.image && (
+              {/* Setiap card adalah sebuah Link ke halaman detail */}
+              <Link
+                to={`/article/${createSlug(article.title)}`}
+                state={{ articleUrl: article.url }} // Kirim URL asli sebagai state
+                className="block"
+              >
+                {article.image_url && (
                   <div className="w-full h-44 overflow-hidden">
                     <img
-                      src={article.image}
+                      src={article.image_url}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
@@ -57,7 +61,10 @@ const UserBookmarks = () => {
                 )}
               </Link>
               <div className="p-4 flex flex-col flex-grow">
-                <Link to={`/article/${article.id}`}>
+                <Link
+                  to={`/article/${createSlug(article.title)}`}
+                  state={{ articleUrl: article.url }}
+                >
                   <h2
                     className="text-base font-semibold mb-2 text-gray-900 group-hover:text-blue-600 line-clamp-2"
                     title={article.title}
@@ -66,19 +73,20 @@ const UserBookmarks = () => {
                   </h2>
                 </Link>
                 <div className="text-xs text-gray-500 mt-auto pt-2">
-                  <span className="font-medium">{article.author}</span>
+                  {/* Sesuaikan dengan data yang ada di objek artikel */}
+                  <span className="font-medium">{article.source_name}</span>
                   <br />
-                  {new Date(article.date).toLocaleDateString("id-ID", {
+                  {new Date(article.published_at).toLocaleDateString("id-ID", {
                     month: "long",
                     day: "numeric",
                     year: "numeric",
                   })}
                 </div>
+                {/* Jika Anda punya data likes/dislikes/comments, tampilkan di sini */}
                 <ArticleCardStats
-                  likes={article.likes}
-                  dislikes={article.dislikes}
-                  commentCount={article.commentCount}
-                  articleId={article.id}
+                  likes={article.likes_count || 0}
+                  dislikes={article.dislikes_count || 0}
+                  commentCount={getCommentCountForArticleContext(article.url)}
                   small
                 />
               </div>
@@ -92,8 +100,8 @@ const UserBookmarks = () => {
             Belum Ada Artikel Disimpan
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Anda bisa menyimpan artikel dengan menekan tombol "Suka" pada
-            halaman detail artikel.
+            Anda bisa menyimpan artikel dengan menekan ikon bookmark pada
+            halaman berita.
           </p>
           <Link
             to="/"

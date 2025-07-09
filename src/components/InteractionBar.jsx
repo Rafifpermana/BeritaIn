@@ -4,9 +4,7 @@ import { ThumbsUp, ThumbsDown, Share2, MessageSquare } from "lucide-react";
 import BookmarkButton from "./BookmarkButton"; // <-- Impor komponen bookmark
 
 const InteractionBar = ({
-  articleId, // <-- Prop ini sangat penting untuk fungsi bookmark
-  articleTitle,
-  articleUrl,
+  article,
   likes = 0,
   dislikes = 0,
   userVote = null,
@@ -19,12 +17,12 @@ const InteractionBar = ({
     try {
       if (navigator.share) {
         await navigator.share({
-          title: articleTitle,
-          text: `Lihat artikel ini: ${articleTitle}`,
-          url: articleUrl || window.location.href,
+          title: article,
+          text: `Lihat artikel ini: ${article}`,
+          url: article || window.location.href,
         });
       } else {
-        await navigator.clipboard.writeText(articleUrl || window.location.href);
+        await navigator.clipboard.writeText(article || window.location.href);
         alert("URL artikel telah disalin ke clipboard!");
       }
     } catch (err) {
@@ -87,10 +85,10 @@ const InteractionBar = ({
         </button>
 
         {/* Tombol Bookmark Baru Ditambahkan di Sini */}
-        {articleId && (
+        {article && (
           <div className="p-1 bg-gray-100 rounded-lg hover:bg-gray-200">
             <BookmarkButton
-              articleId={articleId}
+              article={article} // Kirim seluruh objek artikel
               className="text-black hover:text-gray-700 [&>svg]:text-black [&>svg]:hover:text-gray-700"
             />
           </div>

@@ -4,21 +4,22 @@ import { Bookmark } from "lucide-react";
 import { useArticleInteractions } from "../hooks/useArticleInteractions";
 import { useAuth } from "../contexts/AuthContext";
 
-const BookmarkButton = ({ articleId, className = "" }) => {
+const BookmarkButton = ({ article, className = "" }) => {
   const { articleInteractions, toggleBookmark } = useArticleInteractions();
   const { currentUser } = useAuth();
 
-  // Tombol hanya berfungsi jika user sudah login
   if (!currentUser) {
-    return null; // Tidak menampilkan tombol sama sekali jika belum login
+    return null;
   }
 
-  const isBookmarked = articleInteractions[articleId]?.isBookmarked || false;
+  // Gunakan article.url atau ID unik lainnya sebagai key
+  const isBookmarked = articleInteractions[article?.url]?.isBookmarked || false;
 
   const handleToggle = (e) => {
-    e.preventDefault(); // Mencegah navigasi jika tombol ada di dalam Link
+    e.preventDefault();
     e.stopPropagation();
-    toggleBookmark(articleId);
+    // Kirim seluruh objek artikel ke fungsi toggleBookmark
+    toggleBookmark(article);
   };
 
   return (

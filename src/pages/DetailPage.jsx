@@ -298,9 +298,7 @@ const DetailPage = () => {
 
           <div className="mt-10">
             <InteractionBar
-              articleId={articleUrl} // Gunakan URL sebagai ID unik
-              articleTitle={articleData.title}
-              articleUrl={articleUrl}
+              article={articleData}
               likes={currentInteractions.likes}
               dislikes={currentInteractions.dislikes}
               userVote={currentInteractions.userVote}
