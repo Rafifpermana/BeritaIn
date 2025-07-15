@@ -1,4 +1,3 @@
-// src/dashboard/users/UserPoints.jsx
 import React from "react";
 import {
   Award,
@@ -11,7 +10,6 @@ import {
 } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 
-// Komponen kecil untuk setiap item agar lebih rapi
 const PointListItem = ({
   icon,
   title,
@@ -43,7 +41,7 @@ const PointListItem = ({
 };
 
 const UserPointsPage = () => {
-  const { currentUser } = useOutletContext(); // Mengambil data user dari context Outlet
+  const { currentUser } = useOutletContext();
 
   // Mengambil poin dari currentUser, dengan fallback jika data belum ada
   const currentUserPoints = currentUser?.points ?? 0;

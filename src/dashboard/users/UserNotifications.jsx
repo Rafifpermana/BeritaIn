@@ -1,8 +1,7 @@
-// src/dashboard/users/UserNotifications.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 import { useArticleInteractions } from "../../hooks/useArticleInteractions";
-import { Bell, CheckCheck, Trash2 } from "lucide-react"; // <-- Impor ikon Trash2
+import { Bell, CheckCheck, Trash2 } from "lucide-react";
 
 const UserNotificationsPage = () => {
   // Ambil fungsi deleteNotification dari context
@@ -76,10 +75,9 @@ const UserNotificationsPage = () => {
                   </p>
                 </Link>
 
-                {/* --- Tombol Hapus Ditambahkan di Sini --- */}
                 <button
                   onClick={(e) => {
-                    e.preventDefault(); // Mencegah pindah halaman jika notif adalah link
+                    e.preventDefault();
                     deleteNotification(notif.id);
                   }}
                   title="Hapus notifikasi"

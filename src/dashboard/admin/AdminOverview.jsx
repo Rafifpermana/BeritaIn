@@ -8,7 +8,6 @@ import {
   FilePlus,
   TrendingUp,
 } from "lucide-react";
-// IMPORT KOMPONEN DARI RECHARTS
 import {
   ResponsiveContainer,
   BarChart,
@@ -20,9 +19,7 @@ import {
   Bar,
 } from "recharts";
 
-// --- KOMPONEN CHART YANG SUDAH DIPERBARUI ---
 const AnalyticsChart = ({ chartData, title, dataKey, barColor }) => {
-  // Format tanggal agar lebih pendek, misal: "17 Jun"
   const formatXAxis = (tickItem) => {
     const date = new Date(tickItem);
     return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });

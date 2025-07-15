@@ -1,9 +1,7 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { User, Lock, AlertCircle, LogIn } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-// import { allUsersData } from "../data/mockData"; // <-- Impor data user untuk cek role
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +14,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const user = await login(email, password); // Panggil fungsi login dari context
+    const user = await login(email, password);
 
     if (user) {
       if (user.role === "admin") {

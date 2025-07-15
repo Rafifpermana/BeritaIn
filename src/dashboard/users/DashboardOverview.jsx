@@ -120,7 +120,6 @@ const ProfileSettingsSection = ({ currentUser, onUpdateProfile }) => {
   );
 };
 
-// Komponen SecuritySettingsSection (terhubung dengan backend)
 const SecuritySettingsSection = ({ onUpdatePassword }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -248,7 +247,6 @@ const SecuritySettingsSection = ({ onUpdatePassword }) => {
   );
 };
 
-// Komponen utama
 const DashboardOverview = () => {
   const { currentUser, updateUserProfile, updatePassword } = useOutletContext();
 

@@ -3,7 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { Send, Megaphone } from "lucide-react";
 
 const BroadcastNotificationPage = () => {
-  const { apiCall } = useAuth(); // Gunakan apiCall dari AuthContext
+  const { apiCall } = useAuth();
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -23,7 +23,6 @@ const BroadcastNotificationPage = () => {
     setFeedback({ type: "", message: "" });
 
     try {
-      // Panggil endpoint backend untuk mengirim broadcast
       await apiCall("/admin/broadcast", {
         method: "POST",
         body: JSON.stringify({ title, message }),
@@ -40,7 +39,6 @@ const BroadcastNotificationPage = () => {
       });
     } finally {
       setIsSending(false);
-      // Hapus pesan feedback setelah beberapa detik
       setTimeout(() => setFeedback({ type: "", message: "" }), 5000);
     }
   };

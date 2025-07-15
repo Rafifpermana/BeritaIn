@@ -1,4 +1,3 @@
-// src/dashboard/users/UserBookmarks.jsx
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useArticleInteractions } from "../../hooks/useArticleInteractions";
@@ -47,7 +46,7 @@ const UserBookmarks = () => {
               {/* Setiap card adalah sebuah Link ke halaman detail */}
               <Link
                 to={`/article/${createSlug(article.title)}`}
-                state={{ articleUrl: article.url }} // Kirim URL asli sebagai state
+                state={{ articleUrl: article.url }}
                 className="block"
               >
                 {article.image_url && (

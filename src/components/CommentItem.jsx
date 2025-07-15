@@ -1,4 +1,3 @@
-// src/components/CommentItem.jsx
 import React, { useState } from "react";
 import { ThumbsUp, ThumbsDown, MessageSquare, Send, Info } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";

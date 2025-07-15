@@ -1,4 +1,3 @@
-// src/pages/RegisterPage.jsx
 import React, { useState } from "react";
 import { User, Lock, Mail, AlertCircle, UserPlus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -14,7 +13,6 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Panggil fungsi register dari context
     const user = await register(username, email, password, confirmPassword);
     if (user) {
       navigate("/user/dashboard", { replace: true });

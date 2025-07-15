@@ -1,4 +1,3 @@
-// src/pages/AdminDashboardPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
@@ -15,12 +14,12 @@ import {
   X as CloseIcon,
 } from "lucide-react";
 import ClientPortal from "../utils/Portal";
-import { useAuth } from "../contexts/AuthContext"; // <-- Impor useAuth untuk data dinamis
+import { useAuth } from "../contexts/AuthContext";
 
 const AdminDashboardPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, logout } = useAuth(); // <-- Gunakan data dari AuthContext
+  const { currentUser, logout } = useAuth();
 
   const sidebarLinks = [
     { name: "Overview", icon: LayoutDashboard, path: "/admin/dashboard" },

@@ -1,4 +1,3 @@
-// src/pages/SearchResultsPage.jsx
 import React, { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import axios from "axios";
@@ -17,7 +16,7 @@ const createSlug = (text) => {
 const SearchResultsPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q");
-  const category = searchParams.get("category"); // Ambil parameter kategori jika ada
+  const category = searchParams.get("category");
 
   const [allResults, setAllResults] = useState([]);
   const [paginatedResults, setPaginatedResults] = useState([]);
@@ -40,15 +39,13 @@ const SearchResultsPage = () => {
       setLoading(true);
       setError(null);
       try {
-        // Panggil API dengan parameter 'q' (query) dan 'category' (opsional)
         const response = await axios.get(`${API_BASE_URL}/news`, {
           params: {
             q: query,
-            category: category || undefined, // Kirim kategori jika ada
+            category: category || undefined,
           },
         });
 
-        // Respons dari fungsi searchNews Anda mungkin langsung array
         if (response.data && Array.isArray(response.data)) {
           setAllResults(response.data);
         } else {
@@ -65,7 +62,6 @@ const SearchResultsPage = () => {
     fetchSearchResults();
   }, [query, category]);
 
-  // useEffect untuk meng-update artikel yang ditampilkan saat halaman berubah
   useEffect(() => {
     if (allResults.length > 0) {
       const indexOfLastResult = currentPage * articlesPerPage;

@@ -2,12 +2,12 @@ import axios from "axios";
 
 const apiClient = axios.create({
   baseURL: "http://localhost:8000/api",
-  withCredentials: true, // Important for Sanctum authentication
+  withCredentials: true,
 });
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("authToken"); // Asumsi token disimpan di localStorage
+    const token = localStorage.getItem("authToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

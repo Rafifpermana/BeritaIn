@@ -1,12 +1,6 @@
-// src/pages/CategoryPage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios"; // 1. Impor axios untuk memanggil API
-
-// Gunakan apiClient yang sudah memiliki base URL dan otentikasi jika ada
-// import apiClient from "../api/axios";
-
-// Helper function untuk membuat slug (sebaiknya diimpor dari file utilitas bersama)
+import axios from "axios";
 const createSlug = (text) => {
   if (!text) return "";
   return text
@@ -53,7 +47,7 @@ const CategoryPage = () => {
             setCategoryName(displayName);
           }
         } else {
-          setArticles([]); // Jika data tidak valid, kosongkan artikel
+          setArticles([]);
         }
       } catch (err) {
         setError("Gagal memuat artikel untuk kategori ini.");
@@ -64,7 +58,7 @@ const CategoryPage = () => {
     };
 
     fetchCategoryArticles();
-  }, [categorySlug]); // useEffect akan berjalan lagi setiap kali 'categorySlug' berubah
+  }, [categorySlug]);
 
   if (loading) {
     return (
@@ -83,9 +77,7 @@ const CategoryPage = () => {
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-250px)]">
       <div className="mb-8 pb-4 border-b border-gray-200">
-        <nav className="text-sm text-gray-500" aria-label="Breadcrumb">
-          {/* ... Breadcrumb ... */}
-        </nav>
+        <nav className="text-sm text-gray-500" aria-label="Breadcrumb"></nav>
         <h1 className="text-3xl sm:text-4xl font-bold mt-3 text-gray-800">
           Kategori: {categoryName}
         </h1>
@@ -95,7 +87,7 @@ const CategoryPage = () => {
           {articles.map((article) => (
             // 4. Render setiap artikel yang didapat dari API
             <div
-              key={article.link} // Gunakan 'link' atau ID unik lain dari API sebagai key
+              key={article.link}
               className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out overflow-hidden flex flex-col group"
             >
               <Link

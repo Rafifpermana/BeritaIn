@@ -1,6 +1,5 @@
-// src/components/Footer.jsx
 import React, { useState } from "react";
-import { Link } from "react-router-dom"; // <-- Menghapus 'useNavigate' yang tidak perlu
+import { Link } from "react-router-dom";
 import {
   Twitter,
   Instagram,
@@ -22,7 +21,7 @@ const createSlug = (text) => {
 
 const Footer = () => {
   const [expandedSections, setExpandedSections] = useState({});
-  const { categories } = useHomeContent(); // <-- Mengambil kategori dari context
+  const { categories } = useHomeContent();
 
   // Membuat data footer secara dinamis
   const footerData = {

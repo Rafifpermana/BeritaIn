@@ -1,12 +1,9 @@
-// src/services/commentService.js
 const API_BASE_URL = "http://localhost:8000/api";
 
-// Get auth token from localStorage
 const getAuthToken = () => {
   return localStorage.getItem("token") || localStorage.getItem("authToken");
 };
 
-// Base fetch function with auth
 const fetchWithAuth = async (url, options = {}) => {
   const token = getAuthToken();
 
@@ -32,7 +29,6 @@ const fetchWithAuth = async (url, options = {}) => {
   return response.json();
 };
 
-// Like comment
 export const likeComment = async (commentId) => {
   try {
     const result = await fetchWithAuth(
@@ -45,7 +41,7 @@ export const likeComment = async (commentId) => {
     return {
       likes: result.likes,
       dislikes: result.dislikes,
-      userVote: "liked", // Indicate user has liked
+      userVote: "liked",
     };
   } catch (error) {
     console.error("Error liking comment:", error);
@@ -53,7 +49,6 @@ export const likeComment = async (commentId) => {
   }
 };
 
-// Dislike comment
 export const dislikeComment = async (commentId) => {
   try {
     const result = await fetchWithAuth(
@@ -66,7 +61,7 @@ export const dislikeComment = async (commentId) => {
     return {
       likes: result.likes,
       dislikes: result.dislikes,
-      userVote: "disliked", // Indicate user has disliked
+      userVote: "disliked",
     };
   } catch (error) {
     console.error("Error disliking comment:", error);
@@ -74,7 +69,6 @@ export const dislikeComment = async (commentId) => {
   }
 };
 
-// Remove vote
 export const removeVote = async (commentId) => {
   try {
     const result = await fetchWithAuth(
@@ -87,7 +81,7 @@ export const removeVote = async (commentId) => {
     return {
       likes: result.likes,
       dislikes: result.dislikes,
-      userVote: null, // Indicate no vote
+      userVote: null,
     };
   } catch (error) {
     console.error("Error removing vote:", error);
@@ -95,7 +89,6 @@ export const removeVote = async (commentId) => {
   }
 };
 
-// Get comments for a specific article/news
 export const getComments = async (articleId) => {
   try {
     const result = await fetchWithAuth(
@@ -108,7 +101,6 @@ export const getComments = async (articleId) => {
   }
 };
 
-// Add new comment
 export const addComment = async (articleId, content, parentId = null) => {
   try {
     const result = await fetchWithAuth(

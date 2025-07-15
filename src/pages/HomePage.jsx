@@ -5,11 +5,8 @@ import BookmarkButton from "../components/BookmarkButton";
 import { useHomeContent } from "../contexts/HomeContentProvider";
 import ArticleCardStats from "../utils/ArticleCardStats";
 
-// --- PERBAIKAN: Tentukan URL dasar untuk backend API Anda ---
-// Pastikan URL ini cocok dengan tempat backend Laravel Anda berjalan (misalnya, dari `php artisan serve`)
 const API_BASE_URL = "http://localhost:8000";
 
-// Helper function to create a URL-friendly slug from a title
 const createSlug = (text) => {
   if (!text || typeof text !== "string") return "";
   return text
@@ -81,10 +78,8 @@ const SmallStoryItem = ({ article }) => (
 );
 
 const HomePage = () => {
-  // 2. Ambil semua data langsung dari context. Tidak ada lagi useState atau useEffect di sini.
   const { articles, categories, loading, error } = useHomeContent();
 
-  // 3. Logika untuk menampilkan loading, error, atau "tidak ada berita" tetap sama.
   if (loading) {
     return (
       <div className="text-center py-20 font-bold text-lg">
@@ -112,7 +107,6 @@ const HomePage = () => {
 
   return (
     <div className="container mx-auto py-6 px-4 sm:py-8">
-      {/* === BAGIAN PERTAMA === */}
       <div className="grid gap-6 lg:grid-cols-3 mb-8 sm:mb-10 md:mb-12">
         <div className="lg:col-span-2 space-y-3 sm:space-y-4">
           {articles.main && (
@@ -238,7 +232,6 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* === BAGIAN KEDUA === */}
       <section className="mb-8 sm:mb-10 md:mb-12">
         <SectionTitle title="Recommendation News" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -279,13 +272,12 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* === BAGIAN TRENDING NOW & LATEST UPDATES === */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 sm:mb-10 md:mb-12">
         <section className="lg:col-span-2">
           <SectionTitle title="Trending Now" />
           <div className="space-y-5 md:space-y-6">
             {articles.trending.map((item, index) => {
-              const isLarge = index === 0; // Make the first item larger
+              const isLarge = index === 0;
               return (
                 <div
                   key={item.link}
@@ -395,7 +387,6 @@ const HomePage = () => {
         </section>
       </div>
 
-      {/* === BAGIAN KETIGA (BREAKING NEWS & TAGS) === */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 sm:mb-10 md:mb-12">
         <section className="lg:col-span-2">
           <SectionTitle title="Breaking News" />
@@ -410,7 +401,7 @@ const HomePage = () => {
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {categories.map((tag) => (
               <Link
-                key={tag.name} // <-- GUNAKAN 'tag.name' SEBAGAI KEY YANG UNIK
+                key={tag.name}
                 to={`/category/${createSlug(tag.name)}`}
                 className="bg-gray-100 text-gray-700 text-xs px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md hover:bg-gray-200 transition-colors"
               >
@@ -421,7 +412,6 @@ const HomePage = () => {
         </section>
       </div>
 
-      {/* === BAGIAN KEEMPAT (MUST-READ STORIES) === */}
       {articles.mustRead && articles.mustRead.length > 0 && (
         <section>
           <SectionTitle title="Must-Read Stories" />

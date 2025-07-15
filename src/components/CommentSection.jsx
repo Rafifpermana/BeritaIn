@@ -1,4 +1,3 @@
-// src/components/CommentSection.jsx
 import React, { useState, useEffect } from "react";
 import CommentForm from "./CommentForm";
 import CommentItem from "./CommentItem";
@@ -82,7 +81,7 @@ const CommentSection = ({ comments = [], onAddComment, onAddReply }) => {
   const handleAddComment = (author, content) => {
     // Create optimistic update
     const newComment = {
-      id: Date.now(), // Temporary ID
+      id: Date.now(),
       author,
       content,
       created_at: new Date().toISOString(),
@@ -104,7 +103,7 @@ const CommentSection = ({ comments = [], onAddComment, onAddReply }) => {
   // Handle add reply (update local state)
   const handleAddReply = (parentId, author, content) => {
     const newReply = {
-      id: Date.now(), // Temporary ID
+      id: Date.now(),
       author,
       content,
       created_at: new Date().toISOString(),

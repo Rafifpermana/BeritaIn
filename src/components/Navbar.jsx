@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -75,7 +74,6 @@ const Navbar = () => {
     markAllNotificationsAsRead,
   } = useArticleInteractions();
 
-  // 2. Ambil daftar kategori dari context, bukan dari variabel statis
   const { categories } = useHomeContent();
 
   // Semua useEffect dan fungsi handler (handleScroll, handleLogout, dll.) tetap sama
@@ -200,7 +198,6 @@ const Navbar = () => {
                 </button>
                 {isSearchDropdownOpen && (
                   <div className="absolute top-full left-0 mt-2 w-60 bg-white border rounded-lg shadow-xl z-10 max-h-72 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
-                    {/* 3. Render kategori dari context */}
                     {[
                       "All Categories",
                       ...categories.map((cat) => cat.name),
@@ -412,7 +409,7 @@ const Navbar = () => {
             </button>
             {isSearchDropdownOpen && (
               <div className="absolute top-full left-0 mt-2 w-64 bg-white border rounded-lg shadow-xl z-10 max-h-64 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
-                {/* 3. Render kategori dari context (untuk mobile) */}
+                {/* Render kategori dari context (untuk mobile) */}
                 {["All Categories", ...categories.map((cat) => cat.name)].map(
                   (catName) => (
                     <button

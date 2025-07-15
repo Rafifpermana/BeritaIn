@@ -1,6 +1,5 @@
 import React from "react";
 
-// Fungsi untuk generate warna background berdasarkan nama
 const generateAvatarColor = (name) => {
   const colors = [
     "bg-red-500",
@@ -27,7 +26,6 @@ const generateAvatarColor = (name) => {
   return colors[Math.abs(hash) % colors.length];
 };
 
-// Fungsi untuk mendapatkan initial dari nama
 const getInitials = (name) => {
   if (!name) return "U";
   const words = name.trim().split(" ");
@@ -37,7 +35,6 @@ const getInitials = (name) => {
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
 };
 
-// Komponen Avatar yang bisa dipakai di mana saja
 const UserAvatar = ({ name, size = "w-10 h-10" }) => {
   const initials = getInitials(name);
   const bgColor = generateAvatarColor(name || "User");

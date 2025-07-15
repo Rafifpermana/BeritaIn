@@ -3,7 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { UserPlus, Trash2, Search } from "lucide-react";
 
 const UserManagementPage = () => {
-  const { apiCall, currentUser } = useAuth(); // Ambil apiCall dan data admin yang sedang login
+  const { apiCall, currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,7 +23,7 @@ const UserManagementPage = () => {
           : `/admin/users?page=${pageNum}`;
 
         const data = await apiCall(endpoint);
-        setUsers(data.data || []); // Data pengguna ada di dalam properti 'data' dari paginasi Laravel
+        setUsers(data.data || []);
         setPagination({
           currentPage: data.current_page,
           lastPage: data.last_page,
@@ -31,7 +31,7 @@ const UserManagementPage = () => {
         });
       } catch (error) {
         console.error("Gagal mengambil data pengguna:", error);
-        setUsers([]); // Kosongkan data jika terjadi error
+        setUsers([]);
       } finally {
         setLoading(false);
       }
@@ -50,7 +50,7 @@ const UserManagementPage = () => {
       // Panggil endpoint BARU yang spesifik untuk mengubah peran
       await apiCall(`/admin/users/${userId}/role`, {
         method: "PATCH",
-        body: JSON.stringify({ role: newRole }), // Hanya kirim data 'role'
+        body: JSON.stringify({ role: newRole }),
       });
       // Refresh data untuk menampilkan perubahan
       fetchUsers(page, searchTerm);
@@ -79,7 +79,7 @@ const UserManagementPage = () => {
   // Handler untuk form pencarian
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    setPage(1); // Selalu reset ke halaman pertama saat melakukan pencarian baru
+    setPage(1);
     fetchUsers(1, searchTerm);
   };
 

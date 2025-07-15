@@ -1,4 +1,3 @@
-// src/contexts/HomeContentProvider.jsx
 import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
 
@@ -99,9 +98,6 @@ export const HomeContentProvider = ({ children }) => {
             articlesWithImages.slice(24, 32).length
           );
         }
-        // ==========================================================
-
-        // Proses kategori (ini sudah benar)
         if (categoriesResponse.data && Array.isArray(categoriesResponse.data)) {
           setCategories(categoriesResponse.data);
         }

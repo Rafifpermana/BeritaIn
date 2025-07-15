@@ -1,7 +1,6 @@
-// src/components/InteractionBar.jsx
 import React from "react";
 import { ThumbsUp, ThumbsDown, Share2, MessageSquare } from "lucide-react";
-import BookmarkButton from "./BookmarkButton"; // <-- Impor komponen bookmark
+import BookmarkButton from "./BookmarkButton";
 
 const InteractionBar = ({
   article,
@@ -88,7 +87,7 @@ const InteractionBar = ({
         {article && (
           <div className="p-1 bg-gray-100 rounded-lg hover:bg-gray-200">
             <BookmarkButton
-              article={article} // Kirim seluruh objek artikel
+              article={article}
               className="text-black hover:text-gray-700 [&>svg]:text-black [&>svg]:hover:text-gray-700"
             />
           </div>

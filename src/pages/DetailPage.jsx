@@ -1,4 +1,3 @@
-// src/pages/DetailPage.jsx
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import axios from "axios";
@@ -7,11 +6,10 @@ import { useAuth } from "../contexts/AuthContext";
 import InteractionBar from "../components/InteractionBar";
 import CommentSection from "../components/CommentSection";
 
-// --- Tentukan URL dasar untuk backend API Anda ---
 const API_BASE_URL = "http://localhost:8000";
 
 const DetailPage = () => {
-  const { articleId } = useParams(); // Ini adalah slug, bukan URL asli
+  const { articleId } = useParams();
   const location = useLocation();
   const { currentUser } = useAuth();
 
@@ -58,7 +56,6 @@ const DetailPage = () => {
       setLoading(true);
       setError(null);
       try {
-        // 1. Ambil konten utama artikel
         const response = await axios.post(
           `${API_BASE_URL}/api/fetch`,
           { url: articleUrl },
@@ -79,8 +76,6 @@ const DetailPage = () => {
           );
         }
 
-        // 2. Ambil data interaksi dan komentar secara paralel
-        // (Memanggil fungsi dari context yang sudah kita buat sebelumnya)
         await Promise.all([
           loadInitialInteractions(articleUrl),
           loadComments(articleUrl),
@@ -139,7 +134,6 @@ const DetailPage = () => {
             "Maaf, artikel yang Anda cari tidak ada atau telah dihapus."}
         </p>
 
-        {/* === PERBAIKAN: Menambahkan link ke sumber asli sebagai alternatif === */}
         {articleUrl && (
           <p className="mb-8">
             <a
@@ -173,21 +167,16 @@ const DetailPage = () => {
           <div className="flex items-center text-xs text-gray-600 mb-6">
             <span>
               By{" "}
-              <span className="font-semibold text-blue-700">
-                {/* PERBAIKAN: Sesuaikan dengan struktur response backend */}
-                Tim Redaksi
-              </span>
+              <span className="font-semibold text-blue-700">Tim Redaksi</span>
             </span>
             <span className="mx-2">•</span>
             <span>
-              {/* PERBAIKAN: Gunakan word_count jika tersedia */}
               {articleData.word_count
                 ? `${articleData.word_count} kata`
                 : "Artikel"}
             </span>
           </div>
 
-          {/* Tampilkan gambar jika tersedia */}
           {articleData.image && (
             <img
               src={articleData.image}
@@ -198,8 +187,6 @@ const DetailPage = () => {
               }}
             />
           )}
-
-          {/* Tampilkan excerpt jika tersedia */}
 
           <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none leading-relaxed">
             <div

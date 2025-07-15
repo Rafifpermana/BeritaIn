@@ -33,8 +33,6 @@ const UserDashboardPage = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  // const [showHeader, setShowHeader] = useState(true);
-  // const [lastScrollY, setLastScrollY] = useState(0);
 
   const notificationButtonRef = useRef(null);
   const notificationPanelRef = useRef(null);
@@ -47,26 +45,6 @@ const UserDashboardPage = () => {
     }, 60000);
     return () => clearInterval(timer);
   }, []);
-
-  // Enhanced scroll handler with smooth transitions
-  // useEffect(() => {
-  //   // const handleScroll = () => {
-  //   //   const currentScrollY = window.scrollY;
-
-  //   //   if (currentScrollY < 50) {
-  //   //     setShowHeader(true);
-  //   //   } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-  //   //     setShowHeader(false);
-  //   //   } else if (currentScrollY < lastScrollY) {
-  //   //     setShowHeader(true);
-  //   //   }
-
-  //   //   setLastScrollY(currentScrollY);
-  //   // };
-
-  //   window.addEventListener("scroll", handleScroll, { passive: true });
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, [lastScrollY]);
 
   const toggleNotifications = () =>
     setIsNotificationsOpen(!isNotificationsOpen);

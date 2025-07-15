@@ -11,7 +11,6 @@ import {
   Send,
 } from "lucide-react";
 
-// Komponen ActionModal tidak perlu diubah karena logikanya hanya untuk UI.
 const ActionModal = ({ isOpen, onClose, onSubmit, comment }) => {
   const [action, setAction] = useState("reject");
   const [points, setPoints] = useState(10);
@@ -119,7 +118,7 @@ const CommentModerationPage = () => {
       try {
         const endpoint = `/admin/comments?status=${status}`;
         const data = await apiCall(endpoint);
-        setComments(data.data || []); // Data dari paginasi Laravel
+        setComments(data.data || []);
       } catch (error) {
         console.error("Gagal mengambil komentar:", error);
         setComments([]);
@@ -140,7 +139,7 @@ const CommentModerationPage = () => {
         method: "PATCH",
         body: JSON.stringify({ status: "approved" }),
       });
-      fetchComments(filterStatus); // Refresh list
+      fetchComments(filterStatus);
     } catch (error) {
       alert(`Gagal menyetujui komentar: ${error.message}`);
     }
@@ -166,7 +165,7 @@ const CommentModerationPage = () => {
         alert(`Gagal menghapus komentar: ${error.message}`);
       }
     }
-    fetchComments(filterStatus); // Refresh list
+    fetchComments(filterStatus);
   };
 
   const openModal = (comment) => setModalState({ isOpen: true, comment });

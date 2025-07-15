@@ -1,6 +1,5 @@
 import React from "react";
-import { ShieldAlert, MessageCircle, UserX, ThumbsDown } from "lucide-react"; // Contoh ikon relevan
-
+import { ShieldAlert, MessageCircle, UserX, ThumbsDown } from "lucide-react";
 const CommunityGuidelines = () => {
   return (
     <div className="bg-white p-6 sm:p-8 rounded-xl shadow-md">

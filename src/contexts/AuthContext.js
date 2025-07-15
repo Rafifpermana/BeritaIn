@@ -1,7 +1,5 @@
-// src/contexts/AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-// Alamat base URL dari API Laravel Anda
 const API_URL = "http://127.0.0.1:8000/api";
 
 export const AuthContext = createContext(null);
@@ -104,11 +102,9 @@ export const AuthProvider = ({ children }) => {
 
   // Fungsi pembantu untuk semua panggilan API
   const apiCall = async (endpoint, options = {}) => {
-    setError(""); // Clear previous errors
+    setError("");
     try {
       const token = getStoredToken();
-
-      // 1. Jangan set Content-Type json bila body-nya FormData
       const headers = {
         Accept: "application/json",
         ...(options.headers || {}),
@@ -117,19 +113,16 @@ export const AuthProvider = ({ children }) => {
         headers["Content-Type"] = "application/json";
       }
 
-      // 2. Tambahkan Authorization jika ada token
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      // 3. Susun opsi fetch
       const response = await fetch(`${API_URL}${endpoint}`, {
         method: options.method || "GET",
         headers,
-        body: options.body, // FormData atau JSON string
+        body: options.body,
       });
 
-      // 4. Parse response
       const data = await response.json();
       if (!response.ok) {
         let errorMessage = data.message || "API call failed";
@@ -247,10 +240,9 @@ export const AuthProvider = ({ children }) => {
     if (!currentUser) return;
 
     try {
-      // Endpoint diubah menjadi /user/profile dengan metode POST
       const response = await apiCall(`/user/profile`, {
         method: "POST",
-        body: formData, // Langsung kirim FormData
+        body: formData,
       });
 
       const updatedUser = response.user;

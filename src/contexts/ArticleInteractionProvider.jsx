@@ -1,4 +1,3 @@
-// src/contexts/ArticleInteractionProvider.jsx
 import React, { useState, useCallback } from "react";
 import { ArticleInteractionContext } from "./ArticleInteractionContextDefinition";
 import apiClient from "../api/axios";
@@ -144,7 +143,7 @@ export const ArticleInteractionProvider = ({ children }) => {
     // Detail artikel akan diisi oleh backend.
     return {
       url: articleUrl,
-      title: "Article from Client", // Judul ini hanya sementara
+      title: "Article from Client",
       description: "",
       image: "",
       source_name: "External",
@@ -159,11 +158,11 @@ export const ArticleInteractionProvider = ({ children }) => {
       const response = await apiClient.post(`/interactions/bookmark`, {
         article: {
           // Pastikan payload sesuai dengan yang dibutuhkan backend
-          url: articleData.url, // atau articleData.link
+          url: articleData.url,
           title: articleData.title,
           description: articleData.description || articleData.excerpt || "",
           image: articleData.image || "",
-          source_name: articleData.source_name || "Unknown",
+          source_name: articleData.source_name || "By Tim Redaksi",
           pubDate:
             articleData.pubDate ||
             articleData.published_at ||
@@ -215,29 +214,23 @@ export const ArticleInteractionProvider = ({ children }) => {
   }, [addNotification]);
 
   const toggleLikeArticle = async (articleData) => {
-    // <-- Perhatikan: parameternya sekarang 'articleData'
     try {
-      // Anda TIDAK perlu lagi memanggil getArticleDataFromUrl di sini
-
       const response = await apiClient.post(`/interactions/vote`, {
         article: {
-          // Pastikan Anda mengirim objek yang sesuai dengan kebutuhan backend
           url: articleData.url,
           title: articleData.title,
           description: articleData.excerpt || "",
           image: articleData.image || "",
-          source_name: articleData.source_name || "Unknown",
+          source_name: articleData.source_name || "By Tim Redaksi",
           pubDate: articleData.published_at || new Date().toISOString(),
         },
         type: "like",
       });
 
-      // Bagian ini sudah benar, yaitu menggunakan respons dari API
       const { likes_count, dislikes_count, current_vote } = response.data;
       setArticleInteractions((prev) => ({
         ...prev,
         [articleData.url]: {
-          // Gunakan articleData.url sebagai key
           ...prev[articleData.url],
           likes: likes_count,
           dislikes: dislikes_count,
@@ -262,7 +255,7 @@ export const ArticleInteractionProvider = ({ children }) => {
           title: articleData.title,
           description: articleData.excerpt || "",
           image: articleData.image || "",
-          source_name: articleData.source_name || "Unknown",
+          source_name: articleData.source_name || "By Tim Redaksi",
           pubDate: articleData.published_at || new Date().toISOString(),
         },
         type: "dislike",
@@ -286,16 +279,14 @@ export const ArticleInteractionProvider = ({ children }) => {
   };
 
   const addCommentToArticle = async (articleData, text) => {
-    // <-- Parameter disederhanakan
     try {
       const response = await apiClient.post(`/interactions/comment`, {
         article: {
-          // <-- Payload disesuaikan
           url: articleData.url,
           title: articleData.title,
           description: articleData.excerpt || "",
           image: articleData.image || "",
-          source_name: articleData.source_name || "Unknown",
+          source_name: articleData.source_name || "By Tim Redaksi",
           pubDate: articleData.published_at || new Date().toISOString(),
         },
         content: text,
@@ -322,16 +313,14 @@ export const ArticleInteractionProvider = ({ children }) => {
   };
 
   const addReplyToComment = async (articleData, parentId, text) => {
-    // <-- Parameter disederhanakan
     try {
       const response = await apiClient.post(`/interactions/comment`, {
         article: {
-          // <-- Payload disesuaikan
           url: articleData.url,
           title: articleData.title,
           description: articleData.excerpt || "",
           image: articleData.image || "",
-          source_name: articleData.source_name || "Unknown",
+          source_name: articleData.source_name || "By Tim Redaksi",
           pubDate: articleData.published_at || new Date().toISOString(),
         },
         content: text,
@@ -342,7 +331,6 @@ export const ArticleInteractionProvider = ({ children }) => {
       setArticleCommentsState((prev) => ({
         ...prev,
         [articleData.url]: addReplyRecursive(
-          // <-- Key menggunakan articleData.url
           prev[articleData.url] || [],
           parentId,
           newReplyFromServer
@@ -361,7 +349,6 @@ export const ArticleInteractionProvider = ({ children }) => {
     }
   };
 
-  // Keep existing functions for admin and local operations
   const deductUserPoints = (userId, amount) => {
     setUserPointsMap((prev) => {
       const currentPoints = prev[userId] || 0;
@@ -491,7 +478,7 @@ export const ArticleInteractionProvider = ({ children }) => {
     deleteNotification,
     loadInitialInteractions,
     loadComments,
-    bookmarkedArticles, // Tambahkan ini
+    bookmarkedArticles,
     fetchBookmarkedArticles,
     // --- Admin Functions ---
     userPointsMap,

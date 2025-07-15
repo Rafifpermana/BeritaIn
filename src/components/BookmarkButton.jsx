@@ -1,4 +1,3 @@
-// src/components/BookmarkButton.jsx
 import React from "react";
 import { Bookmark } from "lucide-react";
 import { useArticleInteractions } from "../hooks/useArticleInteractions";
@@ -12,13 +11,11 @@ const BookmarkButton = ({ article, className = "" }) => {
     return null;
   }
 
-  // Gunakan article.url atau ID unik lainnya sebagai key
   const isBookmarked = articleInteractions[article?.url]?.isBookmarked || false;
 
   const handleToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    // Kirim seluruh objek artikel ke fungsi toggleBookmark
     toggleBookmark(article);
   };
 
