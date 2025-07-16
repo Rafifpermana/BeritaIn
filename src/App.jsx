@@ -84,7 +84,7 @@ function App() {
               </Route>
             </Route>
 
-            {/* Rute Terproteksi khusus Admin */}
+            {/* Rute Terproteksi Admin */}
             <Route element={<ProtectedRoute adminOnly={true} />}>
               <Route path="/admin/dashboard" element={<AdminDashboardPage />}>
                 <Route index element={<AdminOverview />} />
